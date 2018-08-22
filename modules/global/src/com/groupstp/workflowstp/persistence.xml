@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <persistence-unit name="Workflow-STP"
+                      transaction-type="RESOURCE_LOCAL">
+        <class>com.groupstp.workflowstp.entity.QueryExample</class>
+        <class>com.groupstp.workflowstp.entity.Stage</class>
+        <class>com.groupstp.workflowstp.entity.Step</class>
+        <class>com.groupstp.workflowstp.entity.StepDirection</class>
+        <class>com.groupstp.workflowstp.entity.Workflow</class>
+        <class>com.groupstp.workflowstp.entity.WorkflowInstance</class>
+        <class>com.groupstp.workflowstp.entity.WorkflowInstanceComment</class>
+        <class>com.groupstp.workflowstp.entity.WorkflowInstanceTask</class>
+    </persistence-unit>
+</persistence>

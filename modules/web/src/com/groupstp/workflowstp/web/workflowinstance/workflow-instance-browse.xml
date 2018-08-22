@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowInstanceBrowse.caption"
+        class="com.groupstp.workflowstp.web.workflowinstance.WorkflowInstanceBrowse"
+        focusComponent="workflowInstancesTable"
+        lookupComponent="workflowInstancesTable"
+        messagesPack="com.groupstp.workflowstp.web.workflowinstance">
+    <dsContext>
+        <groupDatasource id="workflowInstancesDs"
+                         class="com.groupstp.workflowstp.entity.WorkflowInstance"
+                         view="workflowInstance-browse">
+            <query>
+                <![CDATA[select e from wfstp$WorkflowInstance e order by e.createTs]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="workflowInstancesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="workflowInstancesTable"
+                datasource="workflowInstancesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="workflowInstancesTable"
+                    width="100%" textSelectionEnabled="true">
+            <actions>
+                <action id="edit"/>
+                <action id="remove"/>
+                <action id="openRelatedEntity"/>
+                <action id="restart"/>
+            </actions>
+            <columns>
+                <column id="workflow"/>
+                <column id="entityCaption"/>
+                <column id="entityName"/>
+                <column id="startDate"/>
+                <column id="endDate"/>
+                <column id="error" maxTextLength="50"/>
+            </columns>
+            <rows datasource="workflowInstancesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="editBtn"
+                        action="workflowInstancesTable.edit" caption="mainMsg://actions.View"/>
+                <button id="removeBtn"
+                        action="workflowInstancesTable.remove"/>
+                <button id="openRelatedEntityBtn"
+                        icon="CHAIN"
+                        action="workflowInstancesTable.openRelatedEntity"/>
+                <button icon="REFRESH_ACTION" caption="msg://workflowInstanceBrowse.restart" id="restartBtn"
+                        action="workflowInstancesTable.restart"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

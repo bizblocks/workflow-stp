@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<app-component xmlns="http://schemas.haulmont.com/cuba/app-component.xsd"
+               dependsOn="com.haulmont.cuba">
+    <module blocks="*"
+            name="global">
+        <artifact appJar="true"
+                  name="wfstp-global"/>
+        <property name="cuba.persistenceConfig"
+                  value="+com/groupstp/workflowstp/persistence.xml"/>
+        <property name="cuba.metadataConfig"
+                  value="+com/groupstp/workflowstp/metadata.xml"/>
+        <property name="cuba.viewsConfig"
+                  value="+com/groupstp/workflowstp/views.xml"/>
+    </module>
+    <module blocks="core"
+            dependsOn="global"
+            name="core">
+        <artifact appJar="true"
+                  name="wfstp-core"/>
+        <artifact classifier="db"
+                  configuration="dbscripts"
+                  ext="zip"
+                  name="wfstp-core"/>
+        <property name="cuba.springContextConfig"
+                  value="+com/groupstp/workflowstp/spring.xml"/>
+        <property name="cuba.mainMessagePack"
+                  value="+com.groupstp.workflowstp.core"/>
+    </module>
+    <module blocks="web"
+            dependsOn="global"
+            name="web">
+        <artifact appJar="true"
+                  name="wfstp-web"/>
+        <artifact classifier="web"
+                  configuration="webcontent"
+                  ext="zip"
+                  name="wfstp-web"/>
+        <property name="cuba.springContextConfig"
+                  value="+com/groupstp/workflowstp/web-spring.xml"/>
+        <property name="cuba.dispatcherSpringContextConfig"
+                  value="+com/groupstp/workflowstp/web-dispatcher-spring.xml"/>
+        <property name="cuba.windowConfig"
+                  value="+com/groupstp/workflowstp/web-screens.xml"/>
+        <property name="cuba.menuConfig"
+                  value="+com/groupstp/workflowstp/web-menu.xml"/>
+        <property name="cuba.permissionConfig"
+                  value="+com/groupstp/workflowstp/web-permissions.xml"/>
+        <property name="cuba.mainMessagePack"
+                  value="+com.groupstp.workflowstp.web"/>
+    </module>
+</app-component>

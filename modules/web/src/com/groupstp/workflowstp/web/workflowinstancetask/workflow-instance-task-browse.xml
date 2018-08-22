@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowInstanceTaskBrowse.caption"
+        class="com.groupstp.workflowstp.web.workflowinstancetask.WorkflowInstanceTaskBrowse"
+        focusComponent="workflowInstanceTasksTable"
+        lookupComponent="workflowInstanceTasksTable"
+        messagesPack="com.groupstp.workflowstp.web.workflowinstancetask">
+    <dsContext>
+        <groupDatasource id="workflowInstanceTasksDs"
+                         class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+                         view="workflowInstanceTask-browse">
+            <query>
+                <![CDATA[select e from wfstp$WorkflowInstanceTask e order by e.createTs]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="workflowInstanceTasksTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="workflowInstanceTasksTable"
+                datasource="workflowInstanceTasksDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="workflowInstanceTasksTable"
+                    width="100%" settingsEnabled="false" textSelectionEnabled="true">
+            <actions>
+                <action id="openRelatedEntity"/>
+            </actions>
+            <columns>
+                <column id="instance"/>
+                <column id="step"/>
+                <column id="startDate"/>
+                <column id="endDate"/>
+            </columns>
+            <rows datasource="workflowInstanceTasksDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="openRelatedEntityBtn"
+                        icon="CHAIN"
+                        action="workflowInstanceTasksTable.openRelatedEntity"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

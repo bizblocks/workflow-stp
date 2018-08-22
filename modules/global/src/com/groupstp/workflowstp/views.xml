@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<views xmlns="http://schemas.haulmont.com/cuba/view.xsd">
+    <view class="com.groupstp.workflowstp.entity.QueryExample"
+          extends="_minimal"
+          name="query-browse">
+        <property name="status"/>
+        <property name="stepName"/>
+        <property name="comment"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.QueryExample"
+          extends="_local"
+          name="query-edit">
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_minimal"
+          name="query-workflow-browse">
+        <property name="steps"
+                  view="_minimal">
+            <property name="order"/>
+            <property name="stage"
+                      view="_minimal">
+                <property name="browseScreenGroovyScript"/>
+                <property name="actors"/>
+                <property name="actorsRoles"/>
+            </property>
+        </property>
+    </view>
+    <view class="com.haulmont.cuba.security.entity.User"
+          extends="_minimal"
+          name="user-with-name">
+        <property name="firstName"/>
+        <property name="middleName"/>
+        <property name="lastName"/>
+    </view>
+    <view class="com.haulmont.cuba.security.entity.User"
+          extends="_local"
+          name="user-with-role">
+        <property name="userRoles"
+                  view="user-with-role"/>
+    </view>
+    <view class="com.haulmont.cuba.security.entity.UserRole"
+          extends="_local"
+          name="user-with-role">
+        <property name="role"
+                  view="_local"/>
+    </view>
+    <!--Start Workflow views-->
+    <view class="com.groupstp.workflowstp.entity.Stage"
+          extends="_minimal"
+          name="stage-browse">
+        <property name="entityName"/>
+        <property name="name"/>
+        <property name="type"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Stage"
+          extends="_local"
+          name="stage-edit">
+        <property name="actors"
+                  view="user.browse"/>
+        <property name="actorsRoles"
+                  view="_local"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_minimal"
+          name="workflow-browse">
+        <property name="entityName"/>
+        <property name="name"/>
+        <property name="active"/>
+        <property name="entityCaption"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_local"
+          name="workflow-edit">
+        <property name="steps"
+                  view="step-edit"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Step"
+          extends="_local"
+          name="step-edit">
+        <property name="stage"
+                  view="stage-browse"/>
+        <property name="workflow"
+                  view="_minimal"/>
+        <property name="directions"
+                  view="stepDirection-edit"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.StepDirection"
+          extends="_local"
+          name="stepDirection-edit">
+        <property name="from"
+                  view="_minimal"/>
+        <property name="to"
+                  view="_minimal"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstance"
+          extends="_minimal"
+          name="workflowInstance-browse">
+        <property name="workflow"
+                  view="_minimal"/>
+        <property name="entityId"/>
+        <property name="entityName"/>
+        <property name="entityCaption"/>
+        <property name="startDate"/>
+        <property name="endDate"/>
+        <property name="error"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstance"
+          extends="_local"
+          name="workflowInstance-edit">
+        <property name="workflow"
+                  view="_minimal"/>
+        <property name="createdBy"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+          extends="_local"
+          name="workflowInstanceTask-browse">
+        <property name="instance"
+                  view="_minimal"/>
+        <property name="step"
+                  view="_minimal"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstanceComment"
+          extends="_local"
+          name="workflowInstanceComment-browse">
+        <property name="createTs"/>
+        <property name="instance"
+                  view="_minimal"/>
+        <property name="task"
+                  view="workflowInstanceTask-browse"/>
+        <property name="author"
+                  view="_minimal"/>
+        <property name="attachment"
+                  view="_minimal"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstanceComment"
+          extends="_local"
+          name="workflowInstanceComment-edit">
+        <property name="instance"
+                  view="_minimal"/>
+        <property name="task"
+                  view="_minimal"/>
+        <property name="author"
+                  view="_minimal"/>
+        <property name="attachment"
+                  view="_minimal"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_local"
+          name="workflow-export">
+        <property name="steps"
+                  view="_local">
+            <property name="stage"
+                      view="_local">
+                <property name="actors"
+                          view="_minimal"/>
+                <property name="actorsRoles"
+                          view="_minimal"/>
+            </property>
+            <property name="directions"
+                      view="_local">
+                <property name="from"
+                          view="_minimal"/>
+                <property name="to"
+                          view="_minimal"/>
+            </property>
+            <property name="workflow"
+                      view="_minimal"/>
+        </property>
+    </view>
+    <!--Workflow processing view-->
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_local"
+          name="workflow-process">
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstance"
+          extends="_local"
+          name="workflowInstance-process">
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+          extends="_local"
+          name="workflowInstanceTask-process">
+        <property name="step"
+                  view="_local">
+            <property name="stage"
+                      view="_minimal"/>
+            <property name="directions"
+                      view="_local">
+                <property name="from"
+                          view="_minimal"/>
+                <property name="to"
+                          view="_minimal"/>
+            </property>
+        </property>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstance"
+          extends="_local"
+          name="workflowInstance-full">
+        <property name="tasks"
+                  view="_local">
+            <property name="step"
+                      view="_local">
+                <property name="stage"
+                          view="_local"/>
+                <property name="directions"
+                          view="_local">
+                    <property name="from"
+                              view="_local"/>
+                    <property name="to"
+                              view="_local"/>
+                </property>
+            </property>
+        </property>
+        <property name="workflow"
+                  view="_local"/>
+        <property name="comments"
+                  view="_local">
+            <property name="task"
+                      view="_local"/>
+            <property name="author"
+                      view="_local"/>
+        </property>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Step"
+          extends="_local"
+          name="step-process">
+        <property name="stage"
+                  view="stage-process"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Stage"
+          extends="_local"
+          name="stage-process">
+        <property name="actors"
+                  view="user.browse"/>
+        <property name="actorsRoles"
+                  view="role.browse"/>
+    </view>
+    <!--End Workflow processing view-->
+    <!--End Workflow view -->
+</views>

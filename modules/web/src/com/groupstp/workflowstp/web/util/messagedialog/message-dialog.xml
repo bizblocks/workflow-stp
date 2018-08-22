@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://messageDialog.caption"
+        class="com.groupstp.workflowstp.web.util.messagedialog.MessageDialog"
+        messagesPack="com.groupstp.workflowstp.web.util.messagedialog">
+    <dialogMode height="600"
+                resizable="true"
+                width="800"/>
+    <layout expand="textArea" spacing="true">
+        <textArea id="textArea"
+                  editable="false"
+                  width="100%"/>
+        <button id="okBtn"
+                caption="mainMsg://actions.Ok"
+                invoke="close"/>
+    </layout>
+</window>

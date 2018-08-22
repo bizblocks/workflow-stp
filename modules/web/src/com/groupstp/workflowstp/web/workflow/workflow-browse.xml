@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowBrowse.caption"
+        class="com.groupstp.workflowstp.web.workflow.WorkflowBrowse"
+        focusComponent="workflowsTable"
+        lookupComponent="workflowsTable"
+        messagesPack="com.groupstp.workflowstp.web.workflow">
+    <dsContext>
+        <groupDatasource id="workflowsDs"
+                         class="com.groupstp.workflowstp.entity.Workflow"
+                         view="workflow-browse">
+            <query>
+                <![CDATA[select e from wfstp$Workflow e order by e.entityName]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="workflowsTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="workflowsTable"
+                datasource="workflowsDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="workflowsTable"
+                    width="100%" textSelectionEnabled="true">
+            <actions>
+                <action id="create"/>
+                <action id="edit"/>
+                <action id="remove"/>
+                <action id="export"/>
+            </actions>
+            <columns>
+                <group>
+                    <column id="entityCaption"/>
+                </group>
+                <column id="entityName"/>
+                <column id="active"/>
+                <column id="name"/>
+            </columns>
+            <rows datasource="workflowsDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn"
+                        action="workflowsTable.create"/>
+                <button id="editBtn"
+                        action="workflowsTable.edit"/>
+                <button id="removeBtn"
+                        action="workflowsTable.remove"/>
+                <button id="activateBtn"
+                        action="workflowsTable.activate"/>
+                <button id="exportBtn"
+                        action="workflowsTable.export" icon="icons/download.png"/>
+                <upload id="importBtn"
+                        uploadButtonCaption=""
+                        uploadButtonIcon="UPLOAD" fileStoragePutMode="MANUAL"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

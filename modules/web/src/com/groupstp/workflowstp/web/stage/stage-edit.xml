@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://stageEdit.caption"
+        class="com.groupstp.workflowstp.web.stage.StageEdit"
+        datasource="stageDs"
+        focusComponent="generalFieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.stage">
+    <dsContext>
+        <datasource id="stageDs"
+                    class="com.groupstp.workflowstp.entity.Stage"
+                    view="stage-edit">
+            <collectionDatasource id="actorsDs" property="actors"/>
+            <collectionDatasource id="actorsRolesDs" property="actorsRoles"/>
+        </datasource>
+        <collectionDatasource id="usersDs"
+                              class="com.haulmont.cuba.security.entity.User"
+                              view="user.browse">
+            <query>
+                <![CDATA[select e from sec$User e order by e.login]]>
+            </query>
+        </collectionDatasource>
+        <collectionDatasource id="rolesDs"
+                              class="com.haulmont.cuba.security.entity.Role"
+                              view="_local">
+            <query>
+                <![CDATA[select e from sec$Role e order by e.name]]>
+            </query>
+        </collectionDatasource>
+    </dsContext>
+    <dialogMode height="600" width="800"/>
+    <layout expand="mainBox" spacing="true">
+        <vbox id="mainBox" width="100%" spacing="true">
+            <groupBox spacing="true" caption="msg://stageEdit.general" collapsable="true">
+                <fieldGroup id="generalFieldGroup"
+                            datasource="stageDs">
+                    <column width="300px">
+                        <field property="name"/>
+                        <field property="entityName"
+                               caption="msg://com.groupstp.workflowstp.entity/Stage.entityCaption">
+                            <lookupField width="100%" datasource="stageDs" property="entityName" id="entityNameField"/>
+                        </field>
+                        <field property="type"/>
+                    </column>
+                </fieldGroup>
+            </groupBox>
+
+            <hbox id="userInteractionBox" spacing="true" width="100%" height="100%" expand="screenGroovyBox">
+                <vbox width="300px" height="100%" id="actorsBox" expand="fakeLabel" spacing="true">
+                    <lookupField id="userTypeAction" width="100%" caption="msg://stageEdit.userTypeAction"/>
+                    <tokenList datasource="actorsRolesDs" id="rolesList"
+                               caption="msg://com.groupstp.workflowstp.entity/Stage.actorsRoles" clearEnabled="false"
+                               width="100%">
+                        <lookup lookup="true" multiselect="true" optionsDatasource="rolesDs"/>
+                    </tokenList>
+                    <tokenList datasource="actorsDs" id="usersList"
+                               caption="msg://com.groupstp.workflowstp.entity/Stage.actors" clearEnabled="false"
+                               width="100%">
+                        <lookup lookup="true" multiselect="true" optionsDatasource="usersDs"/>
+                    </tokenList>
+                    <label id="fakeLabel"/>
+                </vbox>
+                <vbox height="100%" id="screenGroovyBox" expand="screenTabSheet">
+                    <tabSheet id="screenTabSheet">
+                        <tab id="browseGroovyScriptTab" expand="browseScreenGroovyScript"
+                             caption="msg://com.groupstp.workflowstp.entity/Stage.browseScreenGroovyScript">
+                            <sourceCodeEditor id="browseScreenGroovyScript" mode="Groovy" width="100%"
+                                              datasource="stageDs"
+                                              property="browseScreenGroovyScript"/>
+                        </tab>
+                        <tab id="editorGroovyScriptTab" expand="editorScreenGroovyScript"
+                             caption="msg://com.groupstp.workflowstp.entity/Stage.editorScreenGroovyScript">
+                            <sourceCodeEditor id="editorScreenGroovyScript" mode="Groovy" width="100%"
+                                              datasource="stageDs"
+                                              property="editorScreenGroovyScript"/>
+                        </tab>
+                    </tabSheet>
+                </vbox>
+            </hbox>
+
+            <vbox id="executionBox" spacing="true" width="100%" height="100%" expand="executionCode"
+                  margin="true">
+                <label value="msg://com.groupstp.workflowstp.entity/Stage.executionGroovyScript"/>
+                <sourceCodeEditor id="executionCode" mode="Groovy" width="100%" datasource="stageDs"
+                                  property="executionGroovyScript"/>
+            </vbox>
+        </vbox>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>

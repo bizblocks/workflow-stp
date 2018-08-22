@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowInstanceCommentDialog.caption"
+        class="com.groupstp.workflowstp.web.workflowinstancecomment.WorkflowInstanceCommentDialog"
+        datasource="commentDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.workflowinstancecomment">
+    <dsContext>
+        <datasource id="commentDs"
+                    class="com.groupstp.workflowstp.entity.WorkflowInstanceComment"
+                    view="workflowInstanceComment-edit"/>
+    </dsContext>
+    <layout expand="actionsBox" spacing="true">
+        <fieldGroup id="fieldGroup" datasource="commentDs" width="100%">
+            <column width="100%">
+                <field property="attachment"/>
+                <field property="comment">
+                    <textArea datasource="commentDs" property="comment" rows="6"/>
+                </field>
+            </column>
+        </fieldGroup>
+
+        <hbox spacing="true" stylename="c-edit-window-actions" id="actionsBox">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOkClick"/>
+            <button id="cancelBtn"
+                    caption="mainMsg://actions.Cancel"
+                    icon="icons/cancel.png"
+                    invoke="onCancelClick"/>
+        </hbox>
+    </layout>
+</window>

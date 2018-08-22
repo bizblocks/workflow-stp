@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowInstanceEdit.caption"
+        class="com.groupstp.workflowstp.web.workflowinstance.WorkflowInstanceEdit"
+        datasource="workflowInstanceDs"
+        focusComponent="generalFieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.workflowinstance">
+    <dsContext>
+        <datasource id="workflowInstanceDs"
+                    class="com.groupstp.workflowstp.entity.WorkflowInstance"
+                    view="workflowInstance-edit"/>
+        <collectionDatasource id="tasksDs"
+                              class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+                              view="workflowInstanceTask-browse">
+            <query>
+                <![CDATA[select e from wfstp$WorkflowInstanceTask e where e.instance.id = :ds$workflowInstanceDs order by e.createTs asc]]>
+            </query>
+        </collectionDatasource>
+        <collectionDatasource id="commentsDs"
+                              class="com.groupstp.workflowstp.entity.WorkflowInstanceComment"
+                              view="workflowInstanceComment-browse">
+            <query>
+                <![CDATA[select e from wfstp$WorkflowInstanceComment e where e.instance.id = :ds$workflowInstanceDs order by e.createTs asc]]>
+            </query>
+        </collectionDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="split"
+            spacing="true">
+        <groupBox caption="msg://workflowInstanceEdit.general">
+            <fieldGroup id="generalFieldGroup"
+                        datasource="workflowInstanceDs">
+                <column width="300px">
+                    <field property="workflow">
+                        <pickerField id="workflow" datasource="workflowInstanceDs" property="workflow"/>
+                    </field>
+                    <field property="createdBy" caption="msg://workflowInstanceEdit.startedBy"/>
+                    <field property="startDate"/>
+                    <field property="endDate"/>
+                </column>
+                <column width="200px">
+                    <field id="context" caption="">
+                        <linkButton id="contextLink" caption="msg://workflowInstanceEdit.context"/>
+                    </field>
+                    <field id="relatedEntity" caption="">
+                        <linkButton id="relatedEntityLink" caption="msg://workflowInstanceEdit.relatedEntity"/>
+                    </field>
+                    <field id="error" caption="">
+                        <linkButton id="errorLink" caption="msg://workflowInstanceEdit.errorMessage"/>
+                    </field>
+                </column>
+            </fieldGroup>
+        </groupBox>
+        <split id="split" width="100%" orientation="horizontal" settingsEnabled="false">
+            <vbox id="tasksBox" spacing="true" width="100%" height="100%" expand="tasksTable" margin="true">
+                <label value="msg://com.groupstp.workflowstp.entity/WorkflowInstance.tasks"/>
+                <filter id="taskFilter"
+                        applyTo="tasksTable"
+                        datasource="tasksDs">
+                    <properties include=".*" exclude="instance"/>
+                </filter>
+                <table id="tasksTable" width="100%" textSelectionEnabled="true" settingsEnabled="false">
+                    <columns>
+                        <column id="step"/>
+                        <column id="startDate"/>
+                        <column id="endDate"/>
+                    </columns>
+                    <rows datasource="tasksDs"/>
+                </table>
+            </vbox>
+            <vbox id="commentsBox" spacing="true" width="100%" height="100%" expand="commentsTable" margin="true">
+                <label value="msg://com.groupstp.workflowstp.entity/WorkflowInstance.comments"/>
+                <filter id="commentFilter"
+                        applyTo="commentsTable"
+                        datasource="commentsDs">
+                    <properties include=".*" exclude="instance"/>
+                </filter>
+                <table id="commentsTable" width="100%" textSelectionEnabled="true" settingsEnabled="false">
+                    <columns>
+                        <column id="createTs"/>
+                        <column id="task.step"/>
+                        <column id="author"/>
+                        <column id="comment" maxTextLength="100"/>
+                        <column id="attachment.name"/>
+                    </columns>
+                    <rows datasource="commentsDs"/>
+                </table>
+            </vbox>
+        </split>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://queryWorkflowEdit.caption"
+        class="com.groupstp.workflowstp.web.queryexample.workflow.QueryWorkflowEdit"
+        datasource="queryDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.queryexample.workflow">
+    <dsContext>
+        <datasource id="queryDs"
+                    class="com.groupstp.workflowstp.entity.QueryExample"
+                    view="query-edit">
+        </datasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="tabsheet"
+            spacing="true">
+        <tabSheet id="tabsheet">
+            <tab id="dataTab"
+                 caption="msg://queryWorkflowEdit.data">
+                <scrollBox id="scrollBox"
+                           height="100%"
+                           spacing="true">
+                    <hbox height="500px"
+                          spacing="true"
+                          width="100%">
+                        <vbox id="genericBox"
+                              expand="commentBox"
+                              height="100%"
+                              margin="true"
+                              spacing="true"
+                              width="800px">
+                            <fieldGroup id="fieldGroup"
+                                        datasource="queryDs"
+                                        width="100%">
+                                <column width="100%">
+                                    <field editable="false"
+                                           property="status"/>
+                                </column>
+                            </fieldGroup>
+                            <vbox id="commentBox"
+                                  expand="comment"
+                                  spacing="true">
+                                <label value="msg://com.groupstp.workflowstp.entity/QueryExample.comment"/>
+                                <textArea id="comment"
+                                          datasource="queryDs"
+                                          property="comment"
+                                          width="100%"/>
+                            </vbox>
+                        </vbox>
+                    </hbox>
+                </scrollBox>
+            </tab>
+        </tabSheet>
+        <hbox id="bottomPanel"
+              spacing="true"
+              stylename="c-edit-window-actions">
+            <button id="windowCommit"
+                    action="windowCommit"
+                    icon="EDITOR_OK"/>
+            <button id="windowClose"
+                    action="windowClose"
+                    icon="EDITOR_CANCEL"/>
+        </hbox>
+    </layout>
+</window>

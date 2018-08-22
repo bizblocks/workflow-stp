@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://queryBrowse.caption"
+        class="com.groupstp.workflowstp.web.queryexample.QueryBrowse"
+        focusComponent="queriesTable"
+        lookupComponent="queriesTable"
+        messagesPack="com.groupstp.workflowstp.web.queryexample">
+    <dsContext>
+        <groupDatasource id="queriesDs"
+                         class="com.groupstp.workflowstp.entity.QueryExample"
+                         view="query-browse">
+            <query>
+                <![CDATA[select e from wfstp$QueryExample e]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="queriesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="queriesTable"
+                datasource="queriesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="queriesTable"
+                    width="100%">
+            <actions>
+                <action id="create"/>
+                <action id="edit"/>
+                <action id="remove"/>
+            </actions>
+            <columns>
+                <column id="comment"
+                        caption="msg://queryExample.comment"/>
+                <column id="status"
+                        caption="msg://queryExample.status"/>
+                <column id="stepName"
+                        caption="msg://queryExample.stepname"/>
+            </columns>
+            <rows datasource="queriesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn"
+                        action="queriesTable.create"/>
+                <button id="editBtn"
+                        action="queriesTable.edit"/>
+                <button id="removeBtn"
+                        action="queriesTable.remove"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

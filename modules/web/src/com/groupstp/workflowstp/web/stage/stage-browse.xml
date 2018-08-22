@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://stageBrowse.caption"
+        class="com.groupstp.workflowstp.web.stage.StageBrowse"
+        focusComponent="stagesTable"
+        lookupComponent="stagesTable"
+        messagesPack="com.groupstp.workflowstp.web.stage">
+    <dsContext>
+        <groupDatasource id="stagesDs"
+                         class="com.groupstp.workflowstp.entity.Stage"
+                         view="stage-browse">
+            <query>
+                <![CDATA[select e from wfstp$Stage e order by e.entityName]]>
+                <filter>
+                    <and>
+                        <c>e.entityName = :custom$entityName</c>
+                    </and>
+                </filter>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode resizable="true" height="600" width="800"/>
+    <layout expand="stagesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="stagesTable"
+                datasource="stagesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="stagesTable"
+                    width="100%" textSelectionEnabled="true">
+            <actions>
+                <action id="create"/>
+                <action id="edit"/>
+                <action id="remove"/>
+            </actions>
+            <columns>
+                <group>
+                    <column id="entityCaption"/>
+                </group>
+                <column id="entityName"/>
+                <column id="name"/>
+                <column id="type"/>
+            </columns>
+            <rows datasource="stagesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn"
+                        action="stagesTable.create"/>
+                <button id="editBtn"
+                        action="stagesTable.edit"/>
+                <button id="removeBtn"
+                        action="stagesTable.remove"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowEdit.caption"
+        class="com.groupstp.workflowstp.web.workflow.WorkflowEdit"
+        datasource="workflowDs"
+        focusComponent="generalFieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.workflow">
+    <dsContext>
+        <datasource id="workflowDs"
+                    class="com.groupstp.workflowstp.entity.Workflow"
+                    view="workflow-edit">
+            <collectionDatasource id="stepsDs" property="steps">
+                <collectionDatasource id="directionsDs" property="directions"/>
+            </collectionDatasource>
+        </datasource>
+        <collectionDatasource id="possibleStartStepsDs"
+                              class="com.groupstp.workflowstp.entity.Step"
+                              view="step-edit"
+                              refreshMode="NEVER"
+                              allowCommit="false"/>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="mainBox" spacing="true">
+        <vbox id="mainBox" width="100%" expand="stepsSplit" spacing="true">
+            <groupBox caption="msg://workflowEdit.general" collapsable="true">
+                <fieldGroup id="generalFieldGroup"
+                            datasource="workflowDs">
+                    <column width="300px">
+                        <field property="name"/>
+                        <field property="entityName">
+                            <lookupField width="100%" datasource="workflowDs" property="entityName"
+                                         id="entityNameField"/>
+                        </field>
+                    </column>
+                </fieldGroup>
+            </groupBox>
+
+            <split width="100%" id="stepsSplit" orientation="horizontal" settingsEnabled="false">
+                <vbox width="100%" height="100%" expand="stepsTable" spacing="true" margin="true">
+                    <label value="msg://workflowEdit.steps"/>
+                    <table id="stepsTable" width="100%" sortable="false" settingsEnabled="false"
+                           textSelectionEnabled="true">
+                        <actions>
+                            <action id="add"/>
+                            <action id="remove"/>
+                            <action id="up"/>
+                            <action id="down"/>
+                        </actions>
+                        <columns>
+                            <column id="stage.name"/>
+                            <column id="order"/>
+                        </columns>
+                        <rows datasource="stepsDs"/>
+                        <buttonsPanel id="stepsTableButtonsPanel" alwaysVisible="true">
+                            <button id="stepsTableAddBtn"
+                                    action="stepsTable.add"/>
+                            <button id="stepsTableRemoveBtn"
+                                    action="stepsTable.remove"/>
+                            <button action="stepsTable.up" icon="CARET_UP" caption=""/>
+                            <button action="stepsTable.down" icon="CARET_DOWN" caption=""/>
+                        </buttonsPanel>
+                    </table>
+                </vbox>
+
+                <vbox width="100%" height="100%" expand="stepDirectionsTable" spacing="true" margin="true">
+                    <label value="msg://workflowEdit.directions"/>
+                    <table id="stepDirectionsTable" width="100%" sortable="false" settingsEnabled="false"
+                           textSelectionEnabled="true">
+                        <actions>
+                            <action id="create"/>
+                            <action id="edit"/>
+                            <action id="remove"/>
+                            <action id="up"/>
+                            <action id="down"/>
+                        </actions>
+                        <columns>
+                            <column id="to"/>
+                            <column id="order"/>
+                            <column id="conditionSqlScript" maxTextLength="40"/>
+                            <column id="conditionGroovyScript" maxTextLength="40"/>
+                        </columns>
+                        <rows datasource="directionsDs"/>
+                        <buttonsPanel id="stepDirectionsTableButtonsPanel"
+                                      alwaysVisible="true">
+                            <button id="stepDirectionsTableCreateBtn"
+                                    action="stepDirectionsTable.create"/>
+                            <button id="stepDirectionsTableEditBtn"
+                                    action="stepDirectionsTable.edit"/>
+                            <button id="stepDirectionsTableRemoveBtn"
+                                    action="stepDirectionsTable.remove"/>
+                            <button action="stepDirectionsTable.up" icon="CARET_UP" caption=""/>
+                            <button action="stepDirectionsTable.down" icon="CARET_DOWN" caption=""/>
+                        </buttonsPanel>
+                    </table>
+                </vbox>
+            </split>
+        </vbox>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>

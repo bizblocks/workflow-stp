@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<menu-config xmlns="http://schemas.haulmont.com/cuba/menu.xsd">
+    <menu id="catalogs"
+          insertBefore="administration">
+        <item screen="wfstp$QueryExample.browse"/>
+    </menu>
+    <menu id="workflow"
+          insertBefore="catalogs">
+        <item screen="wfstp$Stage.browse"/>
+        <item screen="wfstp$Workflow.browse"/>
+        <item screen="wfstp$WorkflowInstance.browse"/>
+        <item screen="wfstp$WorkflowInstanceTask.browse"/>
+    </menu>
+    <item id="query-workflow"
+          insertBefore="catalogs"
+          screen="query-workflow"/>
+</menu-config>

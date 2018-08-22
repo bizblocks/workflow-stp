@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<screen-config xmlns="http://schemas.haulmont.com/cuba/screens.xsd">
+    <screen id="message-dialog"
+            template="com/groupstp/workflowstp/web/util/messagedialog/message-dialog.xml"/>
+    <screen id="wfstp$QueryExample.browse"
+            template="com/groupstp/workflowstp/web/queryexample/query-browse.xml"/>
+    <screen id="wfstp$QueryExample.edit"
+            template="com/groupstp/workflowstp/web/queryexample/query-edit.xml"/>
+    <screen id="wfstp$Stage.browse"
+            template="com/groupstp/workflowstp/web/stage/stage-browse.xml"/>
+    <screen id="wfstp$Stage.edit"
+            template="com/groupstp/workflowstp/web/stage/stage-edit.xml"/>
+    <screen id="wfstp$Workflow.browse"
+            template="com/groupstp/workflowstp/web/workflow/workflow-browse.xml"/>
+    <screen id="wfstp$Workflow.edit"
+            template="com/groupstp/workflowstp/web/workflow/workflow-edit.xml"/>
+    <screen id="wfstp$StepDirection.edit"
+            template="com/groupstp/workflowstp/web/stepdirection/step-direction-edit.xml"/>
+    <screen id="wfstp$WorkflowInstance.browse"
+            template="com/groupstp/workflowstp/web/workflowinstance/workflow-instance-browse.xml"/>
+    <screen id="wfstp$WorkflowInstance.edit"
+            template="com/groupstp/workflowstp/web/workflowinstance/workflow-instance-edit.xml"/>
+    <screen id="wfstp$WorkflowInstanceTask.browse"
+            template="com/groupstp/workflowstp/web/workflowinstancetask/workflow-instance-task-browse.xml"/>
+    <screen id="workflow-instance-comment-dialog"
+            template="com/groupstp/workflowstp/web/workflowinstancecomment/workflow-instance-comment-dialog.xml"/>
+    <screen id="query-workflow"
+            template="com/groupstp/workflowstp/web/queryexample/workflow/query-workflow-browse.xml"/>
+    <screen id="queryexample-workflow-edit"
+            template="com/groupstp/workflowstp/web/queryexample/workflow/query-workflow-edit.xml"/>
+    <screen id="queryexample-workflow-table"
+            template="com/groupstp/workflowstp/web/queryexample/workflow/frame/query-workflow-browse-table-frame.xml"/>
+</screen-config>

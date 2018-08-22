@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://queryWorkflowBrowse.caption"
+        class="com.groupstp.workflowstp.web.queryexample.workflow.QueryWorkflowBrowse"
+        focusComponent="tabSheet"
+        messagesPack="com.groupstp.workflowstp.web.queryexample.workflow">
+    <dialogMode height="600"
+                width="800"/>
+    <layout spacing="true">
+        <tabSheet id="tabSheet"
+                  height="100%"/>
+    </layout>
+</window>

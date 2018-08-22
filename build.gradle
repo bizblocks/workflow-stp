@@ -24,8 +24,6 @@ def coreModule = project(":${modulePrefix}-core")
 def webModule = project(":${modulePrefix}-web")
 
 def servletApi = 'javax.servlet:javax.servlet-api:3.1.0'
-
-
 apply(plugin: 'idea')
 apply(plugin: 'cuba')
 
@@ -45,7 +43,7 @@ dependencies {
 
 }
 
-def hsql = 'org.hsqldb:hsqldb:2.2.9'
+def postgres = 'org.postgresql:postgresql:9.4.1212'
 
 configure([globalModule, coreModule, webModule]) {
     apply(plugin: 'java')
@@ -90,8 +88,9 @@ configure(coreModule) {
     dependencies {
         compile(globalModule)
         provided(servletApi)
-        jdbc(hsql)
-        testRuntime(hsql)
+        jdbc(postgres)
+        testRuntime(postgres)
+        compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
 
     }
 
@@ -112,19 +111,19 @@ configure(coreModule) {
     }
 
     task createDb(dependsOn: assembleDbScripts, description: 'Creates local database', type: CubaDbCreation) {
-        dbms = 'hsql'
+        dbms = 'postgres'
         host = 'localhost'
         dbName = 'wfstp'
-        dbUser = 'sa'
-        dbPassword = ''
+        dbUser = 'cuba'
+        dbPassword = 'cuba'
     }
 
     task updateDb(dependsOn: assembleDbScripts, description: 'Updates local database', type: CubaDbUpdate) {
-        dbms = 'hsql'
+        dbms = 'postgres'
         host = 'localhost'
         dbName = 'wfstp'
-        dbUser = 'sa'
-        dbPassword = ''
+        dbUser = 'cuba'
+        dbPassword = 'cuba'
     }
 }
     
@@ -176,10 +175,6 @@ configure(webModule) {
         appJars(modulePrefix + '-global', modulePrefix + '-web')
     }
 }
-
-
-
-
 
 task undeploy(type: Delete, dependsOn: ":${modulePrefix}-web:cleanConf") {
     delete("$cuba.tomcat.dir/shared")

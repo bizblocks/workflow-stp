@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://stepDirectionEdit.caption"
+        class="com.groupstp.workflowstp.web.stepdirection.StepDirectionEdit"
+        datasource="stepDirectionDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.stepdirection">
+    <dsContext>
+        <datasource id="stepDirectionDs"
+                    class="com.groupstp.workflowstp.entity.StepDirection"
+                    view="stepDirection-edit"/>
+        <collectionDatasource id="possibleToStepsDs"
+                              class="com.groupstp.workflowstp.entity.Step"
+                              view="_minimal"
+                              refreshMode="NEVER"
+                              allowCommit="false"/>
+    </dsContext>
+    <dialogMode height="600" width="800"/>
+    <layout expand="mainBox" spacing="true">
+        <vbox id="mainBox" spacing="true" expand="constraintTabSheet" width="100%">
+            <groupBox caption="msg://stepDirectionEdit.general">
+                <fieldGroup id="fieldGroup"
+                            datasource="stepDirectionDs">
+                    <column width="300px">
+                        <field property="from" editable="false"/>
+                        <field property="to">
+                            <lookupField id="toField" datasource="stepDirectionDs" property="to"
+                                         optionsDatasource="possibleToStepsDs"/>
+                        </field>
+                        <field id="entityName" caption="msg://stepDirectionEdit.entityName">
+                            <textField id="entityName" editable="false"/>
+                        </field>
+                    </column>
+                </fieldGroup>
+            </groupBox>
+
+            <tabSheet id="constraintTabSheet" width="100%">
+                <tab id="sqlTab" caption="msg://com.groupstp.workflowstp.entity/StepDirection.conditionSqlScript">
+                    <vbox spacing="true" id="sqlBox" expand="sqlClause" margin="true" width="100%" height="100%">
+                        <linkButton id="sqlConstructor"
+                                    caption="msg://stepDirectionEdit.createWithConstructor"
+                                    invoke="openSqlConstructor"/>
+                        <sourceCodeEditor id="sqlClause"
+                                          width="100%"
+                                          highlightActiveLine="false"
+                                          mode="SQL"
+                                          datasource="stepDirectionDs"
+                                          property="conditionSqlScript"
+                                          printMargin="false"/>
+                    </vbox>
+                </tab>
+                <tab id="groovyTab" caption="msg://com.groupstp.workflowstp.entity/StepDirection.conditionGroovyScript">
+                    <vbox spacing="true" id="groovyBox" expand="groovyClause" margin="true" width="100%" height="100%">
+                        <sourceCodeEditor id="groovyClause"
+                                          highlightActiveLine="false"
+                                          mode="Groovy"
+                                          width="100%"
+                                          datasource="stepDirectionDs"
+                                          property="conditionGroovyScript"
+                                          printMargin="false"/>
+                        <label id="fakeLabel" visible="false"/>
+                    </vbox>
+                </tab>
+            </tabSheet>
+        </vbox>
+
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>
