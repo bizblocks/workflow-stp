@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <views xmlns="http://schemas.haulmont.com/cuba/view.xsd">
-    <view class="com.groupstp.workflowstp.entity.QueryExample"
-          extends="_minimal"
-          name="query-browse">
-        <property name="status"/>
-        <property name="stepName"/>
-        <property name="comment"/>
-    </view>
-    <view class="com.groupstp.workflowstp.entity.QueryExample"
-          extends="_local"
-          name="query-edit">
-    </view>
     <view class="com.groupstp.workflowstp.entity.Workflow"
           extends="_minimal"
           name="query-workflow-browse">
