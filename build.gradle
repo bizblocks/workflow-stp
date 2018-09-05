@@ -1,8 +1,9 @@
 
 buildscript {
-    ext.cubaVersion = '6.9.4'
+    ext.cubaVersion = '6.9.5'
     repositories {
         
+        mavenLocal()
         maven {
             url 'https://repo.cuba-platform.com/content/groups/work'
             credentials {
@@ -31,7 +32,7 @@ cuba {
     artifact {
         group = 'com.groupstp.workflowstp'
         version = '0.1'
-        isSnapshot = true
+        isSnapshot = false
     }
     tomcat {
         dir = "$project.rootDir/deploy/tomcat"
