@@ -1,6 +1,5 @@
 package com.groupstp.workflowstp.core.bean;
 
-import com.groupstp.workflowstp.core.config.WorkflowConfig;
 import com.groupstp.workflowstp.core.util.JsonUtil;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 import com.groupstp.workflowstp.entity.*;
@@ -8,7 +7,6 @@ import com.groupstp.workflowstp.exception.WorkflowException;
 import com.haulmont.bali.util.Preconditions;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
-import com.haulmont.cuba.core.EntityManager;
 import com.haulmont.cuba.core.Persistence;
 import com.haulmont.cuba.core.Transaction;
 import com.haulmont.cuba.core.entity.Entity;
@@ -45,9 +43,6 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected JsonUtil jsonUtil;
     @Inject
     protected Persistence persistence;
-
-    @Inject
-    protected WorkflowConfig config;
 
     @Override
     public UUID startWorkflow(WorkflowEntity entity, Workflow wf) throws WorkflowException {
@@ -156,7 +151,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
      * @throws WorkflowException in case of any unexpected problems
      */
     protected void start(WorkflowInstance instance) throws WorkflowException {
-        iterate(instance);//TODO maybe it is better call in scheduler to release calling thread?
+        iterate(instance);
     }
 
     /**
@@ -356,10 +351,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         Preconditions.checkNotNullArgument(task, getMessage("WorkflowWorkerBean.emptyWorkflowInstanceTask"));
 
         WorkflowInstance instance;
-        try (Transaction tr = persistence.getTransaction()) {
-            EntityManager em = persistence.getEntityManager();
-
-            task = em.reloadNN(task, View.LOCAL);
+        task = reloadNN(task, "workflowInstanceTask-process");
             if (task.getEndDate() != null) {
                 throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.workflowInstanceTaskAlreadyFinished"), task));
             }
@@ -374,10 +366,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 }
                 setExecutionContext(ctx, instance);
             }
-
-            tr.commit();
-        }
-
+        dataManager.commit(task);
         iterate(instance);//move to the next step
     }
 
@@ -386,14 +375,13 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
      */
     protected void markAsDone(WorkflowInstance instance, @Nullable WorkflowEntity entity) throws WorkflowException {
         try (Transaction tr = persistence.getTransaction()) {
-            EntityManager em = persistence.getEntityManager();
 
-            instance = em.reloadNN(instance, View.LOCAL);
+            instance = reloadNN(instance, View.LOCAL);
+
             instance.setEndDate(timeSource.currentTimestamp());
 
             if (entity != null) {
-                entity = em.reloadNN(entity, View.LOCAL);
-                //entity.setStepName(null); keep last step name
+                entity = reloadNN(entity, View.LOCAL);
                 entity.setStatus(WorkflowEntityStatus.DONE);
             }
 
@@ -415,20 +403,18 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected void markAsFailed(WorkflowInstance instance, @Nullable WorkflowEntity entity,
                                 @Nullable WorkflowInstanceTask task, @Nullable String error) throws WorkflowException {
         try (Transaction tr = persistence.getTransaction()) {
-            EntityManager em = persistence.getEntityManager();
-
-            instance = em.reloadNN(instance, View.LOCAL);
+            instance = reloadNN(instance, View.LOCAL);
             instance.setEndDate(timeSource.currentTimestamp());
             instance.setError(StringUtils.isEmpty(error) ? getMessage("WorkflowWorkerBean.internalServerError") : error);
             instance.setErrorInTask(task != null);
 
             if (entity != null) {
-                entity = em.reloadNN(entity, View.LOCAL);
+                entity = reloadNN(entity, View.LOCAL);
                 entity.setStatus(WorkflowEntityStatus.FAILED);
             }
 
             if (task != null) {
-                task = em.reloadNN(task, View.LOCAL);
+                task = reloadNN(task, View.LOCAL);
                 task.setEndDate(timeSource.currentTimestamp());
             }
 
@@ -444,38 +430,29 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     public WorkflowExecutionContext getExecutionContext(WorkflowInstance instance) {
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
 
-        try (Transaction tr = persistence.getTransaction()) {
-            EntityManager em = persistence.getEntityManager();
-            instance = em.reloadNN(instance, View.LOCAL);
+        instance = reloadNN(instance, "workflowInstance-process");
+        WorkflowExecutionContext ctx;
 
-            WorkflowExecutionContext ctx;
-            if (!StringUtils.isEmpty(instance.getContext())) {
-                ctx = jsonUtil.fromJson(instance.getContext(), WorkflowExecutionContext.class);
-            } else {
-                ctx = new WorkflowExecutionContext();
-            }
-
-            tr.commit();
-
-            return ctx;
+        if (!StringUtils.isEmpty(instance.getContext())) {
+            ctx = jsonUtil.fromJson(instance.getContext(), WorkflowExecutionContext.class);
+        } else {
+            ctx = new WorkflowExecutionContext();
         }
+        return ctx;
+
     }
 
     @Override
     public void setExecutionContext(WorkflowExecutionContext context, WorkflowInstance instance) {
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
 
-        try (Transaction tr = persistence.getTransaction()) {
-            EntityManager em = persistence.getEntityManager();
-            instance = em.reloadNN(instance, View.LOCAL);
+        instance = reloadNN(instance, "workflowInstance-process");
 
-            String text = context == null ? null : jsonUtil.toJson(context);
-            if (!Objects.equals(instance.getContext(), text)) {
-                instance.setContext(text);
-            }
-
-            tr.commit();
+        String text = context == null ? null : jsonUtil.toJson(context);
+        if (!Objects.equals(instance.getContext(), text)) {
+            instance.setContext(text);
         }
+        dataManager.commit(instance);
     }
 
     @Nullable

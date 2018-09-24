@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <views xmlns="http://schemas.haulmont.com/cuba/view.xsd">
-    <view class="com.groupstp.workflowstp.entity.Workflow"
-          extends="_minimal"
-          name="query-workflow-browse">
-        <property name="steps"
-                  view="_minimal">
-            <property name="order"/>
-            <property name="stage"
-                      view="_minimal">
-                <property name="browseScreenGroovyScript"/>
-                <property name="actors"/>
-                <property name="actorsRoles"/>
-            </property>
-        </property>
-    </view>
     <view class="com.haulmont.cuba.security.entity.User"
           extends="_minimal"
           name="user-with-name">
@@ -52,10 +38,12 @@
     <view class="com.groupstp.workflowstp.entity.Workflow"
           extends="_minimal"
           name="workflow-browse">
-        <property name="entityName"/>
-        <property name="name"/>
         <property name="active"/>
         <property name="entityCaption"/>
+        <property name="steps"
+                  view="_minimal">
+            <property name="order"/>
+        </property>
     </view>
     <view class="com.groupstp.workflowstp.entity.Workflow"
           extends="_local"
@@ -168,6 +156,8 @@
     <view class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
           extends="_local"
           name="workflowInstanceTask-process">
+        <property name="instance"
+                  view="_minimal"/>
         <property name="step"
                   view="_local">
             <property name="stage"
