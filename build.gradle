@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.cubaVersion = '6.9.5'
+    ext.cubaVersion = '6.10.0'
     repositories {
         
         mavenLocal()
@@ -31,7 +31,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.workflowstp'
-        version = "0.3"
+        version = "0.4"
         isSnapshot = false
     }
     tomcat {
@@ -67,7 +67,9 @@ configure([globalModule, coreModule, webModule]) {
 }
 
 configure(globalModule) {
-    task enhance(type: CubaEnhancing)
+    entitiesEnhancing {
+        main { enabled = true }
+    }
 
     jar {
         manifest {
