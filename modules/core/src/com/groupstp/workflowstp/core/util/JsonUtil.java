@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 @Component(JsonUtil.NAME)
 public class JsonUtil {
-    public static final String NAME = "bill_JsonUtil";
+    public static final String NAME = "wfstp_JsonUtil";
 
     /**
      * Serialize provided object into json text

@@ -20,8 +20,7 @@ import java.util.List;
 @Table(name = "WFSTP_STAGE")
 @Entity(name = "wfstp$Stage")
 public class Stage extends StandardEntity {
-
-    private static final long serialVersionUID = -4703591651938362703L;
+    private static final long serialVersionUID = 1256356222180211224L;
 
     @NotNull
     @Column(name = "NAME", nullable = false)
@@ -47,17 +46,39 @@ public class Stage extends StandardEntity {
             inverseJoinColumns = @JoinColumn(name = "ACTOR_ROLE_ID"))
     private List<Role> actorsRoles;
 
+    @ManyToMany
+    @JoinTable(name = "STAGE_VIEWERS_LINK",
+            joinColumns = @JoinColumn(name = "STAGE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "VIEWER_ID"))
+    private List<User> viewers;
+
+    @ManyToMany
+    @JoinTable(name = "STAGE_VIEWERS_ROLES_LINK",
+            joinColumns = @JoinColumn(name = "STAGE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "VIEWER_ROLE_ID"))
+    private List<Role> viewersRoles;
+
     @Lob
     @Column(name = "EXECUTION_GROOVY_SCRIPT")
     private String executionGroovyScript;
 
+    @Deprecated
     @Lob
     @Column(name = "BROWSE_SCREEN_GROOVY_SCRIPT")
     private String browseScreenGroovyScript;
 
     @Lob
+    @Column(name = "BROWSER_SCREEN_CONSTRUCTOR")
+    private String browserScreenConstructor;
+
+    @Deprecated
+    @Lob
     @Column(name = "EDITOR_SCREEN_GROOVY_SCRIPT")
     private String editorScreenGroovyScript;
+
+    @Lob
+    @Column(name = "EDITOR_SCREEN_CONSTRUCTOR")
+    private String editorScreenConstructor;
 
 
     public String getName() {
@@ -100,6 +121,22 @@ public class Stage extends StandardEntity {
         this.actorsRoles = actorsRoles;
     }
 
+    public List<User> getViewers() {
+        return viewers;
+    }
+
+    public void setViewers(List<User> viewers) {
+        this.viewers = viewers;
+    }
+
+    public List<Role> getViewersRoles() {
+        return viewersRoles;
+    }
+
+    public void setViewersRoles(List<Role> viewersRoles) {
+        this.viewersRoles = viewersRoles;
+    }
+
     public String getExecutionGroovyScript() {
         return executionGroovyScript;
     }
@@ -108,20 +145,40 @@ public class Stage extends StandardEntity {
         this.executionGroovyScript = executionGroovyScript;
     }
 
+    @Deprecated
     public String getBrowseScreenGroovyScript() {
         return browseScreenGroovyScript;
     }
 
+    @Deprecated
     public void setBrowseScreenGroovyScript(String browseScreenGroovyScript) {
         this.browseScreenGroovyScript = browseScreenGroovyScript;
     }
 
+    public String getBrowserScreenConstructor() {
+        return browserScreenConstructor;
+    }
+
+    public void setBrowserScreenConstructor(String browserScreenConstructor) {
+        this.browserScreenConstructor = browserScreenConstructor;
+    }
+
+    @Deprecated
     public String getEditorScreenGroovyScript() {
         return editorScreenGroovyScript;
     }
 
+    @Deprecated
     public void setEditorScreenGroovyScript(String editorScreenGroovyScript) {
         this.editorScreenGroovyScript = editorScreenGroovyScript;
+    }
+
+    public String getEditorScreenConstructor() {
+        return editorScreenConstructor;
+    }
+
+    public void setEditorScreenConstructor(String editorScreenConstructor) {
+        this.editorScreenConstructor = editorScreenConstructor;
     }
 
     @MetaProperty

@@ -1,7 +1,6 @@
 package com.groupstp.workflowstp.web.stepdirection;
 
 import com.groupstp.workflowstp.entity.Step;
-import com.groupstp.workflowstp.entity.StepDirection;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
@@ -10,6 +9,7 @@ import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerProvider;
 import com.haulmont.cuba.gui.WindowParam;
 import com.haulmont.cuba.gui.components.*;
+import com.groupstp.workflowstp.entity.StepDirection;
 import com.haulmont.cuba.gui.components.autocomplete.JpqlSuggestionFactory;
 import com.haulmont.cuba.gui.components.autocomplete.Suggestion;
 import com.haulmont.cuba.gui.components.filter.ConditionsTree;
@@ -108,7 +108,7 @@ public class StepDirectionEdit extends AbstractEditor<StepDirection> {
         if (entityName.getValue() != null) {
             String whereStr = sqlClause.getValue();
 
-            // the magic entity name!  The length is three character to match "{E}" length in queryexample
+            // the magic entity name!  The length is three character to match "{E}" length in query
             String entityNameAlias = "a39";
 
             int position = 0;

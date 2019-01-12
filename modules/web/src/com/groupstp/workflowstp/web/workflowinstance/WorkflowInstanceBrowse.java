@@ -4,7 +4,7 @@ import com.groupstp.workflowstp.entity.Workflow;
 import com.groupstp.workflowstp.entity.WorkflowInstance;
 import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.web.util.WebUiHelper;
-import com.groupstp.workflowstp.web.util.WebWorkflowHelper;
+import com.groupstp.workflowstp.web.util.WorkflowInstanceHelper;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
@@ -61,7 +61,7 @@ public class WorkflowInstanceBrowse extends AbstractLookup {
             private Entity reload(String name, String id) {
                 //noinspection unchecked
                 return dataManager.load(LoadContext.create(metadata.getClassNN(name).getJavaClass())
-                        .setId(WebWorkflowHelper.parseEntityId(name, id))
+                        .setId(WorkflowInstanceHelper.parseEntityId(name, id))
                         .setView(View.MINIMAL));
             }
 

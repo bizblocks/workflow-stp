@@ -15,8 +15,7 @@ import javax.validation.constraints.NotNull;
 @Table(name = "WFSTP_STEP_DIRECTION")
 @Entity(name = "wfstp$StepDirection")
 public class StepDirection extends StandardEntity {
-
-    private static final long serialVersionUID = 7932251477219968911L;
+    private static final long serialVersionUID = -2403604726600820573L;
 
     @Column(name = "ORDER_")
     private Integer order;

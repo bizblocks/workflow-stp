@@ -10,12 +10,12 @@ import org.apache.commons.lang.StringUtils;
 import java.util.UUID;
 
 /**
- * UI workflow util class
+ * Workflow instance helper class
  *
  * @author adiatullin
  */
-public final class WebWorkflowHelper {
-    private WebWorkflowHelper() {
+public final class WorkflowInstanceHelper {
+    private WorkflowInstanceHelper() {
     }
 
     /**

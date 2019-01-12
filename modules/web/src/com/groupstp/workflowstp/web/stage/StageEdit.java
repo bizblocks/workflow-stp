@@ -1,52 +1,74 @@
 package com.groupstp.workflowstp.web.stage;
 
-import com.groupstp.workflowstp.entity.Stage;
 import com.groupstp.workflowstp.entity.StageType;
-import com.groupstp.workflowstp.entity.WorkflowEntity;
+import com.groupstp.workflowstp.util.EqualsUtils;
+import com.groupstp.workflowstp.web.bean.WorkflowWebBean;
+import com.groupstp.workflowstp.web.screenconstructor.ScreenConstructorEditor;
+import com.groupstp.workflowstp.web.util.codedialog.CodeDialog;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.components.*;
+import com.groupstp.workflowstp.entity.Stage;
+import com.haulmont.cuba.gui.data.Datasource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author adiatullin
  */
 public class StageEdit extends AbstractEditor<Stage> {
-    @Inject
-    private Metadata metadata;
+    private static final Logger log = LoggerFactory.getLogger(StageEdit.class);
+
     @Inject
     private MessageTools messageTools;
     @Inject
-    private ExtendedEntities extendedEntities;
-    @Inject
     private DataManager dataManager;
+    @Inject
+    private WorkflowWebBean workflowWebBean;
+    @Inject
+    private Metadata metadata;
 
+    @Inject
+    private Datasource<Stage> stageDs;
     @Inject
     private FieldGroup generalFieldGroup;
     @Inject
     private LookupField entityNameField;
     @Inject
+    private LookupField typeField;
+    @Inject
     private Component userInteractionBox;
     @Inject
     private Component executionBox;
     @Inject
-    private LookupField userTypeAction;
+    private LookupField actorTypeAction;
     @Inject
-    private TokenList rolesList;
+    private TokenList actorRolesList;
     @Inject
-    private TokenList usersList;
+    private TokenList actorUsersList;
+    @Inject
+    private LookupField viewerTypeAction;
+    @Inject
+    private TokenList viewerRolesList;
+    @Inject
+    private TokenList viewerUsersList;
     @Inject
     private SourceCodeEditor browseScreenGroovyScript;
     @Inject
     private SourceCodeEditor editorScreenGroovyScript;
     @Inject
     private SourceCodeEditor executionCode;
+    @Inject
+    private TextArea browserScreenConstructor;
+    @Inject
+    private TextArea editorScreenConstructor;
     @Inject
     private BoxLayout mainBox;
 
@@ -57,6 +79,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         initTypeSelectionBehaviour();
         initEntityNameBehaviour();
         initActorsSelectionBehaviour();
+        initViewerSelectionBehaviour();
 
         browseScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getBrowseScreenGroovyHint());
         editorScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getEditorScreenGroovyHint());
@@ -66,7 +89,7 @@ public class StageEdit extends AbstractEditor<Stage> {
     //Setup behaviour when selected one type some view must be hidden or showed
     private void initTypeSelectionBehaviour() {
         ((LookupField) generalFieldGroup.getFieldNN("type").getComponentNN()).addValueChangeListener(e -> {
-            boolean userInteraction = StageType.USERS_INTERACTION.equals(e.getValue());
+            boolean userInteraction = EqualsUtils.equalAny(e.getValue(), StageType.USERS_INTERACTION, StageType.ARCHIVE);
             boolean execution = StageType.ALGORITHM_EXECUTION.equals(e.getValue());
 
             //pretty view
@@ -94,17 +117,15 @@ public class StageEdit extends AbstractEditor<Stage> {
     //Setup entity name selection. Then name selected it's can't be changed
     private void initEntityNameBehaviour() {
         Map<String, Object> options = new TreeMap<>();
-        for (MetaClass metaClass : metadata.getSession().getClasses()) {
-            if (WorkflowEntity.class.isAssignableFrom(metaClass.getJavaClass())) {
-                MetaClass mainMetaClass = extendedEntities.getOriginalOrThisMetaClass(metaClass);
-                String originalName = mainMetaClass.getName();
-                options.put(messageTools.getEntityCaption(metaClass) + " (" + originalName + ")", originalName);
-            }
+        for (MetaClass metaClass : workflowWebBean.getWorkflowEntities()) {
+            options.put(messageTools.getEntityCaption(metaClass) + " (" + metaClass.getName() + ")", metaClass.getName());
         }
         entityNameField.setOptionsMap(options);
         entityNameField.addValueChangeListener(e -> {
             entityNameField.setEditable(e.getValue() == null);
+            typeField.setEditable(e.getValue() != null);
         });
+        typeField.setEditable(false);
     }
 
     //Behaviour for selecting users or roles
@@ -113,13 +134,27 @@ public class StageEdit extends AbstractEditor<Stage> {
         options.put(getMessage("stageEdit.selectUsers"), ActorsType.USER);
         options.put(getMessage("stageEdit.selectRole"), ActorsType.ROLE);
 
-        userTypeAction.setOptionsMap(options);
-        userTypeAction.setNullOptionVisible(false);
-        userTypeAction.addValueChangeListener(e -> {
-            rolesList.setVisible(ActorsType.ROLE.equals(e.getValue()));
-            usersList.setVisible(ActorsType.USER.equals(e.getValue()));
+        actorTypeAction.setOptionsMap(options);
+        actorTypeAction.setNullOptionVisible(false);
+        actorTypeAction.addValueChangeListener(e -> {
+            actorRolesList.setVisible(ActorsType.ROLE.equals(e.getValue()));
+            actorUsersList.setVisible(ActorsType.USER.equals(e.getValue()));
         });
-        userTypeAction.setValue(ActorsType.USER);
+        actorTypeAction.setValue(ActorsType.USER);
+    }
+
+    private void initViewerSelectionBehaviour() {
+        Map<String, Object> options = new LinkedHashMap<>();
+        options.put(getMessage("stageEdit.selectUsers"), ActorsType.USER);
+        options.put(getMessage("stageEdit.selectRole"), ActorsType.ROLE);
+
+        viewerTypeAction.setOptionsMap(options);
+        viewerTypeAction.setNullOptionVisible(false);
+        viewerTypeAction.addValueChangeListener(e -> {
+            viewerRolesList.setVisible(ActorsType.ROLE.equals(e.getValue()));
+            viewerUsersList.setVisible(ActorsType.USER.equals(e.getValue()));
+        });
+        viewerTypeAction.setValue(ActorsType.USER);
     }
 
     private void getBrowseScreenGroovyHint() {
@@ -152,9 +187,84 @@ public class StageEdit extends AbstractEditor<Stage> {
             generalFieldGroup.getFieldNN("name").setEditable(false);
         }
 
-        if (StageType.USERS_INTERACTION.equals(getItem().getType())) {//setup view
-            userTypeAction.setValue(CollectionUtils.isEmpty(getItem().getActorsRoles()) ? ActorsType.USER : ActorsType.ROLE);
+        if (EqualsUtils.equalAny(getItem().getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {//setup view
+            actorTypeAction.setValue(CollectionUtils.isEmpty(getItem().getActorsRoles()) ? ActorsType.USER : ActorsType.ROLE);
+            viewerTypeAction.setValue(CollectionUtils.isEmpty(getItem().getViewersRoles()) ? ActorsType.USER : ActorsType.ROLE);
         }
+
+        initConstructors();
+    }
+
+    private void initConstructors() {
+        stageDs.addItemPropertyChangeListener(e -> {
+            if ("browserScreenConstructor".equals(e.getProperty())) {
+                browserScreenConstructor.setValue(pettyPrint(e.getItem().getBrowserScreenConstructor()));
+            } else if ("editorScreenConstructor".equals(e.getProperty())) {
+                editorScreenConstructor.setValue(pettyPrint(e.getItem().getEditorScreenConstructor()));
+            }
+        });
+        browserScreenConstructor.setValue(pettyPrint(getItem().getBrowserScreenConstructor()));
+        editorScreenConstructor.setValue(pettyPrint(getItem().getEditorScreenConstructor()));
+    }
+
+    @Nullable
+    private String pettyPrint(@Nullable String json) {
+        if (!StringUtils.isEmpty(json)) {
+            try {
+                JSONObject jsObject = new JSONObject(json);
+                return jsObject.toString(4);
+            } catch (Exception e) {
+                log.warn("Failed to print json", e);
+            }
+        }
+        return null;
+    }
+
+    public void editBrowseScreenGroovy() {
+        CodeDialog dialog = CodeDialog.show(this, getItem().getBrowseScreenGroovyScript(), "groovy");
+        dialog.addCloseWithCommitListener(() -> getItem().setBrowseScreenGroovyScript(dialog.getCode()));
+    }
+
+    public void editEditorScreenGroovy() {
+        CodeDialog dialog = CodeDialog.show(this, getItem().getEditorScreenGroovyScript(), "groovy");
+        dialog.addCloseWithCommitListener(() -> getItem().setEditorScreenGroovyScript(dialog.getCode()));
+    }
+
+    public void editExecutionGroovy() {
+        CodeDialog dialog = CodeDialog.show(this, getItem().getExecutionGroovyScript(), "groovy");
+        dialog.addCloseWithCommitListener(() -> getItem().setExecutionGroovyScript(dialog.getCode()));
+    }
+
+    public void editBrowserScreenConstructor() {
+        MetaClass metaClass = getMetaClassNN();
+        String entityName = metaClass.getName();
+        String screenId = workflowWebBean.getWorkflowEntityScreens(metaClass).getBrowserScreenId();
+        String constructorJson = getItem().getBrowserScreenConstructor();
+
+        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, true, constructorJson);
+        screen.addCloseWithCommitListener(() -> getItem().setBrowserScreenConstructor(screen.getScreenConstructor()));
+    }
+
+    public void removeBrowserScreenConstructor() {
+        getItem().setBrowserScreenConstructor(null);
+    }
+
+    public void editEditorScreenConstructor() {
+        MetaClass metaClass = getMetaClassNN();
+        String entityName = metaClass.getName();
+        String screenId = workflowWebBean.getWorkflowEntityScreens(metaClass).getEditorScreenId();
+        String constructorJson = getItem().getEditorScreenConstructor();
+
+        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, false, constructorJson);
+        screen.addCloseWithCommitListener(() -> getItem().setEditorScreenConstructor(screen.getScreenConstructor()));
+    }
+
+    public void removeEditorScreenGroovy() {
+        getItem().setEditorScreenConstructor(null);
+    }
+
+    private MetaClass getMetaClassNN() {
+        return metadata.getClassNN(getItem().getEntityName());
     }
 
     @Override
@@ -171,27 +281,38 @@ public class StageEdit extends AbstractEditor<Stage> {
             if (StageType.ALGORITHM_EXECUTION.equals(item.getType())) {//cleanup user interaction fields
                 item.setActorsRoles(null);
                 item.setActors(null);
+                item.setViewersRoles(null);
+                item.setViewers(null);
                 item.setBrowseScreenGroovyScript(null);
+                item.setBrowserScreenConstructor(null);
                 item.setEditorScreenGroovyScript(null);
+                item.setEditorScreenConstructor(null);
             }
-            if (StageType.USERS_INTERACTION.equals(item.getType())) {
-                if (ActorsType.USER.equals(userTypeAction.getValue())) {
+            if (EqualsUtils.equalAny(item.getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {
+                if (ActorsType.USER.equals(actorTypeAction.getValue())) {
                     if (!isUsersSelected(item)) {
-                        usersList.requestFocus();
+                        actorUsersList.requestFocus();
                         showNotification(getMessage("stageEdit.usersEmpty"));
                         return false;
                     }
                     item.setActorsRoles(null);
                 }
-                if (ActorsType.ROLE.equals(userTypeAction.getValue())) {
+                if (ActorsType.ROLE.equals(actorTypeAction.getValue())) {
                     if (!isRolesSelected(item)) {
-                        rolesList.requestFocus();
+                        actorRolesList.requestFocus();
                         showNotification(getMessage("stageEdit.roleEmpty"));
                         return false;
                     }
                     item.setActors(null);
                 }
                 item.setExecutionGroovyScript(null);
+
+                //cleanup viewers
+                if (ActorsType.USER.equals(viewerTypeAction.getValue())) {//selected users only
+                    item.setViewersRoles(null);
+                } else {//selected roles
+                    item.setViewers(null);
+                }
             }
 
             return true;

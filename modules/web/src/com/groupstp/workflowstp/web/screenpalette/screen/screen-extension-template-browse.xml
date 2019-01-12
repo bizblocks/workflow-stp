@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://screenExtensionTemplateBrowse.caption"
+        class="com.groupstp.workflowstp.web.screenpalette.screen.ScreenExtensionTemplateBrowse"
+        focusComponent="screenExtensionTemplatesTable"
+        lookupComponent="screenExtensionTemplatesTable"
+        messagesPack="com.groupstp.workflowstp.web.screenpalette.screen">
+    <dsContext>
+        <groupDatasource id="screenExtensionTemplatesDs"
+                         class="com.groupstp.workflowstp.entity.ScreenExtensionTemplate"
+                         view="_local">
+            <query>
+                <![CDATA[select e from wfstp$ScreenExtensionTemplate e order by e.key]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="screenExtensionTemplatesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="screenExtensionTemplatesTable"
+                datasource="screenExtensionTemplatesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="screenExtensionTemplatesTable"
+                    multiselect="true"
+                    width="100%">
+            <actions>
+                <action id="create"/>
+                <action id="edit"/>
+                <action id="remove"/>
+            </actions>
+            <columns>
+                <column id="name"/>
+                <column id="key"/>
+                <column id="entityCaption"/>
+                <column id="screenId"/>
+                <column id="isBrowser"/>
+            </columns>
+            <rows datasource="screenExtensionTemplatesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn"
+                        action="screenExtensionTemplatesTable.create"/>
+                <button id="editBtn"
+                        action="screenExtensionTemplatesTable.edit"/>
+                <button id="removeBtn"
+                        action="screenExtensionTemplatesTable.remove"/>
+                <popupButton id="exportBtn"
+                             caption="msg://screenExtensionTemplateBrowse.export"
+                             icon="icons/download.png"/>
+                <upload id="importBtn"
+                        uploadButtonIcon="UPLOAD"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

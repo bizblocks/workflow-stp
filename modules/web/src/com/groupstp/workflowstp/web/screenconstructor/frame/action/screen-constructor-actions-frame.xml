@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        class="com.groupstp.workflowstp.web.screenconstructor.frame.action.ScreenConstructorActionsFrame"
+        messagesPack="com.groupstp.workflowstp.web.screenconstructor.frame.action">
+    <dsContext>
+        <datasource id="actionDs" class="com.groupstp.workflowstp.entity.ScreenAction"/>
+        <collectionDatasource id="actionTemplatesDs"
+                              class="com.groupstp.workflowstp.entity.ScreenActionTemplate"
+                              allowCommit="false"
+                              refreshMode="NEVER"/>
+    </dsContext>
+    <dialogMode height="100%"
+                width="100%"/>
+    <layout spacing="true" width="100%" height="100%">
+        <split id="actionsSplit" width="100%" height="100%" pos="70" orientation="horizontal">
+            <vbox id="tableBox" margin="true,true,false,false" width="100%" height="100%" expand="actionsTable">
+                <table id="actionsTable" width="100%">
+                    <actions>
+                        <action id="create"/>
+                        <action id="edit"/>
+                        <action id="remove"/>
+                        <action id="up"/>
+                        <action id="down"/>
+                    </actions>
+                    <columns>
+                        <column id="order"/>
+                        <column id="caption"/>
+                        <column id="icon"/>
+                        <column id="template"/>
+                    </columns>
+                    <rowsCount/>
+                    <rows datasource="actionsDs"/>
+                    <buttonsPanel alwaysVisible="true">
+                        <button id="createActionBtn" action="actionsTable.create"/>
+                        <button id="editActionBtn" action="actionsTable.edit"/>
+                        <button id="removeActionBtn" action="actionsTable.remove"/>
+                        <button id="upActionBtn" action="actionsTable.up" icon="CARET_UP" caption=""/>
+                        <button id="downActionBtn" action="actionsTable.down" icon="CARET_DOWN" caption=""/>
+                    </buttonsPanel>
+                </table>
+                <label id="fakeLabel"/>
+            </vbox>
+            <vbox width="100%" height="100%" expand="actionDetail" spacing="true">
+                <scrollBox id="actionDetail" spacing="true" width="100%">
+                    <vbox margin="true" spacing="true" width="100%" height="-1px">
+                        <fieldGroup datasource="actionDs" width="100%" id="actionsFieldGroup">
+                            <column width="100%">
+                                <field property="template">
+                                    <lookupField id="templateField" optionsDatasource="actionTemplatesDs"/>
+                                </field>
+                                <field property="caption"/>
+                                <field property="icon">
+                                    <lookupField id="iconField" datasource="actionDs" property="icon"/>
+                                </field>
+                                <field property="style">
+                                    <lookupField id="styleField" datasource="actionDs" property="style"/>
+                                </field>
+                                <field property="shortcut"/>
+                                <field property="alwaysEnabled"/>
+                                <field property="buttonAction"/>
+                            </column>
+                        </fieldGroup>
+                        <textArea id="actionScriptEditor" datasource="actionDs" property="script"
+                                  caption="msg://com.groupstp.workflowstp.entity/ScreenAction.script"
+                                  width="100%"
+                                  height="250px"/>
+                        <flowBox width="100%" spacing="true" id="actionScriptEditorBox">
+                            <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editScript"/>
+                            <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testScript"/>
+                            <button icon="QUESTION_CIRCLE" id="scriptHint" invoke="scriptHint"/>
+                        </flowBox>
+                        <checkBox id="permitRequiredChBx"
+                                  datasource="actionDs" property="permitRequired"
+                                  caption="msg://com.groupstp.workflowstp.entity/ScreenAction.permitRequired"/>
+                        <vbox id="permitRequiredBox" width="100%" spacing="true">
+                            <label value="msg://com.groupstp.workflowstp.entity/ScreenAction.permitItemsCount"/>
+                            <hbox width="100%" expand="permitItemsCountField" spacing="true">
+                                <lookupField id="permitItemsTypeField" datasource="actionDs"
+                                             property="permitItemsType"/>
+                                <textField id="permitItemsCountField"
+                                           datasource="actionDs" property="permitItemsCount">
+                                    <validator class="com.haulmont.cuba.gui.components.validators.IntegerValidator"/>
+                                </textField>
+                            </hbox>
+
+                            <textArea width="100%" height="150px" datasource="actionDs" property="permitScript"
+                                      caption="msg://com.groupstp.workflowstp.entity/ScreenAction.permitScript"
+                                      id="permitScriptEditor"/>
+                            <flowBox width="100%" spacing="true" id="permitScriptEditorBox">
+                                <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editPermitScript"/>
+                                <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testPermitScript"/>
+                                <button icon="QUESTION_CIRCLE" id="permitScriptHint" invoke="permitScriptHint"/>
+                            </flowBox>
+                        </vbox>
+                    </vbox>
+                </scrollBox>
+                <hbox id="actionEditBox" spacing="true" expand="fakeLabel2" width="100%" visible="false" margin="true">
+                    <button id="actionOkBtn"
+                            caption="mainMsg://actions.Ok"
+                            icon="icons/ok.png"
+                            invoke="onOk"/>
+                    <button id="actionCancelBtn"
+                            caption="mainMsg://actions.Cancel"
+                            icon="icons/cancel.png"
+                            invoke="onCancel"/>
+                    <label id="fakeLabel2"/>
+                </hbox>
+            </vbox>
+        </split>
+    </layout>
+</window>

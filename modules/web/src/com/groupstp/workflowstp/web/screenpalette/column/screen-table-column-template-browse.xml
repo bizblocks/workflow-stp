@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://screenTableColumnTemplateBrowse.caption"
+        class="com.groupstp.workflowstp.web.screenpalette.column.ScreenTableColumnTemplateBrowse"
+        focusComponent="screenTableColumnTemplatesTable"
+        lookupComponent="screenTableColumnTemplatesTable"
+        messagesPack="com.groupstp.workflowstp.web.screenpalette.column">
+    <dsContext>
+        <groupDatasource id="screenTableColumnTemplatesDs"
+                         class="com.groupstp.workflowstp.entity.ScreenTableColumnTemplate"
+                         view="_local">
+            <query>
+                <![CDATA[select e from wfstp$ScreenTableColumnTemplate e order by e.entityName]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="screenTableColumnTemplatesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="screenTableColumnTemplatesTable"
+                datasource="screenTableColumnTemplatesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="screenTableColumnTemplatesTable"
+                    width="100%"
+                    multiselect="true">
+            <actions>
+                <action id="create"/>
+                <action id="edit"/>
+                <action id="remove"/>
+            </actions>
+            <columns>
+                <column id="name"/>
+                <column id="caption"/>
+                <column id="columnId"/>
+                <column id="editable"/>
+                <column id="entityName"/>
+            </columns>
+            <rows datasource="screenTableColumnTemplatesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn"
+                        action="screenTableColumnTemplatesTable.create"/>
+                <button id="editBtn"
+                        action="screenTableColumnTemplatesTable.edit"/>
+                <button id="removeBtn"
+                        action="screenTableColumnTemplatesTable.remove"/>
+                <popupButton id="exportBtn"
+                             caption="msg://screenTableColumnTemplateBrowse.export"
+                             icon="icons/download.png"/>
+                <upload id="importBtn"
+                        uploadButtonIcon="UPLOAD"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

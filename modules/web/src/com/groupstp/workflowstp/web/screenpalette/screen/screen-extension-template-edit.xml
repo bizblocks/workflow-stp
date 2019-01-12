@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://screenExtensionTemplateEdit.caption"
+        class="com.groupstp.workflowstp.web.screenpalette.screen.ScreenExtensionTemplateEdit"
+        datasource="screenExtensionTemplateDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.screenpalette.screen">
+    <dsContext>
+        <datasource id="screenExtensionTemplateDs"
+                    class="com.groupstp.workflowstp.entity.ScreenExtensionTemplate"
+                    view="_local"/>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="constructorBox"
+            spacing="true">
+        <groupBox caption="msg://screenExtensionTemplateEdit.general">
+            <fieldGroup id="fieldGroup"
+                        datasource="screenExtensionTemplateDs">
+                <column width="250px">
+                    <field property="name"/>
+                    <field property="key"/>
+                    <field property="entityName">
+                        <lookupField id="entityNameField" datasource="screenExtensionTemplateDs" property="entityName"/>
+                    </field>
+                </column>
+                <column width="250px">
+                    <field property="screenId">
+                        <lookupField id="screenIdField" datasource="screenExtensionTemplateDs" property="screenId"/>
+                    </field>
+                    <field property="isBrowser" editable="false"/>
+                </column>
+            </fieldGroup>
+        </groupBox>
+        <vbox id="constructorBox" expand="browserScreenConstructor">
+            <label value="msg://screenExtensionTemplateEdit.descriptorOfExtending" stylename="h2"/>
+            <hbox margin="true,false,true,false" spacing="true">
+                <button icon="COGS" caption="msg://screenExtensionTemplateEdit.openConstructor"
+                        invoke="editScreenConstructor"/>
+                <button icon="REMOVE" caption="msg://screenExtensionTemplateEdit.cleanup"
+                        invoke="removeScreenConstructor"/>
+            </hbox>
+            <textArea id="browserScreenConstructor" width="100%" editable="false"/>
+        </vbox>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>

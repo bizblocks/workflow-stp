@@ -28,10 +28,12 @@
                             datasource="workflowDs">
                     <column width="300px">
                         <field property="name"/>
+                        <field property="code"/>
                         <field property="entityName">
                             <lookupField width="100%" datasource="workflowDs" property="entityName"
                                          id="entityNameField"/>
                         </field>
+                        <field property="order"/>
                     </column>
                 </fieldGroup>
             </groupBox>
@@ -48,8 +50,9 @@
                             <action id="down"/>
                         </actions>
                         <columns>
-                            <column id="stage.name"/>
                             <column id="order"/>
+                            <column id="stage.name"/>
+                            <column id="start"/>
                         </columns>
                         <rows datasource="stepsDs"/>
                         <buttonsPanel id="stepsTableButtonsPanel" alwaysVisible="true">
@@ -77,8 +80,8 @@
                         <columns>
                             <column id="to"/>
                             <column id="order"/>
-                            <column id="conditionSqlScript" maxTextLength="40"/>
-                            <column id="conditionGroovyScript" maxTextLength="40"/>
+                            <column id="conditionSqlScript" maxTextLength="150"/>
+                            <column id="conditionGroovyScript" maxTextLength="150"/>
                         </columns>
                         <rows datasource="directionsDs"/>
                         <buttonsPanel id="stepDirectionsTableButtonsPanel"

@@ -1,0 +1,6 @@
+<components xmlns="http://schemas.haulmont.com/cuba/components.xsd">
+    <component>
+        <name>groupTable</name>
+        <class>com.groupstp.workflowstp.web.components.ExternalSelectionGroupTable</class>
+    </component>
+</components>

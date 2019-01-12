@@ -1,11 +1,10 @@
 package com.groupstp.workflowstp.web.workflow;
 
-import com.groupstp.workflowstp.entity.Stage;
 import com.groupstp.workflowstp.entity.Step;
 import com.groupstp.workflowstp.entity.StepDirection;
 import com.groupstp.workflowstp.entity.Workflow;
+import com.groupstp.workflowstp.service.ExtEntityImportExportService;
 import com.haulmont.cuba.core.app.importexport.CollectionImportPolicy;
-import com.haulmont.cuba.core.app.importexport.EntityImportExportService;
 import com.haulmont.cuba.core.app.importexport.EntityImportView;
 import com.haulmont.cuba.core.app.importexport.ReferenceImportBehaviour;
 import com.haulmont.cuba.core.entity.Entity;
@@ -22,6 +21,7 @@ import com.haulmont.cuba.gui.upload.FileUploadingAPI;
 import com.haulmont.cuba.security.entity.EntityOp;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,7 @@ public class WorkflowBrowse extends AbstractLookup {
     @Inject
     private FileUploadingAPI uploadingAPI;
     @Inject
-    private EntityImportExportService entityImportExportService;
+    private ExtEntityImportExportService entityImportExportService;
     @Inject
     private ViewRepository viewRepository;
     @Inject
@@ -134,15 +134,23 @@ public class WorkflowBrowse extends AbstractLookup {
             final UUID fileId = importBtn.getFileId();
             try {
                 File file = uploadingAPI.getFile(fileId);
-                if (file != null) {//expect this is a json file
+                if (file != null) {
+
+                    Collection<Entity> importedEntities;
                     byte[] data = java.nio.file.Files.readAllBytes(file.toPath());
-                    Collection<Entity> importedEntities = entityImportExportService.importEntitiesFromJSON(
-                            new String(data, StandardCharsets.UTF_8), getImportingView());
+
+                    if ("json".equalsIgnoreCase(FilenameUtils.getExtension(e.getFileName()))) {
+                        String jsonContent = new String(data, StandardCharsets.UTF_8);
+                        importedEntities = entityImportExportService.importEntitiesFromJSON(jsonContent, getImportingView());
+                    } else {
+                        importedEntities = entityImportExportService.importEntitiesFromZIP(data, getImportingView());
+                    }
                     long count = importedEntities.stream()
                             .filter(entity -> entity instanceof Workflow)
                             .count();
                     showNotification(String.format(getMessage("workflowBrowse.importedSuccess"), count), NotificationType.HUMANIZED);
                     workflowsDs.refresh();
+
                 } else {
                     showNotification(getMessage("workflowBrowse.fileNotFound"), NotificationType.WARNING);
                     log.error("Upload file not found");
@@ -174,9 +182,8 @@ public class WorkflowBrowse extends AbstractLookup {
                 Collection<Workflow> items = workflowsTable.getSelected();
                 if (!CollectionUtils.isEmpty(items)) {
                     try {
-                        byte[] data = entityImportExportService.exportEntitiesToJSON(items, getExportingView())
-                                .getBytes(StandardCharsets.UTF_8);
-                        exportDisplay.show(new ByteArrayDataProvider(data), "Workflows", ExportFormat.JSON);
+                        byte[] data = entityImportExportService.exportEntitiesSeparatelyToZIP(items, getExportingView());
+                        exportDisplay.show(new ByteArrayDataProvider(data), getMessage("workflowEdit.exportFileName"), ExportFormat.ZIP);
                     } catch (Exception e) {
                         showNotification(getMessage("workflowBrowse.exportFailed"), e.getMessage(), NotificationType.ERROR);
                         log.error("Workflow export failed", e);
@@ -223,11 +230,7 @@ public class WorkflowBrowse extends AbstractLookup {
                 .addOneToManyProperty("steps",
                         new EntityImportView(Step.class)
                                 .addLocalProperties()
-                                .addManyToOneProperty("stage",
-                                        new EntityImportView(Stage.class)
-                                                .addLocalProperties()
-                                                .addManyToManyProperty("actors", ReferenceImportBehaviour.ERROR_ON_MISSING, CollectionImportPolicy.REMOVE_ABSENT_ITEMS)
-                                                .addManyToOneProperty("actorsRoles", ReferenceImportBehaviour.ERROR_ON_MISSING))
+                                .addManyToOneProperty("stage", ReferenceImportBehaviour.ERROR_ON_MISSING)
                                 .addOneToManyProperty("directions",
                                         new EntityImportView(StepDirection.class)
                                                 .addLocalProperties()

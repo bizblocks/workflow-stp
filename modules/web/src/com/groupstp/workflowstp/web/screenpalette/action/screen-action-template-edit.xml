@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://screenActionTemplateEdit.caption"
+        class="com.groupstp.workflowstp.web.screenpalette.action.ScreenActionTemplateEdit"
+        datasource="screenActionTemplateDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.groupstp.workflowstp.web.screenpalette.action">
+    <dsContext>
+        <datasource id="screenActionTemplateDs"
+                    class="com.groupstp.workflowstp.entity.ScreenActionTemplate"
+                    view="_local"/>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="mainSplit"
+            spacing="true">
+        <groupBox width="100%" caption="msg://screenActionTemplateEdit.generic" spacing="true" orientation="horizontal">
+            <fieldGroup id="fieldGroup"
+                        datasource="screenActionTemplateDs">
+                <column width="300px">
+                    <field property="name"/>
+                    <field property="caption"/>
+                    <field property="icon">
+                        <lookupField id="iconField" datasource="screenActionTemplateDs" property="icon"/>
+                    </field>
+                    <field property="style">
+                        <lookupField id="styleField" datasource="screenActionTemplateDs" property="style"/>
+                    </field>
+                </column>
+                <column width="300px">
+                    <field property="shortcut"/>
+                    <field property="alwaysEnabled"/>
+                    <field property="entityName">
+                        <lookupField id="entityNameField" datasource="screenActionTemplateDs" property="entityName"/>
+                    </field>
+                    <field property="buttonAction">
+                        <checkBox id="buttonActionChb" datasource="screenActionTemplateDs" property="buttonAction"/>
+                    </field>
+                </column>
+                <column>
+                    <field id="sample">
+                        <hbox spacing="true" width="100%" expand="fakeLabel" align="MIDDLE_CENTER">
+                            <label id="sampleBtnLabel" value="msg://screenActionTemplateEdit.sample" stylename="h2"/>
+                            <button id="sampleBtn"/>
+                            <label id="fakeLabel"/>
+                        </hbox>
+                    </field>
+                </column>
+            </fieldGroup>
+        </groupBox>
+        <split pos="70%" width="100%" id="mainSplit" orientation="horizontal">
+            <vbox spacing="true"
+                  expand="scriptEditor"
+                  margin="true"
+                  width="100%" height="100%">
+                <label value="msg://com.groupstp.workflowstp.entity/ScreenActionTemplate.script" stylename="h3"/>
+                <sourceCodeEditor width="100%" datasource="screenActionTemplateDs" property="script" id="scriptEditor"
+                                  mode="Groovy" contextHelpText="msg://screenActionTemplateEdit.scriptHint"/>
+                <hbox width="100%" spacing="true">
+                    <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editScript"/>
+                    <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testScript" align="BOTTOM_RIGHT"/>
+                </hbox>
+            </vbox>
+            <vbox spacing="true"
+                  margin="true"
+                  id="permitBox"
+                  expand="permitScriptEditor"
+                  width="100%" height="100%">
+                <label value="msg://com.groupstp.workflowstp.entity/ScreenActionTemplate.permitRequired" stylename="h3"/>
+                <checkBox id="permitRequiredChBx"
+                          datasource="screenActionTemplateDs" property="permitRequired"/>
+
+                <label value="msg://com.groupstp.workflowstp.entity/ScreenActionTemplate.permitItemsCount"/>
+                <hbox expand="permitItemsCountField" width="100%" spacing="true">
+                    <lookupField id="permitItemsTypeField" datasource="screenActionTemplateDs"
+                                 property="permitItemsType"/>
+                    <textField id="permitItemsCountField"
+                               datasource="screenActionTemplateDs" property="permitItemsCount">
+                        <validator class="com.haulmont.cuba.gui.components.validators.IntegerValidator"/>
+                    </textField>
+                </hbox>
+                <sourceCodeEditor width="100%" datasource="screenActionTemplateDs" property="permitScript"
+                                  caption="msg://com.groupstp.workflowstp.entity/ScreenActionTemplate.permitScript"
+                                  contextHelpText="msg://screenActionTemplateEdit.permitScriptHint"
+                                  mode="Groovy"
+                                  id="permitScriptEditor"/>
+                <hbox width="100%" spacing="true" id="permitActionBox">
+                    <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editPermitScript"/>
+                    <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testPermitScript"
+                            align="BOTTOM_RIGHT"/>
+                </hbox>
+                <label id="permitExpandLabel" width="100%"/>
+            </vbox>
+        </split>
+
+        <frame id="windowActions" screen="editWindowActions"/>
+    </layout>
+</window>

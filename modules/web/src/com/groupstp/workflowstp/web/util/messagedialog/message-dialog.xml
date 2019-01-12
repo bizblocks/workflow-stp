@@ -10,8 +10,16 @@
         <textArea id="textArea"
                   editable="false"
                   width="100%"/>
-        <button id="okBtn"
-                caption="mainMsg://actions.Ok"
-                invoke="close"/>
+        <hbox spacing="true" expand="fakeLabel" width="100%">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOk"/>
+            <button id="cancelBtn"
+                    caption="mainMsg://actions.Cancel"
+                    icon="icons/cancel.png"
+                    invoke="onCancel"/>
+            <label id="fakeLabel"/>
+        </hbox>
     </layout>
 </window>

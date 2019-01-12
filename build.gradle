@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.cubaVersion = '6.10.0'
+    ext.cubaVersion = '6.10.6'
     repositories {
         
         mavenLocal()
@@ -31,7 +31,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.workflowstp'
-        version = "0.4"
+        version = "1.0"
         isSnapshot = false
     }
     tomcat {
@@ -69,6 +69,10 @@ configure([globalModule, coreModule, webModule]) {
 configure(globalModule) {
     entitiesEnhancing {
         main { enabled = true }
+    }
+
+    dependencies {
+        compile (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.6')
     }
 
     jar {

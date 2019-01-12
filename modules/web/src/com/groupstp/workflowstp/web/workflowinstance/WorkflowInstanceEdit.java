@@ -1,23 +1,27 @@
 package com.groupstp.workflowstp.web.workflowinstance;
 
-import com.groupstp.workflowstp.entity.WorkflowInstance;
 import com.groupstp.workflowstp.entity.WorkflowInstanceComment;
+import com.groupstp.workflowstp.entity.WorkflowInstanceTask;
+import com.groupstp.workflowstp.exception.WorkflowException;
+import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.web.util.WebUiHelper;
-import com.groupstp.workflowstp.web.util.WebWorkflowHelper;
+import com.groupstp.workflowstp.web.util.WorkflowInstanceHelper;
 import com.groupstp.workflowstp.web.util.messagedialog.MessageDialog;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.LoadContext;
-import com.haulmont.cuba.core.global.Metadata;
-import com.haulmont.cuba.core.global.View;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.app.core.file.FileDownloadHelper;
 import com.haulmont.cuba.gui.components.*;
+import com.groupstp.workflowstp.entity.WorkflowInstance;
 import com.haulmont.cuba.gui.components.actions.BaseAction;
+import com.haulmont.cuba.gui.data.CollectionDatasource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author adiatullin
@@ -27,6 +31,8 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     private DataManager dataManager;
     @Inject
     private Metadata metadata;
+    @Inject
+    private WorkflowService workflowService;
 
     @Inject
     private PickerField workflow;
@@ -40,6 +46,11 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     private FieldGroup generalFieldGroup;
     @Inject
     private Table<WorkflowInstanceComment> commentsTable;
+    @Inject
+    private CollectionDatasource<WorkflowInstanceTask, UUID> tasksDs;
+    @Inject
+    private Button recreateTaskBtn;
+
 
     @Override
     public void init(Map<String, Object> params) {
@@ -64,7 +75,8 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
         contextLink.setAction(new BaseAction("contextLink") {
             @Override
             public void actionPerform(Component component) {
-                MessageDialog.showText(WorkflowInstanceEdit.this, getItem().getContext());
+                final MessageDialog dialog = MessageDialog.showText(WorkflowInstanceEdit.this, getItem().getContext(), true);
+                dialog.addCloseWithCommitListener(() -> getItem().setContext(dialog.getMessage()));
             }
         });
     }
@@ -81,11 +93,12 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
 
         initRelatedEntityLookup();
         initErrorLookup();
+        initRecreateTasks();
     }
 
     private void initRelatedEntityLookup() {
         final String entityName = getItem().getEntityName();
-        final Object entityId = WebWorkflowHelper.parseEntityId(entityName, getItem().getEntityId());
+        final Object entityId = WorkflowInstanceHelper.parseEntityId(entityName, getItem().getEntityId());
 
         relatedEntityLink.setAction(new BaseAction("entityLink") {
 
@@ -115,5 +128,39 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
         } else {
             errorLink.setEnabled(false);
         }
+    }
+
+    private void initRecreateTasks() {
+        recreateTaskBtn.setAction(new AbstractAction("recreateTask") {
+            @Override
+            public void actionPerform(Component component) {
+                Action yes = new DialogAction(DialogAction.Type.YES, Status.PRIMARY).withHandler(event -> {
+                    try {
+                        workflowService.recreateTasks(getItem());
+                    } catch (WorkflowException e) {
+                        throw new RuntimeException("Failed to recreate tasks", e);
+                    }
+                });
+                Action no = new DialogAction(DialogAction.Type.NO);
+                showOptionDialog(
+                        getMessage("workflowInstanceEdit.warning"),
+                        getMessage("workflowInstanceEdit.recreateTasksDescription"),
+                        MessageType.CONFIRMATION,
+                        new Action[]{yes, no});
+            }
+        });
+        recreateTaskBtn.setEnabled(getItem().getEndDate() == null && StringUtils.isEmpty(getItem().getError()) && isAllTasksFinished());
+    }
+
+    private boolean isAllTasksFinished() {
+        Collection<WorkflowInstanceTask> tasks = tasksDs.getItems();
+        if (!CollectionUtils.isEmpty(tasks)) {
+            for (WorkflowInstanceTask task : tasks) {
+                if (task.getEndDate() == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

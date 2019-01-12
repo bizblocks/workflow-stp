@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://screenConstructorEditor.caption"
+        datasource="screenConstructorDs"
+        class="com.groupstp.workflowstp.web.screenconstructor.ScreenConstructorEditor"
+        messagesPack="com.groupstp.workflowstp.web.screenconstructor">
+    <dsContext>
+        <datasource id="screenConstructorDs" class="com.groupstp.workflowstp.entity.ScreenConstructor" allowCommit="false">
+            <collectionDatasource id="actionsDs" property="actions"/>
+            <collectionDatasource id="columnsDs" property="browserTableColumns"/>
+            <collectionDatasource id="fieldsDs" property="editorEditableFields"/>
+        </datasource>
+    </dsContext>
+    <dialogMode height="100%"
+                width="100%"/>
+    <layout spacing="true" expand="mainTabSheet">
+        <tabSheet id="mainTabSheet" width="100%" stylename="framed">
+            <tab id="actionTab" caption="msg://screenConstructorEditor.action" margin="true">
+                <frame id="actionsFrame" screen="screen-constructor-actions-frame" width="100%" height="100%"/>
+            </tab>
+            <tab id="browserTab" caption="msg://screenConstructorEditor.browser" margin="true">
+                <frame id="browserFrame" screen="screen-constructor-browser-frame" width="100%" height="100%"/>
+            </tab>
+            <tab id="editorTab" caption="msg://screenConstructorEditor.edit" margin="true">
+                <frame id="editorFrame" screen="screen-constructor-editor-frame" width="100%" height="100%"/>
+            </tab>
+            <tab id="customTab" caption="msg://screenConstructorEditor.custom" margin="true">
+                <frame id="customFrame" screen="screen-constructor-custom-extending-frame" width="100%" height="100%"/>
+            </tab>
+        </tabSheet>
+        <hbox spacing="true" expand="fakeLabel" width="100%">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOk"/>
+            <button id="cancelBtn"
+                    caption="mainMsg://actions.Cancel"
+                    icon="icons/cancel.png"
+                    invoke="onCancel"/>
+            <label id="fakeLabel"/>
+        </hbox>
+    </layout>
+</window>

@@ -16,6 +16,13 @@ public interface WorkflowEntity<T> extends Entity<T> {
     void setStepName(String stepName);
 
     /**
+     * @return processing workflow entity
+     */
+    Workflow getWorkflow();
+
+    void setWorkflow(Workflow workflow);
+
+    /**
      * @return processing status
      */
     WorkflowEntityStatus getStatus();
