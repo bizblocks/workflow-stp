@@ -14,8 +14,7 @@ import javax.persistence.*;
 @Table(name = "WFSTP_WORKFLOW_INSTANCE_COMMENT")
 @Entity(name = "wfstp$WorkflowInstanceComment")
 public class WorkflowInstanceComment extends StandardEntity {
-
-    private static final long serialVersionUID = -1599597303130921287L;
+    private static final long serialVersionUID = -2361839742872628996L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "INSTANCE_ID")

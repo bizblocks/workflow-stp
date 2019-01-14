@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author adiatullin
  */
 public abstract class MessageableBean {
-    private Messages messages;
+    protected Messages messages;
 
     @Inject
     public void setMessages(Messages messages) {

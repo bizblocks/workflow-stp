@@ -1,11 +1,8 @@
 package com.groupstp.workflowstp.service;
 
-import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
-import com.groupstp.workflowstp.entity.Workflow;
-import com.groupstp.workflowstp.entity.WorkflowEntity;
-import com.groupstp.workflowstp.entity.WorkflowInstance;
-import com.groupstp.workflowstp.entity.WorkflowInstanceTask;
+import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.exception.WorkflowException;
+import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -18,6 +15,15 @@ import java.util.UUID;
  */
 public interface WorkflowService {
     String NAME = "wfstp_WorkflowService";
+
+    /**
+     * Determinate and get active workflow object which should be used for specified entity
+     *
+     * @param entity workflow entity
+     * @return active workflow object which should be used for specified entity
+     * @throws WorkflowException in case of any unexpected problems or if active workflow not found
+     */
+    Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException;
 
     /**
      * Create and start workflow execution by provided entity and workflow object.
@@ -37,6 +43,31 @@ public interface WorkflowService {
      * @throws WorkflowException in case of any unexpected problems
      */
     void restartWorkflow(WorkflowInstance instance) throws WorkflowException;
+
+    /**
+     * Recreate tasks if workflow process stopped
+     *
+     * @param instance worflow instance task
+     * @throws WorkflowException in case of any unexpected problems
+     */
+    void recreateTasks(WorkflowInstance instance) throws WorkflowException;
+
+    /**
+     * Load query processing workflow instance task
+     *
+     * @param entity entity
+     * @param stage  query current stage
+     * @return processing workflow instance task
+     */
+    WorkflowInstanceTask loadLastProcessingTask(WorkflowEntity entity, Stage stage);
+
+    /**
+     * Load last active workflow instace by workflow entity
+     *
+     * @param entity entity
+     * @return active current entity workflow instance
+     */
+    WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity);
 
     /**
      * Complete (if possible) provided workflow task and move workflow instance to the next step

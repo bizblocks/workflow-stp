@@ -6,14 +6,12 @@ import com.groupstp.workflowstp.web.stepdirection.StepDirectionEdit;
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.ExtendedEntities;
-import com.haulmont.cuba.core.global.MessageTools;
-import com.haulmont.cuba.core.global.Metadata;
-import com.haulmont.cuba.core.global.PersistenceHelper;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.*;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.security.entity.EntityOp;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
@@ -31,6 +29,10 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
     private MessageTools messageTools;
     @Inject
     private ExtendedEntities extendedEntities;
+    @Inject
+    private ComponentsFactory componentsFactory;
+    @Inject
+    private DataManager dataManager;
 
     @Inject
     private FieldGroup generalFieldGroup;
@@ -151,6 +153,21 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
         stepsTable.addAction(new ItemMoveAction(stepsTable, true));
         stepsTable.addAction(new ItemMoveAction(stepsTable, false));
 
+        stepsTable.addGeneratedColumn("start", step -> {
+            CheckBox checkBox = componentsFactory.createComponent(CheckBox.class);
+            checkBox.setValue(step.getStart());
+            checkBox.addValueChangeListener(e -> {
+                boolean checked = checkBox.isChecked();
+                if (checked) {
+                    for (Step item : stepsDs.getItems()) {
+                        item.setStart(Objects.equals(step, item));
+                    }
+                    stepsTable.repaint();
+                }
+            });
+            checkBox.setEnabled(!Boolean.TRUE.equals(getItem().getActive()));
+            return checkBox;
+        });
         stepsDs.addCollectionChangeListener(e -> {
             correctOrderIfNeed(stepsTable, "order");
         });
@@ -257,6 +274,19 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
             if (isCycleDetected()) {
                 return false;
             }
+            if (!isStartSet()) {
+                stepsTable.requestFocus();
+                showNotification(getMessage("workflowEdit.error.startNotSet"));
+                return false;
+            }
+            if (!checkArchiveSteps()) {
+                return false;
+            }
+            if (!isUnique()) {
+                generalFieldGroup.getFieldNN("code").getComponentNN().requestFocus();
+                showNotification(getMessage("workflowEdit.error.sameWorkflowExist"));
+                return false;
+            }
             return true;
         }
         return false;
@@ -267,6 +297,44 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
         return false;//TODO
     }
 
+    private boolean isStartSet() {
+        Collection<Step> items = stepsDs.getItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            for (Step item : items) {
+                if (Boolean.TRUE.equals(item.getStart())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkArchiveSteps() {
+        Collection<Step> items = stepsDs.getItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            for (Step item : items) {
+                if (StageType.ARCHIVE.equals(item.getStage().getType())) {
+                    if (!CollectionUtils.isEmpty(item.getDirections())) {
+                        showNotification(String.format(getMessage("workflowEdit.error.directionFromArchive"), item.getStage().getName()));
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isUnique() {
+        List same = dataManager.loadList(LoadContext.create(Workflow.class)
+                .setQuery(new LoadContext.Query("select e from wfstp$Workflow e where " +
+                        "e.code = :code and e.id <> :id")
+                        .setParameter("code", getItem().getCode())
+                        .setParameter("id", getItem().getId())
+                        .setMaxResults(1))
+                .setView(View.MINIMAL));
+        return CollectionUtils.isEmpty(same);
+    }
 
     //order moving action
     private class ItemMoveAction extends ItemTrackingAction {

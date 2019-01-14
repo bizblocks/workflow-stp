@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema targetNamespace="http://schemas.groupstp.com/wf/0.1/wf-schema.xsd"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:attribute name="actions" type="xs:string"/>
+</xs:schema>

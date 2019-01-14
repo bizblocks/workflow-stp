@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <metadata xmlns="http://schemas.haulmont.com/cuba/metadata.xsd">
 
-    <metadata-model root-package="com.groupstp.workflowstp" namespace="wfstp"/>
+    <metadata-model root-package="com.groupstp.workflowstp" namespace="wfstp">
+        <class>com.groupstp.workflowstp.entity.ScreenAction</class>
+        <class>com.groupstp.workflowstp.entity.ScreenConstructor</class>
+        <class>com.groupstp.workflowstp.entity.ScreenField</class>
+        <class>com.groupstp.workflowstp.entity.ScreenTableColumn</class>
+    </metadata-model>
 
 </metadata>

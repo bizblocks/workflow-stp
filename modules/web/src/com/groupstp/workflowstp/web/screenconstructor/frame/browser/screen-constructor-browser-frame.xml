@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        class="com.groupstp.workflowstp.web.screenconstructor.frame.browser.ScreenConstructorBrowserFrame"
+        messagesPack="com.groupstp.workflowstp.web.screenconstructor.frame.browser">
+    <dsContext>
+        <datasource id="columnDs" class="com.groupstp.workflowstp.entity.ScreenTableColumn"/>
+        <collectionDatasource id="columnTemplatesDs"
+                              class="com.groupstp.workflowstp.entity.ScreenTableColumnTemplate"
+                              allowCommit="false"
+                              refreshMode="NEVER"/>
+    </dsContext>
+    <dialogMode height="100%"
+                width="100%"/>
+    <layout spacing="true">
+        <split id="browserColumnsSplit" width="100%" height="100%" pos="70" orientation="horizontal">
+            <vbox id="tableBox" margin="true,true,false,false" width="100%" height="100%" expand="columnsTable">
+                <table id="columnsTable" width="100%">
+                    <actions>
+                        <action id="create"/>
+                        <action id="edit"/>
+                        <action id="remove"/>
+                        <action id="up"/>
+                        <action id="down"/>
+                    </actions>
+                    <columns>
+                        <column id="order"/>
+                        <column id="caption"/>
+                        <column id="columnId"/>
+                        <column id="editable"/>
+                        <column id="template"/>
+                    </columns>
+                    <rowsCount/>
+                    <rows datasource="columnsDs"/>
+                    <buttonsPanel alwaysVisible="true">
+                        <button id="createColumnBtn" action="columnsTable.create"/>
+                        <button id="editColumnBtn" action="columnsTable.edit"/>
+                        <button id="removeColumnBtn" action="columnsTable.remove"/>
+                        <button id="upColumnBtn" action="columnsTable.up" icon="CARET_UP" caption=""/>
+                        <button id="downColumnBtn" action="columnsTable.down" icon="CARET_DOWN" caption=""/>
+                    </buttonsPanel>
+                </table>
+                <label id="fakeLabel"/>
+            </vbox>
+            <vbox width="100%" height="100%" expand="columnDetail" spacing="true">
+                <scrollBox id="columnDetail" spacing="true" width="100%">
+                    <vbox margin="true" spacing="true" width="100%" height="-1px">
+                        <fieldGroup datasource="columnDs" width="100%" id="columnFieldGroup">
+                            <column width="100%">
+                                <field property="template">
+                                    <lookupField id="templateField" optionsDatasource="columnTemplatesDs"/>
+                                </field>
+                                <field property="caption">
+                                    <hbox width="100%" expand="namePropertiesLookup" spacing="true">
+                                        <textField id="captionField" datasource="columnDs" property="caption"/>
+                                        <lookupField id="namePropertiesLookup"/>
+                                    </hbox>
+                                </field>
+                                <field property="columnId"/>
+                                <field property="editable"/>
+                            </column>
+                        </fieldGroup>
+                        <textArea id="generatorScriptEditor" datasource="columnDs" property="generatorScript"
+                                  caption="msg://com.groupstp.workflowstp.entity/ScreenTableColumn.generatorScript"
+                                  width="100%"
+                                  height="400px"/>
+                        <flowBox width="100%" spacing="true" id="generatorScriptEditorBox">
+                            <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editGeneratorScript"/>
+                            <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testGeneratorScript"/>
+                            <button icon="QUESTION_CIRCLE" id="generatorsScriptHint" invoke="generatorScriptHint"/>
+                        </flowBox>
+                    </vbox>
+                </scrollBox>
+                <hbox id="columnEditBox" spacing="true" expand="fakeLabel2" width="100%" visible="false" margin="true">
+                    <button id="columnOkBtn"
+                            caption="mainMsg://actions.Ok"
+                            icon="icons/ok.png"
+                            invoke="onOk"/>
+                    <button id="columnCancelBtn"
+                            caption="mainMsg://actions.Cancel"
+                            icon="icons/cancel.png"
+                            invoke="onCancel"/>
+                    <label id="fakeLabel2"/>
+                </hbox>
+            </vbox>
+        </split>
+    </layout>
+</window>

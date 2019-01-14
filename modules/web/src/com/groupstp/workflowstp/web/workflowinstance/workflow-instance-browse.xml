@@ -35,6 +35,7 @@
                 <column id="workflow"/>
                 <column id="entityCaption"/>
                 <column id="entityName"/>
+                <column id="entityId"/>
                 <column id="startDate"/>
                 <column id="endDate"/>
                 <column id="error" maxTextLength="50"/>

@@ -28,7 +28,7 @@
             <properties include=".*"/>
         </filter>
         <groupTable id="stagesTable"
-                    width="100%" textSelectionEnabled="true">
+                    width="100%" textSelectionEnabled="true" multiselect="true">
             <actions>
                 <action id="create"/>
                 <action id="edit"/>
@@ -52,6 +52,11 @@
                         action="stagesTable.edit"/>
                 <button id="removeBtn"
                         action="stagesTable.remove"/>
+                <button id="exportBtn"
+                        action="stagesTable.export" icon="icons/download.png"/>
+                <upload id="importBtn"
+                        uploadButtonCaption=""
+                        uploadButtonIcon="UPLOAD" fileStoragePutMode="MANUAL"/>
             </buttonsPanel>
         </groupTable>
     </layout>

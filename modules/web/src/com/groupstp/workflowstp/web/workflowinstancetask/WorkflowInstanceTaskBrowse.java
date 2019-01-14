@@ -3,17 +3,11 @@ package com.groupstp.workflowstp.web.workflowinstancetask;
 import com.groupstp.workflowstp.entity.WorkflowInstance;
 import com.groupstp.workflowstp.entity.WorkflowInstanceTask;
 import com.groupstp.workflowstp.web.util.WebUiHelper;
-import com.groupstp.workflowstp.web.util.WebWorkflowHelper;
+import com.groupstp.workflowstp.web.util.WorkflowInstanceHelper;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.LoadContext;
-import com.haulmont.cuba.core.global.Metadata;
-import com.haulmont.cuba.core.global.View;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
-import com.haulmont.cuba.gui.components.AbstractEditor;
-import com.haulmont.cuba.gui.components.AbstractLookup;
-import com.haulmont.cuba.gui.components.Component;
-import com.haulmont.cuba.gui.components.GroupTable;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.BaseAction;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -57,7 +51,7 @@ public class WorkflowInstanceTaskBrowse extends AbstractLookup {
             private Entity reload(String name, String id) {
                 //noinspection unchecked
                 return dataManager.load(LoadContext.create(metadata.getClassNN(name).getJavaClass())
-                        .setId(WebWorkflowHelper.parseEntityId(name, id))
+                        .setId(WorkflowInstanceHelper.parseEntityId(name, id))
                         .setView(View.MINIMAL));
             }
 

@@ -18,11 +18,13 @@ import java.util.List;
 @Table(name = "WFSTP_STEP")
 @Entity(name = "wfstp$Step")
 public class Step extends StandardEntity {
-
-    private static final long serialVersionUID = 5845143789959411708L;
+    private static final long serialVersionUID = 5659734088709526091L;
 
     @Column(name = "ORDER_")
     private Integer order;
+
+    @Column(name = "START")
+    private Boolean start = false;
 
     @OnDeleteInverse(DeletePolicy.DENY)
     @NotNull
@@ -48,6 +50,14 @@ public class Step extends StandardEntity {
 
     public void setOrder(Integer order) {
         this.order = order;
+    }
+
+    public Boolean getStart() {
+        return start;
+    }
+
+    public void setStart(Boolean start) {
+        this.start = start;
     }
 
     public Stage getStage() {

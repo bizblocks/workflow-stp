@@ -7,7 +7,8 @@ import com.haulmont.chile.core.datatypes.impl.EnumClass;
  */
 public enum StageType implements EnumClass<Integer> {
     USERS_INTERACTION(1),
-    ALGORITHM_EXECUTION(2);
+    ALGORITHM_EXECUTION(2),
+    ARCHIVE(3);
 
     private final Integer id;
 

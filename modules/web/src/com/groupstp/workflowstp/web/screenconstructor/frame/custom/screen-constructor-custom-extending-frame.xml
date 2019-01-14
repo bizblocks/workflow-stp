@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        class="com.groupstp.workflowstp.web.screenconstructor.frame.custom.ScreenConstructorCustomExtendingFrame"
+        messagesPack="com.groupstp.workflowstp.web.screenconstructor.frame.custom">
+    <dsContext/>
+    <dialogMode height="100%"
+                width="100%"/>
+    <layout spacing="true">
+        <split width="100%" height="100%" orientation="vertical">
+            <vbox margin="true" spacing="true" width="100%" height="100%" expand="customBeforeScriptEditor">
+                <sourceCodeEditor mode="Groovy"
+                                  caption="msg://com.groupstp.workflowstp.entity/ScreenConstructor.customBeforeScript"
+                                  width="100%"
+                                  datasource="screenConstructorDs"
+                                  property="customBeforeScript"
+                                  id="customBeforeScriptEditor"/>
+                <flowBox width="100%" spacing="true" id="customBeforeScriptBox">
+                    <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editCustomBeforeScript"/>
+                    <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testCustomBeforeScript"/>
+                    <button icon="QUESTION_CIRCLE" id="customBeforeScriptHint" invoke="customBeforeScriptHint"/>
+                </flowBox>
+            </vbox>
+            <vbox margin="true" spacing="true" width="100%" height="100%" expand="customAfterScriptEditor">
+                <sourceCodeEditor mode="Groovy"
+                                  caption="msg://com.groupstp.workflowstp.entity/ScreenConstructor.customAfterScript"
+                                  width="100%"
+                                  datasource="screenConstructorDs"
+                                  property="customAfterScript"
+                                  id="customAfterScriptEditor"/>
+                <flowBox width="100%" spacing="true" id="customAfterScriptBox">
+                    <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editCustomAfterScript"/>
+                    <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testCustomAfterScript"/>
+                    <button icon="QUESTION_CIRCLE" id="customAfterScriptHint" invoke="customAfterScriptHint"/>
+                </flowBox>
+            </vbox>
+        </split>
+    </layout>
+</window>

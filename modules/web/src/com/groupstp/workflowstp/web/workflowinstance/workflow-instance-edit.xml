@@ -49,6 +49,9 @@
                     <field id="error" caption="">
                         <linkButton id="errorLink" caption="msg://workflowInstanceEdit.errorMessage"/>
                     </field>
+                    <field id="recreateTask">
+                        <button id="recreateTaskBtn" caption="msg://workflowInstanceEdit.recreateTasks"/>
+                    </field>
                 </column>
             </fieldGroup>
         </groupBox>
@@ -65,6 +68,7 @@
                         <column id="step"/>
                         <column id="startDate"/>
                         <column id="endDate"/>
+                        <column id="performer"/>
                     </columns>
                     <rows datasource="tasksDs"/>
                 </table>

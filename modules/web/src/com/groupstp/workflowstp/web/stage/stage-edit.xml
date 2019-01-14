@@ -11,6 +11,8 @@
                     view="stage-edit">
             <collectionDatasource id="actorsDs" property="actors"/>
             <collectionDatasource id="actorsRolesDs" property="actorsRoles"/>
+            <collectionDatasource id="viewerDs" property="viewers"/>
+            <collectionDatasource id="viewerRolesDs" property="viewersRoles"/>
         </datasource>
         <collectionDatasource id="usersDs"
                               class="com.haulmont.cuba.security.entity.User"
@@ -35,43 +37,102 @@
                             datasource="stageDs">
                     <column width="300px">
                         <field property="name"/>
-                        <field property="entityName"
-                               caption="msg://com.groupstp.workflowstp.entity/Stage.entityCaption">
+                        <field property="entityName" caption="msg://com.groupstp.workflowstp.entity/Stage.entityCaption">
                             <lookupField width="100%" datasource="stageDs" property="entityName" id="entityNameField"/>
                         </field>
-                        <field property="type"/>
+                        <field property="type">
+                            <lookupField width="100%" datasource="stageDs" property="type" id="typeField"/>
+                        </field>
                     </column>
                 </fieldGroup>
             </groupBox>
 
             <hbox id="userInteractionBox" spacing="true" width="100%" height="100%" expand="screenGroovyBox">
-                <vbox width="300px" height="100%" id="actorsBox" expand="fakeLabel" spacing="true">
-                    <lookupField id="userTypeAction" width="100%" caption="msg://stageEdit.userTypeAction"/>
-                    <tokenList datasource="actorsRolesDs" id="rolesList"
-                               caption="msg://com.groupstp.workflowstp.entity/Stage.actorsRoles" clearEnabled="false"
-                               width="100%">
-                        <lookup lookup="true" multiselect="true" optionsDatasource="rolesDs"/>
-                    </tokenList>
-                    <tokenList datasource="actorsDs" id="usersList"
-                               caption="msg://com.groupstp.workflowstp.entity/Stage.actors" clearEnabled="false"
-                               width="100%">
-                        <lookup lookup="true" multiselect="true" optionsDatasource="usersDs"/>
-                    </tokenList>
-                    <label id="fakeLabel"/>
-                </vbox>
+                <tabSheet width="300px" height="100%" id="actorsViewersTab" stylename="framed" >
+                    <tab id="actorsTab" expand="actorsBox" caption="msg://com.groupstp.workflowstp.entity/Stage.actors" margin="true">
+                        <vbox width="100%" height="100%" id="actorsBox" expand="fakeLabel1" spacing="true">
+                            <lookupField id="actorTypeAction" width="100%" caption="msg://stageEdit.userTypeAction"/>
+                            <tokenList datasource="actorsRolesDs" id="actorRolesList"
+                                       caption="msg://com.groupstp.workflowstp.entity/Stage.actorsRoles" clearEnabled="false"
+                                       width="100%">
+                                <lookup lookup="true" multiselect="true" optionsDatasource="rolesDs"/>
+                            </tokenList>
+                            <tokenList datasource="actorsDs" id="actorUsersList"
+                                       caption="msg://com.groupstp.workflowstp.entity/Stage.actors" clearEnabled="false"
+                                       width="100%">
+                                <lookup lookup="true" multiselect="true" optionsDatasource="usersDs"/>
+                            </tokenList>
+                            <label id="fakeLabel1"/>
+                        </vbox>
+                    </tab>
+                    <tab id="viewersTab" expand="viewersBox" caption="msg://com.groupstp.workflowstp.entity/Stage.viewers" margin="true">
+                        <vbox width="100%" height="100%" id="viewersBox" expand="fakeLabel2" spacing="true">
+                            <lookupField id="viewerTypeAction" width="100%" caption="msg://stageEdit.viewerTypeAction"/>
+                            <tokenList datasource="viewerRolesDs" id="viewerRolesList"
+                                       caption="msg://com.groupstp.workflowstp.entity/Stage.viewersRoles" clearEnabled="false"
+                                       width="100%">
+                                <lookup lookup="true" multiselect="true" optionsDatasource="rolesDs"/>
+                            </tokenList>
+                            <tokenList datasource="viewerDs" id="viewerUsersList"
+                                       caption="msg://com.groupstp.workflowstp.entity/Stage.viewers" clearEnabled="false"
+                                       width="100%">
+                                <lookup lookup="true" multiselect="true" optionsDatasource="usersDs"/>
+                            </tokenList>
+                            <label id="fakeLabel2"/>
+                        </vbox>
+                    </tab>
+                </tabSheet>
                 <vbox height="100%" id="screenGroovyBox" expand="screenTabSheet">
-                    <tabSheet id="screenTabSheet">
-                        <tab id="browseGroovyScriptTab" expand="browseScreenGroovyScript"
-                             caption="msg://com.groupstp.workflowstp.entity/Stage.browseScreenGroovyScript">
-                            <sourceCodeEditor id="browseScreenGroovyScript" mode="Groovy" width="100%"
-                                              datasource="stageDs"
-                                              property="browseScreenGroovyScript"/>
+                    <tabSheet id="screenTabSheet" stylename="centered-tabs">
+                        <tab id="browseScreenTab" caption="msg://stageEdit.browserScreen">
+                            <tabSheet id="browseScreenConstructorTab" width="100%" height="100%">
+                                <tab id="browserScreenConstructorTab" caption="msg://stageEdit.screenConstructor"
+                                     expand="browserScreenConstructor">
+                                    <hbox margin="true,false,true,false" spacing="true">
+                                        <button icon="COGS" caption="msg://stageEdit.openConstructor"
+                                                invoke="editBrowserScreenConstructor"/>
+                                        <button icon="REMOVE" caption="msg://stageEdit.cleanup"
+                                                invoke="removeBrowserScreenConstructor"/>
+                                    </hbox>
+                                    <label value="msg://stageEdit.descriptorOfExtending" height="30px"/>
+                                    <textArea id="browserScreenConstructor" width="100%" editable="false"/>
+                                </tab>
+                                <tab id="browserScreenScriptTab" expand="browseScreenGroovyScript"
+                                     caption="msg://stageEdit.screenScript">
+                                    <sourceCodeEditor id="browseScreenGroovyScript" mode="Groovy" width="100%"
+                                                      datasource="stageDs"
+                                                      property="browseScreenGroovyScript"/>
+                                    <hbox margin="true,false,true,false">
+                                        <button icon="EXPAND" caption="msg://stageEdit.fullScreen"
+                                                invoke="editBrowseScreenGroovy"/>
+                                    </hbox>
+                                </tab>
+                            </tabSheet>
                         </tab>
-                        <tab id="editorGroovyScriptTab" expand="editorScreenGroovyScript"
-                             caption="msg://com.groupstp.workflowstp.entity/Stage.editorScreenGroovyScript">
-                            <sourceCodeEditor id="editorScreenGroovyScript" mode="Groovy" width="100%"
-                                              datasource="stageDs"
-                                              property="editorScreenGroovyScript"/>
+                        <tab id="editorScreenTab" caption="msg://stageEdit.editorScreen">
+                            <tabSheet id="editorScreenTabSheet" width="100%" height="100%">
+                                <tab id="editorScreenConstructorTab" caption="msg://stageEdit.screenConstructor"
+                                     expand="editorScreenConstructor">
+                                    <hbox margin="true,false,true,false" spacing="true">
+                                        <button icon="COGS" caption="msg://stageEdit.openConstructor"
+                                                invoke="editEditorScreenConstructor"/>
+                                        <button icon="REMOVE" caption="msg://stageEdit.cleanup"
+                                                invoke="removeEditorScreenGroovy"/>
+                                    </hbox>
+                                    <label value="msg://stageEdit.descriptorOfExtending" height="30px"/>
+                                    <textArea id="editorScreenConstructor" width="100%" editable="false"/>
+                                </tab>
+                                <tab id="editorScreenScriptTab" expand="editorScreenGroovyScript"
+                                     caption="msg://stageEdit.screenScript">
+                                    <sourceCodeEditor id="editorScreenGroovyScript" mode="Groovy" width="100%"
+                                                      datasource="stageDs"
+                                                      property="editorScreenGroovyScript"/>
+                                    <hbox margin="true,false,true,false">
+                                        <button icon="EXPAND" caption="msg://stageEdit.fullScreen"
+                                                invoke="editEditorScreenGroovy"/>
+                                    </hbox>
+                                </tab>
+                            </tabSheet>
                         </tab>
                     </tabSheet>
                 </vbox>
@@ -82,6 +143,9 @@
                 <label value="msg://com.groupstp.workflowstp.entity/Stage.executionGroovyScript"/>
                 <sourceCodeEditor id="executionCode" mode="Groovy" width="100%" datasource="stageDs"
                                   property="executionGroovyScript"/>
+                <hbox margin="true,false,true,false" align="BOTTOM_RIGHT">
+                    <button icon="EXPAND" caption="msg://stageEdit.fullScreen" invoke="editExecutionGroovy"/>
+                </hbox>
             </vbox>
         </vbox>
         <frame id="windowActions"

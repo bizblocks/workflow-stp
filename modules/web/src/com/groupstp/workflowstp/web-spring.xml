@@ -14,7 +14,12 @@
             <map>
                 <entry key="wfstp_WorkflowService"
                        value="com.groupstp.workflowstp.service.WorkflowService"/>
+                <entry key="cuba_EntityImportExportService"
+                       value="com.groupstp.workflowstp.service.ExtEntityImportExportService"/>
             </map>
         </property>
     </bean>
+    <bean id="cuba_WebWindowManager"
+          class="com.groupstp.workflowstp.web.sys.ExtWebWindowManager"
+          scope="prototype"/>
 </beans>

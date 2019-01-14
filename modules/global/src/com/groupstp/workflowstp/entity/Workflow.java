@@ -17,16 +17,19 @@ import java.util.List;
 /**
  * @author adiatullin
  */
-@NamePattern("%s|name,entityName")
+@NamePattern("%s|name,entityName,code")
 @Table(name = "WFSTP_WORKFLOW")
 @Entity(name = "wfstp$Workflow")
 public class Workflow extends StandardEntity {
-
-    private static final long serialVersionUID = -1832005667989548686L;
+    private static final long serialVersionUID = -6925865535999298172L;
 
     @NotNull
     @Column(name = "NAME", nullable = false)
     private String name;
+
+    @NotNull
+    @Column(name = "CODE", nullable = false, length = 10)
+    private String code;
 
     @Column(name = "ACTIVE")
     private Boolean active = false;
@@ -41,6 +44,16 @@ public class Workflow extends StandardEntity {
     @OneToMany(mappedBy = "workflow")
     private List<Step> steps;
 
+    @Column(name = "ORDER_")
+    private Integer order;
+
+
+    @MetaProperty
+    public String getEntityCaption() {
+        MessageTools messageTools = AppBeans.get(MessageTools.NAME);
+        Metadata metadata = AppBeans.get(Metadata.NAME);
+        return messageTools.getEntityCaption(metadata.getClassNN(getEntityName()));
+    }
 
     public String getName() {
         return name;
@@ -48,6 +61,14 @@ public class Workflow extends StandardEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public Boolean getActive() {
@@ -74,10 +95,11 @@ public class Workflow extends StandardEntity {
         this.steps = steps;
     }
 
-    @MetaProperty
-    public String getEntityCaption() {
-        MessageTools messageTools = AppBeans.get(MessageTools.NAME);
-        Metadata metadata = AppBeans.get(Metadata.NAME);
-        return messageTools.getEntityCaption(metadata.getClassNN(getEntityName()));
+    public Integer getOrder() {
+        return order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
     }
 }

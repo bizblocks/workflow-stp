@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        class="com.groupstp.workflowstp.web.screenconstructor.frame.editor.ScreenConstructorEditorFrame"
+        messagesPack="com.groupstp.workflowstp.web.screenconstructor.frame.editor">
+    <dsContext>
+        <datasource id="fieldDs" class="com.groupstp.workflowstp.entity.ScreenField"/>
+    </dsContext>
+    <dialogMode height="100%"
+                width="100%"/>
+    <layout spacing="true">
+        <split id="fieldsSplit" width="100%" height="100%" pos="70" orientation="horizontal">
+            <vbox id="tableBox" margin="true,true,false,false" width="100%" height="100%" expand="fieldsTable">
+                <table id="fieldsTable" width="100%">
+                    <actions>
+                        <action id="create"/>
+                        <action id="edit"/>
+                        <action id="remove"/>
+                    </actions>
+                    <columns>
+                        <column id="name"/>
+                        <column id="fieldId"/>
+                    </columns>
+                    <rowsCount/>
+                    <rows datasource="fieldsDs"/>
+                    <buttonsPanel alwaysVisible="true">
+                        <button id="createColumnBtn" action="fieldsTable.create"/>
+                        <button id="editColumnBtn" action="fieldsTable.edit"/>
+                        <button id="removeColumnBtn" action="fieldsTable.remove"/>
+                    </buttonsPanel>
+                </table>
+                <label id="fakeLabel"/>
+            </vbox>
+            <vbox width="100%" height="100%" expand="fieldDetail" spacing="true">
+                <scrollBox id="fieldDetail" spacing="true" width="100%">
+                    <vbox margin="true" spacing="true" width="100%" height="-1px">
+                        <fieldGroup datasource="fieldDs" width="100%" id="fieldFieldGroup">
+                            <column width="100%">
+                                <field property="name">
+                                    <lookupField id="nameLookup" width="100%" required="true"/>
+                                </field>
+                                <field property="fieldId" editable="false"/>
+                            </column>
+                        </fieldGroup>
+                        <label/>
+                    </vbox>
+                </scrollBox>
+                <hbox id="fieldEditBox" spacing="true" expand="fakeLabel2" width="100%" visible="false" margin="true">
+                    <button id="fieldOkBtn"
+                            caption="mainMsg://actions.Ok"
+                            icon="icons/ok.png"
+                            invoke="onOk"/>
+                    <button id="fieldCancelBtn"
+                            caption="mainMsg://actions.Cancel"
+                            icon="icons/cancel.png"
+                            invoke="onCancel"/>
+                    <label id="fakeLabel2"/>
+                </hbox>
+            </vbox>
+        </split>
+    </layout>
+</window>

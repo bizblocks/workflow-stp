@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowDefinitionEdit.caption"
+        class="com.groupstp.workflowstp.web.workflowdefinition.WorkflowDefinitionEdit"
+        datasource="workflowDefinitionDs"
+        focusComponent="entityNameField"
+        messagesPack="com.groupstp.workflowstp.web.workflowdefinition">
+    <dsContext>
+        <datasource id="workflowDefinitionDs"
+                    class="com.groupstp.workflowstp.entity.WorkflowDefinition"
+                    view="workflowDefinition-edit"/>
+        <collectionDatasource id="workflowsDs"
+                              class="com.groupstp.workflowstp.entity.Workflow"
+                              view="_minimal"
+                              allowCommit="false"
+                              refreshMode="NEVER"/>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="controlBox" spacing="true">
+        <vbox id="controlBox" width="100%" expand="conditionTabSheet" spacing="true">
+            <groupBox caption="msg://workflowDefinitionEdit.general" collapsable="true">
+                <fieldGroup id="generalFieldGroup"
+                            datasource="workflowDefinitionDs">
+                    <column width="300px">
+                        <field property="entityName">
+                            <lookupField width="100%" datasource="workflowDefinitionDs" property="entityName"
+                                         id="entityNameField"/>
+                        </field>
+                        <field property="workflow" optionsDatasource="workflowsDs"/>
+                        <field property="priority"/>
+                    </column>
+                </fieldGroup>
+            </groupBox>
+
+            <tabSheet id="conditionTabSheet" width="100%">
+                <tab id="sqlTab" caption="msg://com.groupstp.workflowstp.entity/WorkflowDefinition.conditionSqlScript">
+                    <vbox spacing="true" id="sqlBox" expand="sqlCondition" margin="true" width="100%" height="100%">
+                        <linkButton id="sqlConstructor"
+                                    caption="msg://workflowDefinitionEdit.createWithConstructor"
+                                    invoke="openSqlConstructor"/>
+                        <sourceCodeEditor id="sqlCondition"
+                                          width="100%"
+                                          highlightActiveLine="false"
+                                          mode="SQL"
+                                          datasource="workflowDefinitionDs"
+                                          property="conditionSqlScript"
+                                          printMargin="false"/>
+                    </vbox>
+                </tab>
+                <tab id="groovyTab" caption="msg://com.groupstp.workflowstp.entity/WorkflowDefinition.conditionGroovyScript">
+                    <vbox spacing="true" id="groovyBox" expand="groovyClause" margin="true" width="100%" height="100%">
+                        <sourceCodeEditor id="groovyClause"
+                                          highlightActiveLine="false"
+                                          mode="Groovy"
+                                          width="100%"
+                                          datasource="workflowDefinitionDs"
+                                          property="conditionGroovyScript"
+                                          printMargin="false"/>
+                        <button id="fakeLabel" stylename="friendly"
+                                caption="msg://workflowDefinitionEdit.testScript"
+                                align="BOTTOM_RIGHT"
+                                invoke="testGroovy"/>
+                    </vbox>
+                </tab>
+            </tabSheet>
+        </vbox>
+        <frame id="windowActions" screen="editWindowActions"/>
+    </layout>
+</window>

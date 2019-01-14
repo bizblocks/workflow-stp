@@ -14,7 +14,9 @@ create table WFSTP_STAGE (
     TYPE integer not null,
     EXECUTION_GROOVY_SCRIPT text,
     BROWSE_SCREEN_GROOVY_SCRIPT text,
+    BROWSER_SCREEN_CONSTRUCTOR text,
     EDITOR_SCREEN_GROOVY_SCRIPT text,
+    EDITOR_SCREEN_CONSTRUCTOR text,
     --
     primary key (ID)
 )^
@@ -31,6 +33,7 @@ create table WFSTP_STEP (
     DELETED_BY varchar(50),
     --
     ORDER_ integer,
+    START boolean,
     STAGE_ID uuid not null,
     WORKFLOW_ID uuid not null,
     --
@@ -70,8 +73,10 @@ create table WFSTP_WORKFLOW (
     DELETED_BY varchar(50),
     --
     NAME varchar(255) not null,
+    CODE varchar(10) not null,
     ACTIVE boolean,
     ENTITY_NAME varchar(255) not null,
+    ORDER_ integer,
     --
     primary key (ID)
 )^
@@ -134,6 +139,7 @@ create table WFSTP_WORKFLOW_INSTANCE_TASK (
     STEP_ID uuid not null,
     START_DATE timestamp,
     END_DATE timestamp,
+    PERFORMER_ID uuid,
     --
     primary key (ID)
 )^
@@ -152,3 +158,108 @@ create table STAGE_ACTORS_ROLES_LINK (
     primary key (STAGE_ID, ACTOR_ROLE_ID)
 )^
 -- end STAGE_ACTORS_ROLES_LINK
+-- begin WFSTP_SCREEN_ACTION_TEMPLATE
+create table WFSTP_SCREEN_ACTION_TEMPLATE (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    NAME varchar(255) not null,
+    ENTITY_NAME varchar(255),
+    ALWAYS_ENABLED boolean,
+    CAPTION varchar(255) not null,
+    ICON varchar(255) not null,
+    STYLE varchar(255),
+    SHORTCUT varchar(255),
+    BUTTON_ACTION boolean,
+    SCRIPT text not null,
+    PERMIT_REQUIRED boolean,
+    PERMIT_ITEMS_COUNT integer,
+    PERMIT_ITEMS_TYPE integer,
+    PERMIT_SCRIPT text,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_SCREEN_ACTION_TEMPLATE
+-- begin WFSTP_SCREEN_EXTENSION_TEMPLATE
+create table WFSTP_SCREEN_EXTENSION_TEMPLATE (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    NAME varchar(255) not null,
+    KEY_ varchar(255) not null,
+    ENTITY_NAME varchar(255) not null,
+    SCREEN_ID varchar(255) not null,
+    IS_BROWSER boolean,
+    SCREEN_CONSTRUCTOR text not null,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_SCREEN_EXTENSION_TEMPLATE
+-- begin WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE
+create table WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    NAME varchar(255) not null,
+    ENTITY_NAME varchar(255),
+    CAPTION varchar(255) not null,
+    COLUMN_ID varchar(255) not null,
+    GENERATOR_SCRIPT text not null,
+    EDITABLE boolean,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE
+-- begin WFSTP_WORKFLOW_DEFINITION
+create table WFSTP_WORKFLOW_DEFINITION (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    ENTITY_NAME varchar(255) not null,
+    WORKFLOW_ID uuid not null,
+    PRIORITY_ integer not null,
+    CONDITION_SQL_SCRIPT text,
+    CONDITION_XML text,
+    CONDITION_GROOVY_SCRIPT text,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_WORKFLOW_DEFINITION
+-- begin STAGE_VIEWERS_LINK
+create table STAGE_VIEWERS_LINK (
+    STAGE_ID uuid,
+    VIEWER_ID uuid,
+    primary key (STAGE_ID, VIEWER_ID)
+)^
+-- end STAGE_VIEWERS_LINK
+-- begin STAGE_VIEWERS_ROLES_LINK
+create table STAGE_VIEWERS_ROLES_LINK (
+    STAGE_ID uuid,
+    VIEWER_ROLE_ID uuid,
+    primary key (STAGE_ID, VIEWER_ROLE_ID)
+)^
+-- end STAGE_VIEWERS_ROLES_LINK

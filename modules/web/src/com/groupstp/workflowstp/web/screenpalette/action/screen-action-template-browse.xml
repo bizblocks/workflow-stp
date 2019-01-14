@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://screenActionTemplateBrowse.caption"
+        class="com.groupstp.workflowstp.web.screenpalette.action.ScreenActionTemplateBrowse"
+        focusComponent="screenActionTemplatesTable"
+        lookupComponent="screenActionTemplatesTable"
+        messagesPack="com.groupstp.workflowstp.web.screenpalette.action">
+    <dsContext>
+        <groupDatasource id="screenActionTemplatesDs"
+                         class="com.groupstp.workflowstp.entity.ScreenActionTemplate"
+                         view="_local">
+            <query>
+                <![CDATA[select e from wfstp$ScreenActionTemplate e order by e.entityName]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="screenActionTemplatesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="screenActionTemplatesTable"
+                datasource="screenActionTemplatesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="screenActionTemplatesTable"
+                    width="100%"
+                    multiselect="true">
+            <actions>
+                <action id="create"/>
+                <action id="edit"/>
+                <action id="remove"/>
+            </actions>
+            <columns>
+                <column id="name"/>
+                <column id="caption"/>
+                <column id="icon"/>
+                <column id="style"/>
+                <column id="shortcut"/>
+                <column id="entityName"/>
+                <column id="alwaysEnabled"/>
+                <column id="permitRequired"/>
+                <column id="buttonAction"/>
+            </columns>
+            <rows datasource="screenActionTemplatesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn"
+                        action="screenActionTemplatesTable.create"/>
+                <button id="editBtn"
+                        action="screenActionTemplatesTable.edit"/>
+                <button id="removeBtn"
+                        action="screenActionTemplatesTable.remove"/>
+                <popupButton id="exportBtn"
+                             caption="msg://screenActionTemplateBrowse.export"
+                             icon="icons/download.png"/>
+                <upload id="importBtn"
+                        uploadButtonIcon="UPLOAD"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

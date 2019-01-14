@@ -10,7 +10,7 @@
                          class="com.groupstp.workflowstp.entity.Workflow"
                          view="workflow-browse">
             <query>
-                <![CDATA[select e from wfstp$Workflow e order by e.entityName]]>
+                <![CDATA[select e from wfstp$Workflow e order by e.order]]>
             </query>
         </groupDatasource>
     </dsContext>
@@ -24,7 +24,7 @@
             <properties include=".*"/>
         </filter>
         <groupTable id="workflowsTable"
-                    width="100%" textSelectionEnabled="true">
+                    width="100%" textSelectionEnabled="true" multiselect="true">
             <actions>
                 <action id="create"/>
                 <action id="edit"/>
@@ -38,6 +38,7 @@
                 <column id="entityName"/>
                 <column id="active"/>
                 <column id="name"/>
+                <column id="order"/>
             </columns>
             <rows datasource="workflowsDs"/>
             <rowsCount/>

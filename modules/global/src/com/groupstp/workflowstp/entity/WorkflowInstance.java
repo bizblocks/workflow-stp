@@ -22,8 +22,7 @@ import java.util.List;
 @Table(name = "WFSTP_WORKFLOW_INSTANCE")
 @Entity(name = "wfstp$WorkflowInstance")
 public class WorkflowInstance extends StandardEntity {
-
-    private static final long serialVersionUID = 4444761890041206275L;
+    private static final long serialVersionUID = -6348581277378426995L;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

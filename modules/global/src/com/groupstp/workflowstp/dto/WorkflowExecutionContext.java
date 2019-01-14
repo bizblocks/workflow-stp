@@ -11,8 +11,7 @@ import java.util.Map;
  * @author adiatullin
  */
 public class WorkflowExecutionContext implements Serializable {
-
-    private static final long serialVersionUID = 2482210589102493562L;
+    private static final long serialVersionUID = -4720713209728129217L;
 
     private Map<String, String> params = new HashMap<>();
 
