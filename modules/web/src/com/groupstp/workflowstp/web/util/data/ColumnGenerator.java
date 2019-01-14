@@ -13,8 +13,8 @@ import java.io.Serializable;
 public final class ColumnGenerator<T extends Entity> implements Serializable {
     private static final long serialVersionUID = -359928629900028748L;
 
-    private final Table.ColumnGenerator<T> readGenerator;
-    private final Table.ColumnGenerator<T> editGenerator;
+    protected Table.ColumnGenerator<T> readGenerator;
+    protected Table.ColumnGenerator<T> editGenerator;
 
     public ColumnGenerator(Table.ColumnGenerator<T> readGenerator, Table.ColumnGenerator<T> editGenerator) {
         this.readGenerator = readGenerator;

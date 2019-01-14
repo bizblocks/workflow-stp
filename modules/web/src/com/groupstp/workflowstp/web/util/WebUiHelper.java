@@ -13,6 +13,7 @@ import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.components.*;
+import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.actions.BaseAction;
 import com.haulmont.cuba.gui.components.formatters.DateFormatter;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
@@ -26,6 +27,7 @@ import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -39,12 +41,15 @@ import java.util.function.Function;
  * @author adiatullin
  */
 @SuppressWarnings("unchecked")
-public final class WebUiHelper {
+@org.springframework.stereotype.Component(WebUiHelper.NAME)
+public class WebUiHelper {
 
-    private static final Element CREATE_TS_ELEMENT = Dom4j.readDocument("<createTs format=\"dd.MM.yyyy\" useUserTimezone=\"true\"/>").getRootElement();
-    private static final String DATE_FORMAT = "dd.MM.yyyy";
-    private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
-    private static final DecimalFormat DECIMAL_FORMAT;
+    public static final String NAME = "WebUiHelper";
+
+    protected static Element CREATE_TS_ELEMENT = Dom4j.readDocument("<createTs format=\"dd.MM.yyyy\" useUserTimezone=\"true\"/>").getRootElement();
+    protected static String DATE_FORMAT = "dd.MM.yyyy";
+    protected static SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    protected static DecimalFormat DECIMAL_FORMAT;
 
     static {
         DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
@@ -53,8 +58,21 @@ public final class WebUiHelper {
         DECIMAL_FORMAT = new DecimalFormat("#,###.##", formatSymbols);
     }
 
-    private WebUiHelper() {
-    }
+    @Inject
+    protected ComponentsFactory componentsFactory;
+    @Inject
+    protected Security security;
+    @Inject
+    protected MessageTools messageTools;
+    @Inject
+    protected Messages messages;
+    @Inject
+    protected DataManager dataManager;
+    @Inject
+    protected Metadata metadata;
+
+    @Inject
+    protected WorkflowWebConfig workflowWebConfig;
 
     /**
      * Show related entity in table as link
@@ -63,7 +81,11 @@ public final class WebUiHelper {
      * @param entityProperty slave entity property name
      */
     public static void showLinkOnTable(Table table, String entityProperty) {
-        showLinkOnTable(table, entityProperty, null);
+        ((WebUiHelper) AppBeans.get(NAME)).showLinkOnTableInner(table, entityProperty);
+    }
+
+    protected void showLinkOnTableInner(Table table, String entityProperty) {
+        showLinkOnTableInternal(table, entityProperty, null);
     }
 
     /**
@@ -74,12 +96,14 @@ public final class WebUiHelper {
      * @param captionFunction function to generate related entity link caption
      */
     public static void showLinkOnTable(Table table, String entityProperty, Function<Entity, String> captionFunction) {
-        ComponentsFactory factory = AppBeans.get(ComponentsFactory.NAME);
-        Security security = AppBeans.get(Security.NAME);
+        ((WebUiHelper) AppBeans.get(NAME)).showLinkOnTableInternal(table, entityProperty, captionFunction);
+    }
+
+    protected void showLinkOnTableInternal(Table table, String entityProperty, Function<Entity, String> captionFunction) {
         table.addGeneratedColumn(entityProperty, new Table.ColumnGenerator<Entity>() {
             @Override
             public Component generateCell(Entity entity) {
-                LinkButton link = factory.createComponent(LinkButton.class);
+                LinkButton link = componentsFactory.createComponent(LinkButton.class);
                 final Entity nested = entity.getValue(entityProperty);
                 if (nested != null) {
                     link.setAction(new BaseAction(entityProperty + "Link") {
@@ -109,7 +133,10 @@ public final class WebUiHelper {
      * @param window user opened window
      */
     public static void hideLookupActionInFields(AbstractWindow window) {
-        Security security = AppBeans.get(Security.NAME);
+        ((WebUiHelper) AppBeans.get(NAME)).hideLookupActionInFieldsInternal(window);
+    }
+
+    protected void hideLookupActionInFieldsInternal(AbstractWindow window) {
         Collection<Component> components = window.getComponents();
         if (!CollectionUtils.isEmpty(components)) {
             for (Component component : components) {
@@ -133,6 +160,10 @@ public final class WebUiHelper {
      * @param componentsIds editable components ids
      */
     public static void enableComponents(com.haulmont.cuba.gui.components.Component.Container container, List<String> componentsIds) {
+        ((WebUiHelper) AppBeans.get(NAME)).enableComponentsInternal(container, componentsIds);
+    }
+
+    protected void enableComponentsInternal(com.haulmont.cuba.gui.components.Component.Container container, List<String> componentsIds) {
         ComponentsHelper.walkComponents(container, (component, name) -> {
             if (component instanceof FieldGroup) {
                 FieldGroup fg = (FieldGroup) component;
@@ -164,6 +195,10 @@ public final class WebUiHelper {
      * @param columns which properties are should shown
      */
     public static void showColumns(Table table, List<String> columns, Map<String, ColumnGenerator> generators) {
+        ((WebUiHelper) AppBeans.get(NAME)).showColumnsInternal(table, columns, generators);
+    }
+
+    protected void showColumnsInternal(Table table, List<String> columns, Map<String, ColumnGenerator> generators) {
         clearColumns(table);
 
         showSelectionColumn(table);
@@ -173,7 +208,6 @@ public final class WebUiHelper {
         }
 
         if (!CollectionUtils.isEmpty(columns)) {
-            MessageTools messageTools = AppBeans.get(MessageTools.NAME);
             MetaClass metaClass = table.getDatasource().getMetaClass();
 
             for (String property : columns) {
@@ -205,6 +239,11 @@ public final class WebUiHelper {
      */
     public static void showColumns(Table table, List<String> columns, List<String> editableColumns,
                                    Map<String, ColumnGenerator> generators, Boolean viewOnly) {
+        ((WebUiHelper) AppBeans.get(NAME)).showColumnsInternal(table, columns, editableColumns, generators, viewOnly);
+    }
+
+    protected void showColumnsInternal(Table table, List<String> columns, List<String> editableColumns,
+                                       Map<String, ColumnGenerator> generators, Boolean viewOnly) {
         clearColumns(table);
 
         showSelectionColumn(table);
@@ -215,12 +254,6 @@ public final class WebUiHelper {
         if (editableColumns == null) {
             editableColumns = Collections.emptyList();
         }
-        final Messages messages = AppBeans.get(Messages.NAME);
-        final MessageTools messageTools = AppBeans.get(MessageTools.NAME);
-        final ComponentsFactory componentsFactory = AppBeans.get(ComponentsFactory.NAME);
-        final Security security = AppBeans.get(Security.NAME);
-        final DataManager dataManager = AppBeans.get(DataManager.NAME);
-        final Metadata metadata = AppBeans.get(Metadata.NAME);
 
         final List editing = new ArrayList<>();
         final CollectionDatasource ds = table.getDatasource();
@@ -243,14 +276,14 @@ public final class WebUiHelper {
                         }
 
                         assert path != null;
-                        return getEditableComponent(table, path, entity, componentsFactory, metadata, dataManager);
+                        return getEditableComponent(table, path, entity);
                     } else {
                         if (generator != null && generator.getReadGenerator() != null) {
                             return generator.getReadGenerator().generateCell(entity);
                         }
 
                         assert path != null;
-                        return getNotEditableComponent(path, entity, componentsFactory, messages);
+                        return getNotEditableComponent(path, entity);
                     }
                 });
                 column = table.getColumn(property);
@@ -336,14 +369,13 @@ public final class WebUiHelper {
         }
     }
 
-    private static Component getEditableComponent(Table table, MetaPropertyPath path, Entity entity,
-                                                  ComponentsFactory componentsFactory, Metadata metadata, DataManager dataManager) {
+    protected Component getEditableComponent(Table table, MetaPropertyPath path, Entity entity) {
         Field result;
         if (Boolean.class.isAssignableFrom(path.getRangeJavaClass())) {
             result = componentsFactory.createComponent(CheckBox.class);
         } else if (Entity.class.isAssignableFrom(path.getRangeJavaClass())) {
             LookupField field = componentsFactory.createComponent(LookupField.class);
-            field.setOptionsList(getItemsList(metadata.getClassNN(path.getRangeJavaClass()), metadata, dataManager));
+            field.setOptionsList(getItemsList(metadata.getClassNN(path.getRangeJavaClass())));
             result = field;
             result.setWidth("100%");
         } else if (Enum.class.isAssignableFrom(path.getRangeJavaClass())) {
@@ -368,8 +400,7 @@ public final class WebUiHelper {
         return result;
     }
 
-    private static Component getNotEditableComponent(MetaPropertyPath path, Entity entity,
-                                                     ComponentsFactory componentsFactory, Messages messages) {
+    protected Component getNotEditableComponent(MetaPropertyPath path, Entity entity) {
         final Object value = entity.getValue(path.getMetaProperty().getName());
 
         if (Boolean.class.isAssignableFrom(path.getRangeJavaClass())) {
@@ -396,7 +427,7 @@ public final class WebUiHelper {
         }
     }
 
-    public static List getItemsList(MetaClass metaClass, Metadata metadata, DataManager dataManager) {
+    protected List getItemsList(MetaClass metaClass) {
         Collection<MetaProperty> namePatternProperties = metadata.getTools().getNamePatternProperties(metaClass, true);
         if (CollectionUtils.isEmpty(namePatternProperties)) {
             throw new DevelopmentException(String.format("Unknown entity '%s' name pattern", metaClass.getName()));
@@ -412,7 +443,7 @@ public final class WebUiHelper {
         return list;
     }
 
-    private static void clearColumns(Table table) {
+    protected void clearColumns(Table table) {
         List<Table.Column> columns = table.getColumns();
         if (!CollectionUtils.isEmpty(columns)) {
             columns = new ArrayList<>(columns);
@@ -422,7 +453,7 @@ public final class WebUiHelper {
         }
     }
 
-    private static void showSelectionColumn(Table table) {
+    protected void showSelectionColumn(Table table) {
         if (isShowSelection()) {
             if (!(table instanceof ExternalSelectionGroupTable)) {
                 throw new UnsupportedOperationException("Table not support external selections");
@@ -432,8 +463,6 @@ public final class WebUiHelper {
             sTable.setExternalSelectionEnabled(true);
 
             final Map<Entity, CheckBox> cache = new HashMap<>();
-            final ComponentsFactory componentsFactory = AppBeans.get(ComponentsFactory.NAME);
-            final Messages messages = AppBeans.get(Messages.NAME);
 
             sTable.addGeneratedColumn("selection", entity -> {
                 CheckBox checkBox = cache.get(entity);
@@ -536,9 +565,8 @@ public final class WebUiHelper {
         }
     }
 
-    private static boolean isShowSelection() {
-        WorkflowWebConfig config = ((Configuration) AppBeans.get(Configuration.NAME)).getConfig(WorkflowWebConfig.class);
-        return Boolean.TRUE.equals(config.getShowSelection());
+    protected boolean isShowSelection() {
+        return Boolean.TRUE.equals(workflowWebConfig.getShowSelection());
     }
 
     /**
@@ -547,6 +575,10 @@ public final class WebUiHelper {
      * @param table UI table with CreateTS column
      */
     public static void createTsWithoutTime(Table table) {
+        ((WebUiHelper) AppBeans.get(NAME)).createTsWithoutTimeInternal(table);
+    }
+
+    protected void createTsWithoutTimeInternal(Table table) {
         Table.Column column = table.getColumn("createTs");
         if (column != null) {
             column.setFormatter(new DateFormatter(CREATE_TS_ELEMENT));

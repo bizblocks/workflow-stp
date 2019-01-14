@@ -19,8 +19,8 @@ import java.util.Set;
  * @author adiatullin
  */
 public class ItemMoveAction extends ItemTrackingAction {
-    private final boolean up;
-    private final String orderProperty;
+    protected boolean up;
+    protected String orderProperty;
 
     public ItemMoveAction(Table table, boolean up) {
         this(table, "order", up);
