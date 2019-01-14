@@ -75,6 +75,15 @@ public interface WorkflowWebBean {
     /**
      * Extend a editor screen
      *
+     * @param entity           current processing entity
+     * @param screen           extending screen link
+     * @throws WorkflowException in case of any unexpected problems
+     */
+    void extendEditor(WorkflowEntity entity, Frame screen) throws WorkflowException;
+
+    /**
+     * Extend a editor screen
+     *
      * @param stage            current extending workflow stage
      * @param entity           current processing entity
      * @param screen           extending screen link

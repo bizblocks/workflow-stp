@@ -43,22 +43,22 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     private static final Logger log = LoggerFactory.getLogger(WorkflowWebBeanImpl.class);
 
     @Inject
-    private Metadata metadata;
+    protected Metadata metadata;
     @Inject
-    private ExtendedEntities extendedEntities;
+    protected ExtendedEntities extendedEntities;
     @Inject
-    private WindowConfig windowConfig;
+    protected WindowConfig windowConfig;
     @Inject
-    private Scripting scripting;
+    protected Scripting scripting;
     @Inject
-    private WorkflowService service;
+    protected WorkflowService service;
     @Inject
-    private DataManager dataManager;
+    protected DataManager dataManager;
     @Inject
-    private Messages messages;
+    protected Messages messages;
 
     @Inject
-    private WorkflowWebConfig webConfig;
+    protected WorkflowWebConfig webConfig;
 
     @Override
     public List<MetaClass> getWorkflowEntities() {
@@ -180,6 +180,98 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Override
+    public void extendEditor(WorkflowEntity entity, Frame screen) throws WorkflowException {
+        Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWebBeanImpl.entityIsEmpty"));
+        Preconditions.checkNotNullArgument(screen, getMessage("WorkflowWebBeanImpl.frameIsEmpty"));
+
+        entity = reloadIfNeed(entity, View.LOCAL);
+        final Stage stage = getStage(entity);
+        if (stage == null) {
+            log.warn(String.format("Extension of editor ignored since stage for entity '%s' not found", entity.getInstanceName()));
+            return;
+        }
+
+        final Workflow workflow = getWorkflow(entity);
+        if (workflow == null || !Boolean.TRUE.equals(workflow.getActive())) {
+            log.warn(String.format("Extension of editor ignored since workflow for entity '%s' are missing or deactivated", entity.getInstanceName()));
+            return;
+        }
+
+        final WorkflowInstance instance = getWorkflowInstance(workflow, entity);
+        if (instance == null) {
+            log.warn(String.format("Extension of editor ignored since workflow instance for entity '%s' are missing or finished", entity.getInstanceName()));
+            return;
+        }
+
+        final WorkflowInstanceTask task = getWorkflowInstanceTask(instance, stage);
+        if (task == null || task.getEndDate() != null) {
+            log.warn(String.format("Extension of editor ignored since workflow instance task for entity '%s' are missing", entity.getInstanceName()));
+            return;
+        }
+
+        extendEditor(stage, entity, screen, instance, task);
+    }
+
+    @Nullable
+    protected Stage getStage(WorkflowEntity entity) {
+        if (!StringUtils.isEmpty(entity.getStepName())) {
+            return dataManager.load(Stage.class)
+                    .query("select e from wfstp$Stage e where e.entityName = :entityName and e.name = :name")
+                    .parameter("entityName", entity.getMetaClass().getName())
+                    .parameter("name", entity.getStepName())
+                    .view("stage-process")
+                    .optional()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    @Nullable
+    protected Workflow getWorkflow(WorkflowEntity entity) {
+        if (entity.getWorkflow() != null) {
+            return dataManager.load(Workflow.class)
+                    .query("select e.workflow from " + entity.getMetaClass().getName() + " e where e.id = :id")
+                    .parameter("id", entity.getId())
+                    .view(View.LOCAL)
+                    .optional()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    @Nullable
+    protected WorkflowInstance getWorkflowInstance(Workflow workflow, WorkflowEntity entity) {
+        if (workflow != null) {
+            return dataManager.load(WorkflowInstance.class)
+                    .query("select e from wfstp$WorkflowInstance e where e.entityName = :entityName and e.entityId = :entityId and e.workflow.id = :workflowId order by e.createTs desc")
+                    .parameter("entityName", entity.getMetaClass().getName())
+                    .parameter("entityId", entity.getId().toString())
+                    .parameter("workflowId", workflow.getId())
+                    .view("workflowInstance-process")
+                    .optional()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    @Nullable
+    protected WorkflowInstanceTask getWorkflowInstanceTask(WorkflowInstance workflowInstance, Stage stage) {
+        if (workflowInstance != null && stage != null) {
+            return dataManager.load(WorkflowInstanceTask.class)
+                    .query("select e from wfstp$WorkflowInstanceTask e " +
+                            "join wfstp$Step s on e.step.id = s.id " +
+                            "join wfstp$Stage ss on s.stage.id = ss.id " +
+                            "where e.instance.id = :instanceId and ss.id = :stageId order by e.createTs desc")
+                    .parameter("instanceId", workflowInstance.getId())
+                    .parameter("stageId", stage.getId())
+                    .view("workflowInstanceTask-process")
+                    .optional()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    @Override
     public void extendEditor(Stage stage, WorkflowEntity entity, Frame screen, WorkflowInstance workflowInstance, WorkflowInstanceTask task) throws WorkflowException {
         Preconditions.checkNotNullArgument(stage, getMessage("WorkflowWebBeanImpl.stageIsEmpty"));
         Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWebBeanImpl.entityIsEmpty"));
@@ -187,6 +279,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         Preconditions.checkNotNullArgument(workflowInstance, getMessage("WorkflowWebBeanImpl.workflowInstanceIsEmpty"));
         Preconditions.checkNotNullArgument(task, getMessage("WorkflowWebBeanImpl.workflowInstanceTaskIsEmpty"));
 
+        entity = reloadIfNeed(entity, View.LOCAL);
         stage = reloadIfNeed(stage, "stage-process");
         workflowInstance = reloadIfNeed(workflowInstance, "workflowInstance-process");
         task = reloadIfNeed(task, "workflowInstanceTask-process");
@@ -274,7 +367,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Nullable
-    private String constructScript(Frame screen, String constructorJson) throws Exception {
+    protected String constructScript(Frame screen, String constructorJson) throws Exception {
         if (!StringUtils.isEmpty(constructorJson)) {
             ScreenConstructor constructor = new ObjectMapper().readValue(constructorJson, ScreenConstructor.class);
 
@@ -302,12 +395,12 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         return null;
     }
 
-    private void setupStandardImports(Set<String> imports) {
+    protected void setupStandardImports(Set<String> imports) {
         imports.add("import java.util.*");
     }
 
     //create a total script
-    private String constructScript(Set<String> imports, Set<String> initSection, StringBuilder sb) {
+    protected String constructScript(Set<String> imports, Set<String> initSection, StringBuilder sb) {
         StringBuilder result = sb;
         if (!CollectionUtils.isEmpty(imports) || !CollectionUtils.isEmpty(initSection)) {
             result = new StringBuilder();
@@ -335,7 +428,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         return result.toString();
     }
 
-    private void setupCustomBeforeExtension(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb) {
+    protected void setupCustomBeforeExtension(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb) {
         ScriptWithImports res = ScriptWithImports.parse(constructor.getCustomBeforeScript());
         if (res != null) {
             imports.addAll(res.imports);
@@ -343,7 +436,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         }
     }
 
-    private void setupActions(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb, Frame screen) throws Exception {
+    protected void setupActions(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb, Frame screen) throws Exception {
         List<ScreenAction> items = constructor.getActions();
         if (!CollectionUtils.isEmpty(items)) {
             String target = null;
@@ -353,9 +446,12 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
             if (StringUtils.isEmpty(target)) {
                 throw new WorkflowException(getMessage("WorkflowWebBeanImpl.actionsComponentNotFound"));
             }
+            com.haulmont.cuba.gui.components.Component targetComponent = screen.getComponent(target);
+            if (targetComponent == null) {
+                throw new WorkflowException(getMessage("WorkflowWebBeanImpl.actionsComponentNotFound"));
+            }
 
             int actionsStartPosition = 0;
-            com.haulmont.cuba.gui.components.Component targetComponent = screen.getComponentNN(target);
             if (targetComponent instanceof Table) {
                 targetComponent = ((Table) targetComponent).getButtonsPanel();
             }
@@ -492,7 +588,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Nullable
-    private ScreenActionTemplate getTemplate(ScreenAction action, Map<UUID, ScreenActionTemplate> templatesCache) {
+    protected ScreenActionTemplate getTemplate(ScreenAction action, Map<UUID, ScreenActionTemplate> templatesCache) {
         if (action.getTemplate() != null) {
             if (templatesCache.containsKey(action.getTemplate())) {
                 return templatesCache.get(action.getTemplate());
@@ -509,18 +605,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         return null;
     }
 
-    private <T> T getValue(ScreenAction action, @Nullable ScreenActionTemplate template, String property, T defaultValue) {
-        T value = action.getValue(property);
-        if (value == null || StringUtils.isEmpty(value.toString())) {
-            value = template == null ? null : template.getValue(property);
-            if (value == null || StringUtils.isEmpty(value.toString())) {
-                value = defaultValue;
-            }
-        }
-        return value;
-    }
-
-    private void setupBrowserSettings(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb, Frame screen) throws Exception {
+    protected void setupBrowserSettings(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb, Frame screen) throws Exception {
         List<ScreenTableColumn> items = constructor.getBrowserTableColumns();
         if (!CollectionUtils.isEmpty(items)) {
             String target = null;
@@ -528,6 +613,10 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                 target = ((com.haulmont.cuba.gui.components.Component.HasXmlDescriptor) screen).getXmlDescriptor().attributeValue("actions");
             }
             if (StringUtils.isEmpty(target)) {
+                throw new WorkflowException(getMessage("WorkflowWebBeanImpl.actionsComponentNotFound"));
+            }
+            com.haulmont.cuba.gui.components.Component targetComponent = screen.getComponent(target);
+            if (targetComponent == null) {
                 throw new WorkflowException(getMessage("WorkflowWebBeanImpl.actionsComponentNotFound"));
             }
 
@@ -595,7 +684,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Nullable
-    private ScreenTableColumnTemplate getTemplate(ScreenTableColumn column, Map<UUID, ScreenTableColumnTemplate> templatesCache) {
+    protected ScreenTableColumnTemplate getTemplate(ScreenTableColumn column, Map<UUID, ScreenTableColumnTemplate> templatesCache) {
         if (column.getTemplate() != null) {
             if (templatesCache.containsKey(column.getTemplate())) {
                 return templatesCache.get(column.getTemplate());
@@ -612,18 +701,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         return null;
     }
 
-    private <T> T getValue(ScreenTableColumn column, @Nullable ScreenTableColumnTemplate template, String property, T defaultValue) {
-        T value = column.getValue(property);
-        if (value == null || StringUtils.isEmpty(value.toString())) {
-            value = template == null ? null : template.getValue(property);
-            if (value == null || StringUtils.isEmpty(value.toString())) {
-                value = defaultValue;
-            }
-        }
-        return value;
-    }
-
-    private void setupEditorSettings(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb, Frame screen) {
+    protected void setupEditorSettings(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb, Frame screen) {
         List<ScreenField> items = constructor.getEditorEditableFields();
         if (!CollectionUtils.isEmpty(items)) {
             imports.add("import com.groupstp.workflowstp.web.util.*;");
@@ -637,7 +715,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         }
     }
 
-    private void setupCustomAfterExtension(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb) {
+    protected void setupCustomAfterExtension(ScreenConstructor constructor, Set<String> imports, Set<String> initSection, StringBuilder sb) {
         ScriptWithImports res = ScriptWithImports.parse(constructor.getCustomAfterScript());
         if (res != null) {
             imports.addAll(res.imports);
@@ -645,8 +723,19 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         }
     }
 
+    protected <T> T getValue(Entity action, @Nullable Entity template, String property, T defaultValue) {
+        T value = action.getValue(property);
+        if (value == null || StringUtils.isEmpty(value.toString())) {
+            value = template == null ? null : template.getValue(property);
+            if (value == null || StringUtils.isEmpty(value.toString())) {
+                value = defaultValue;
+            }
+        }
+        return value;
+    }
+
     @SuppressWarnings("all")
-    private void orderBy(List<? extends Entity> entities, String orderProperty) {
+    protected void orderBy(List<? extends Entity> entities, String orderProperty) {
         entities.sort((o1, o2) -> {
             Object order1 = o1.getValue(orderProperty);
             Object order2 = o2.getValue(orderProperty);
@@ -660,18 +749,18 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         });
     }
 
-    private String getMessage(String messageKey) {
+    protected String getMessage(String messageKey) {
         return messages.getMessage(getClass(), messageKey);
     }
 
     /**
      * Prepared groovy script with separated imports
      */
-    private static class ScriptWithImports {
-        final Set<String> imports;
-        final String script;
+    protected static class ScriptWithImports {
+        protected final Set<String> imports;
+        protected final String script;
 
-        private ScriptWithImports(Set<String> imports, String script) {
+        protected ScriptWithImports(Set<String> imports, String script) {
             this.imports = imports;
             this.script = script;
         }
@@ -711,10 +800,10 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     /**
      * Prepared groovy script with separated imports and methods definitions
      */
-    private static class ScriptWithImportAndMethods extends ScriptWithImports {
-        final String methods;
+    protected static class ScriptWithImportAndMethods extends ScriptWithImports {
+        protected final String methods;
 
-        private ScriptWithImportAndMethods(Set<String> imports, String script, String methods) {
+        protected ScriptWithImportAndMethods(Set<String> imports, String script, String methods) {
             super(imports, script);
             this.methods = methods;
         }
