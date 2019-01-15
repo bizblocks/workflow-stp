@@ -1,0 +1,1 @@
+alter table STAGE_ACTORS_LINK rename to WFSTP_STAGE_ACTORS_LINK ;

@@ -35,25 +35,25 @@ public class Stage extends StandardEntity {
     private Integer type;
 
     @ManyToMany
-    @JoinTable(name = "STAGE_ACTORS_LINK",
+    @JoinTable(name = "WFSTP_STAGE_ACTORS_LINK",
             joinColumns = @JoinColumn(name = "STAGE_ID"),
             inverseJoinColumns = @JoinColumn(name = "ACTOR_ID"))
     private List<User> actors;
 
     @ManyToMany
-    @JoinTable(name = "STAGE_ACTORS_ROLES_LINK",
+    @JoinTable(name = "WFSTP_STAGE_ACTORS_ROLES_LINK",
             joinColumns = @JoinColumn(name = "STAGE_ID"),
             inverseJoinColumns = @JoinColumn(name = "ACTOR_ROLE_ID"))
     private List<Role> actorsRoles;
 
     @ManyToMany
-    @JoinTable(name = "STAGE_VIEWERS_LINK",
+    @JoinTable(name = "WFSTP_STAGE_VIEWERS_LINK",
             joinColumns = @JoinColumn(name = "STAGE_ID"),
             inverseJoinColumns = @JoinColumn(name = "VIEWER_ID"))
     private List<User> viewers;
 
     @ManyToMany
-    @JoinTable(name = "STAGE_VIEWERS_ROLES_LINK",
+    @JoinTable(name = "WFSTP_STAGE_VIEWERS_ROLES_LINK",
             joinColumns = @JoinColumn(name = "STAGE_ID"),
             inverseJoinColumns = @JoinColumn(name = "VIEWER_ROLE_ID"))
     private List<Role> viewersRoles;
