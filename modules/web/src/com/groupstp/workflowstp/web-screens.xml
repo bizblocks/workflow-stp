@@ -48,4 +48,6 @@
             template="com/groupstp/workflowstp/web/screenpalette/screen/screen-extension-template-browse.xml"/>
     <screen id="wfstp$ScreenExtensionTemplate.edit"
             template="com/groupstp/workflowstp/web/screenpalette/screen/screen-extension-template-edit.xml"/>
+    <screen id="workflow-chooser-dialog"
+            template="com/groupstp/workflowstp/web/workflowinstance/dialog/workflow-chooser-dialog.xml"/>
 </screen-config>

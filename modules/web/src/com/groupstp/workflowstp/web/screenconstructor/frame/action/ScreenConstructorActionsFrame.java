@@ -9,7 +9,9 @@ import com.haulmont.cuba.core.global.View;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.CreateAction;
 import com.haulmont.cuba.gui.components.actions.EditAction;
+import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
+import com.haulmont.cuba.gui.data.impl.CollectionDatasourceImpl;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
 import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
@@ -46,7 +48,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     @Inject
     private Table<ScreenAction> actionsTable;
     @Inject
-    private CollectionDatasource<ScreenAction, UUID> actionsDs;
+    private CollectionDatasourceImpl<ScreenAction, UUID> actionsDs;
     @Inject
     private FieldGroup actionsFieldGroup;
     @Inject
@@ -191,12 +193,23 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
                 return false;
             }
         });
+        actionsTable.addAction(new RemoveAction(actionsTable) {
+            @Override
+            protected void afterRemove(Set selected) {
+                super.afterRemove(selected);
+                actionDs.setItem(null);
+                actionDs.refresh();
+                actionDs.setModified(false);
+            }
+        });
         actionsTable.addAction(new ItemMoveAction(actionsTable, true));
         actionsTable.addAction(new ItemMoveAction(actionsTable, false));
     }
 
     private void initTableBehaviour() {
         actionsDs.addItemChangeListener(e -> {
+            boolean modified = actionsDs.isModified();
+
             cleanupIfSame(getTemplate(e.getPrevItem()), e.getPrevItem());
 
             ScreenAction select = null;
@@ -212,6 +225,8 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
             actionDs.setItem(select);
             actionDs.refresh();
             actionDs.setModified(false);
+
+            actionsDs.setModified(modified);
         });
         actionsDs.addCollectionChangeListener(e -> {
             correctOrderIfNeed(actionsTable, "order");

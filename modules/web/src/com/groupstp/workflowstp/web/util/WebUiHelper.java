@@ -194,6 +194,14 @@ public class WebUiHelper {
                 } else {
                     component.setEnabled(true);
                 }
+                if (component instanceof Component.ActionsHolder) {
+                    Collection<Action> actions = ((Component.ActionsHolder) component).getActions();
+                    if (!CollectionUtils.isEmpty(actions)) {
+                        for (Action action : actions) {
+                            action.setEnabled(true);
+                        }
+                    }
+                }
             }
         });
     }

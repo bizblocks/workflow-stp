@@ -11,6 +11,7 @@ import com.haulmont.cuba.core.global.View;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.CreateAction;
 import com.haulmont.cuba.gui.components.actions.EditAction;
+import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -137,6 +138,15 @@ public class ScreenConstructorBrowserFrame extends AbstractScreenConstructorFram
                     return !CollectionUtils.isEmpty(selected) && selected.size() == 1;
                 }
                 return false;
+            }
+        });
+        columnsTable.addAction(new RemoveAction(columnsTable) {
+            @Override
+            protected void afterRemove(Set selected) {
+                super.afterRemove(selected);
+                columnDs.setItem(null);
+                columnDs.refresh();
+                columnDs.setModified(false);
             }
         });
         columnsTable.addAction(new ItemMoveAction(columnsTable, true));
