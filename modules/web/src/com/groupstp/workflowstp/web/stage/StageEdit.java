@@ -83,6 +83,8 @@ public class StageEdit extends AbstractEditor<Stage> {
     @Inject
     private ValueCollectionDatasourceImpl directionVariablesDs;
 
+    private boolean ignoreDirectionVariablesChanges = false;
+
 
     @Override
     public void init(Map<String, Object> params) {
@@ -92,6 +94,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         initEntityNameBehaviour();
         initActorsSelectionBehaviour();
         initViewerSelectionBehaviour();
+        initDirectionVariables();
 
         browseScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getBrowseScreenGroovyHint());
         editorScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getEditorScreenGroovyHint());
@@ -169,6 +172,39 @@ public class StageEdit extends AbstractEditor<Stage> {
         viewerTypeAction.setValue(ActorsType.USER);
     }
 
+    private void initDirectionVariables() {
+        directionVariablesTable.addAction(new AddAction(directionVariablesTable) {
+            @Override
+            public void actionPerform(Component component) {
+                KeyValueEntity entity = metadata.create(KeyValueEntity.class);
+                entity.setMetaClass(directionVariablesDs.getMetaClass());
+                directionVariablesDs.addItem(entity);
+            }
+        });
+        directionVariablesTable.addAction(new RemoveAction(directionVariablesTable) {
+            @Override
+            public void actionPerform(Component component) {
+                Set<KeyValueEntity> selected = directionVariablesTable.getSelected();
+                if (!CollectionUtils.isEmpty(selected)) {
+                    for (KeyValueEntity entity : selected) {
+                        directionVariablesDs.removeItem(entity);
+                    }
+                }
+            }
+        });
+        directionVariablesTable.addGeneratedColumn("name", entity -> {
+            TextField textField = componentsFactory.createComponent(TextField.class);
+            textField.setWidth("100%");
+            textField.setValue(entity.getValue("name"));
+            textField.addValueChangeListener(e -> {
+                entity.setValue("name", textField.getValue());
+                onDirectionVariablesChanged();
+            });
+            return textField;
+        });
+        directionVariablesDs.addCollectionChangeListener(e -> onDirectionVariablesChanged());
+    }
+
     private void getBrowseScreenGroovyHint() {
         showMessageDialog(getMessage("stageEdit.browseScreenGroovyScript"), getMessage("stageEdit.browseScreenGroovyScriptHelp"),
                 MessageType.CONFIRMATION_HTML
@@ -205,7 +241,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         }
 
         initConstructors();
-        initDirectionVariables();
+        setupDirectionVariables();
     }
 
     private void initConstructors() {
@@ -220,58 +256,29 @@ public class StageEdit extends AbstractEditor<Stage> {
         editorScreenConstructor.setValue(pettyPrint(getItem().getEditorScreenConstructor()));
     }
 
-    private void initDirectionVariables() {
-        directionVariablesDs.clear();
-        directionVariablesTable.removeAllActions();
+    private void setupDirectionVariables() {
+        ignoreDirectionVariablesChanges = true;
+        try {
+            directionVariablesDs.clear();
 
-        directionVariablesTable.addAction(new AddAction(directionVariablesTable) {
-            @Override
-            public void actionPerform(Component component) {
-                KeyValueEntity entity = metadata.create(KeyValueEntity.class);
-                entity.setMetaClass(directionVariablesDs.getMetaClass());
-                directionVariablesDs.addItem(entity);
-            }
-        });
-        directionVariablesTable.addAction(new RemoveAction(directionVariablesTable) {
-            @Override
-            public void actionPerform(Component component) {
-                Set<KeyValueEntity> selected = directionVariablesTable.getSelected();
-                if (!CollectionUtils.isEmpty(selected)) {
-                    for (KeyValueEntity entity : selected) {
-                        directionVariablesDs.removeItem(entity);
-                    }
+            String variables = getItem().getDirectionVariables();
+            if (!StringUtils.isEmpty(variables)) {
+                String[] items = variables.split(",");
+                for (String item : items) {
+                    KeyValueEntity entity = metadata.create(KeyValueEntity.class);
+                    entity.setMetaClass(directionVariablesDs.getMetaClass());
+                    entity.setValue("name", item);
+                    directionVariablesDs.includeItem(entity);
                 }
             }
-        });
-        directionVariablesTable.addGeneratedColumn("name", entity -> {
-            TextField textField = componentsFactory.createComponent(TextField.class);
-            textField.setValue(entity.getValue("name"));
-            textField.addValueChangeListener(e -> {
-                entity.setValue("name", textField.getValue());
-                onDirectionVariablesChanged();
-            });
-            return textField;
-        });
-
-        setupDirectionVariables();
-
-        directionVariablesDs.addCollectionChangeListener(e -> onDirectionVariablesChanged());
-    }
-
-    private void setupDirectionVariables() {
-        String variables = getItem().getDirectionVariables();
-        if (!StringUtils.isEmpty(variables)) {
-            String[] items = variables.split(",");
-            for (String item : items) {
-                KeyValueEntity entity = metadata.create(KeyValueEntity.class);
-                entity.setMetaClass(directionVariablesDs.getMetaClass());
-                entity.setValue("name", item);
-                directionVariablesDs.includeItem(entity);
-            }
+        } finally {
+            ignoreDirectionVariablesChanges = false;
         }
     }
 
     private void onDirectionVariablesChanged() {
+        if (ignoreDirectionVariablesChanges)
+            return;
         String value = null;
         Collection<KeyValueEntity> items = directionVariablesDs.getItems();
         if (!CollectionUtils.isEmpty(items)) {
