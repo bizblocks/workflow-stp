@@ -3,11 +3,11 @@
         caption="msg://workflowChooserDialog.caption"
         class="com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowChooserDialog"
         messagesPack="com.groupstp.workflowstp.web.workflowinstance.dialog">
-    <dialogMode height="600"
+    <dialogMode height="200"
                 resizable="true"
-                width="800"/>
+                width="500"/>
     <layout expand="mainBox" spacing="true">
-        <hbox id="mainBox" width="100%" expand="workflowField">
+        <hbox id="mainBox" width="100%" expand="workflowField" spacing="true">
             <lookupField id="workflowField"/>
             <button id="workflowDeterminationBtn"
                     invoke="onDeterminate"

@@ -202,6 +202,17 @@ public class WebUiHelper {
                         }
                     }
                 }
+                if (component instanceof Component.HasButtonsPanel) {
+                    ButtonsPanel bp = ((Component.HasButtonsPanel) component).getButtonsPanel();
+                    if (bp != null) {
+                        Collection<Component> components = bp.getComponents();
+                        if (!CollectionUtils.isEmpty(components)) {
+                            for (Component c : components) {
+                                c.setEnabled(true);
+                            }
+                        }
+                    }
+                }
             }
         });
     }

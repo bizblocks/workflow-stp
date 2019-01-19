@@ -11,7 +11,7 @@ import com.haulmont.cuba.gui.components.actions.CreateAction;
 import com.haulmont.cuba.gui.components.actions.EditAction;
 import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
-import com.haulmont.cuba.gui.data.impl.CollectionDatasourceImpl;
+import com.haulmont.cuba.gui.data.impl.CollectionPropertyDatasourceImpl;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
 import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
@@ -48,7 +48,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     @Inject
     private Table<ScreenAction> actionsTable;
     @Inject
-    private CollectionDatasourceImpl<ScreenAction, UUID> actionsDs;
+    private CollectionPropertyDatasourceImpl<ScreenAction, UUID> actionsDs;
     @Inject
     private FieldGroup actionsFieldGroup;
     @Inject

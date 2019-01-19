@@ -48,7 +48,7 @@ public class WorkflowChooserDialog extends AbstractWindow {
         Preconditions.checkNotEmptyString(entityId);
 
         return (WorkflowChooserDialog) frame.openWindow(SCREEN_ID, WindowManager.OpenType.DIALOG,
-                ParamsMap.of(ENTITY_NAME, entityId, ENTITY_ID, entityId));
+                ParamsMap.of(ENTITY_NAME, entityName, ENTITY_ID, entityId));
     }
 
     @Inject

@@ -49,6 +49,8 @@
                     <field id="error" caption="">
                         <linkButton id="errorLink" caption="msg://workflowInstanceEdit.errorMessage"/>
                     </field>
+                </column>
+                <column width="200px">
                     <field id="recreateTask">
                         <button id="recreateTaskBtn" caption="msg://workflowInstanceEdit.recreateTasks"/>
                     </field>
