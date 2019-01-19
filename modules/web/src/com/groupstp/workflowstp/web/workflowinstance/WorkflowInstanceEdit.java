@@ -7,6 +7,7 @@ import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.web.util.WebUiHelper;
 import com.groupstp.workflowstp.web.util.WorkflowInstanceHelper;
 import com.groupstp.workflowstp.web.util.messagedialog.MessageDialog;
+import com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowChooserDialog;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
@@ -50,6 +51,8 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     private CollectionDatasource<WorkflowInstanceTask, UUID> tasksDs;
     @Inject
     private Button recreateTaskBtn;
+    @Inject
+    private Button resetBtn;
 
 
     @Override
@@ -59,6 +62,7 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
         initWorkflowLookup();
         initContextLookup();
         initCommentsTable();
+        initReset();
 
         generalFieldGroup.setEditable(false);
     }
@@ -85,6 +89,32 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     private void initCommentsTable() {
         FileDownloadHelper.initGeneratedColumn(commentsTable, "attachment");
         WebUiHelper.showLinkOnTable(commentsTable, "author");
+    }
+
+    private void initReset() {
+        resetBtn.setAction(new AbstractAction("resetInstance") {
+            @Override
+            public void actionPerform(Component component) {
+                Action yes = new DialogAction(DialogAction.Type.YES, Status.PRIMARY).withHandler(event -> {
+                    WorkflowChooserDialog dialog = WorkflowChooserDialog.show(WorkflowInstanceEdit.this, getItem().getEntityName(), getItem().getEntityId());
+                    dialog.addCloseWithCommitListener(() -> {
+                        try {
+                            workflowService.resetWorkflow(getItem(), dialog.getWorkflow());
+                            getDsContext().refresh();
+                            postInit();
+                        } catch (WorkflowException e) {
+                            throw new RuntimeException("Failed to reset workflow instance", e);
+                        }
+                    });
+                });
+                Action no = new DialogAction(DialogAction.Type.NO);
+                showOptionDialog(
+                        getMessage("workflowInstanceEdit.warning"),
+                        getMessage("workflowInstanceEdit.resetDescription"),
+                        MessageType.CONFIRMATION,
+                        new Action[]{yes, no});
+            }
+        });
     }
 
     @Override

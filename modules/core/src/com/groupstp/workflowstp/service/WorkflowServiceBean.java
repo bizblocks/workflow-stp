@@ -38,6 +38,11 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
+    public void resetWorkflow(WorkflowInstance instance, Workflow wf) throws WorkflowException {
+        worker.resetWorkflow(instance, wf);
+    }
+
+    @Override
     public void recreateTasks(WorkflowInstance instance) throws WorkflowException {
         worker.recreateTasks(instance);
     }

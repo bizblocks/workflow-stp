@@ -116,6 +116,14 @@
         <property name="viewersRoles"
                   view="_minimal"/>
     </view>
+    <view class="com.groupstp.workflowstp.entity.Stage"
+          extends="_minimal"
+          name="stage-actors">
+        <property name="actorsRoles"
+                  view="_minimal"/>
+        <property name="actors"
+                  view="_minimal"/>
+    </view>
     <view class="com.groupstp.workflowstp.entity.StepDirection"
           extends="_local"
           name="stepDirection-edit">

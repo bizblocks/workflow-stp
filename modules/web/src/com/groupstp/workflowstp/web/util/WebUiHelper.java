@@ -1,5 +1,11 @@
 package com.groupstp.workflowstp.web.util;
 
+import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
+import com.groupstp.workflowstp.entity.Stage;
+import com.groupstp.workflowstp.entity.WorkflowEntity;
+import com.groupstp.workflowstp.entity.WorkflowInstance;
+import com.groupstp.workflowstp.entity.WorkflowInstanceTask;
+import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.web.components.ExternalSelectionGroupTable;
 import com.groupstp.workflowstp.web.config.WorkflowWebConfig;
 import com.groupstp.workflowstp.web.util.action.AlwaysActiveBaseAction;
@@ -19,14 +25,13 @@ import com.haulmont.cuba.gui.components.formatters.DateFormatter;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
-import com.haulmont.cuba.security.entity.ConstraintOperationType;
-import com.haulmont.cuba.security.entity.EntityAttrAccess;
-import com.haulmont.cuba.security.entity.EntityOp;
+import com.haulmont.cuba.security.entity.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -34,6 +39,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * This util class which using for construct flexible screens
@@ -70,6 +76,10 @@ public class WebUiHelper {
     protected DataManager dataManager;
     @Inject
     protected Metadata metadata;
+    @Inject
+    protected WorkflowService workflowService;
+    @Inject
+    protected UserSessionSource userSessionSource;
 
     @Inject
     protected WorkflowWebConfig workflowWebConfig;
@@ -582,6 +592,326 @@ public class WebUiHelper {
         Table.Column column = table.getColumn("createTs");
         if (column != null) {
             column.setFormatter(new DateFormatter(CREATE_TS_ELEMENT));
+        }
+    }
+
+    /**
+     * Default workflow execution action
+     * <p>
+     * Usage:
+     * <p>
+     * import com.groupstp.workflowstp.web.util.WebUiHelper;
+     * import com.groupstp.workflowstp.web.util.MapHelper;
+     * <p>
+     * Map params = MapHelper.asMap("solved", "true");//setup all
+     * WebUiHelper.performWorkflowAction(entity, target, workflowInstanceTask, workflowInstance, stage, screen, params);
+     * <p>
+     *
+     * @param entity   editor screen entity
+     * @param target   target actions UI component
+     * @param task     editor screen task
+     * @param instance editor screen workflow instance
+     * @param stage    browser screen stage
+     * @param screen   UI calling frame
+     * @param params   processing parameters
+     */
+    public static void performWorkflowAction(@Nullable WorkflowEntity entity,
+                                             Object target,
+                                             @Nullable WorkflowInstanceTask task,
+                                             @Nullable WorkflowInstance instance,
+                                             @Nullable Stage stage,
+                                             AbstractWindow screen,
+                                             Map<String, String> params) {
+        performWorkflowAction(entity, target, task, instance, stage, screen, params, null);
+    }
+
+    /**
+     * Default workflow execution action with predicate which can filter processing items
+     *
+     * @param entity   editor screen entity
+     * @param target   target actions UI component
+     * @param task     editor screen task
+     * @param instance editor screen workflow instance
+     * @param stage    browser screen stage
+     * @param screen   UI calling frame
+     * @param params   processing parameters
+     */
+    public static void performWorkflowAction(@Nullable WorkflowEntity entity,
+                                             Object target,
+                                             @Nullable WorkflowInstanceTask task,
+                                             @Nullable WorkflowInstance instance,
+                                             @Nullable Stage stage,
+                                             AbstractWindow screen,
+                                             Map<String, String> params,
+                                             @Nullable Predicate<WorkflowEntity> predicate) {
+        ((WebUiHelper) AppBeans.get(NAME)).performWorkflowActionInternal(
+                entity, target, task, instance, stage, screen, params, predicate);
+    }
+
+    /**
+     * Default workflow execution action with predicate which can filter processing items
+     *
+     * @param entity   editor screen entity
+     * @param target   target actions UI component
+     * @param task     editor screen task
+     * @param instance editor screen workflow instance
+     * @param stage    browser screen stage
+     * @param screen   UI calling frame
+     * @param params   processing parameters
+     */
+    protected void performWorkflowActionInternal(@Nullable WorkflowEntity entity,
+                                                 Object target,
+                                                 @Nullable WorkflowInstanceTask task,
+                                                 @Nullable WorkflowInstance instance,
+                                                 @Nullable Stage stage,
+                                                 AbstractWindow screen,
+                                                 Map<String, String> params,
+                                                 @Nullable Predicate<WorkflowEntity> predicate) {
+        try {
+            if (entity != null) { //this is editor
+                if (predicate == null || predicate.test(entity)) {
+                    commitEditorIfNeed((AbstractEditor) screen);
+                    workflowService.finishTask(task, params);
+                    screen.close(Window.COMMIT_ACTION_ID, true);
+                }
+            } else if (target instanceof Table) { //this is browser screen
+                Table<WorkflowEntity> table = (Table) target;
+                Set<WorkflowEntity> selected = table.getSelected();
+                if (!CollectionUtils.isEmpty(selected)) {
+                    commitTableIfNeed(table);
+                    try {
+                        for (WorkflowEntity item : selected) {
+                            if (predicate == null || predicate.test(item)) {
+                                WorkflowInstanceTask itemTask = workflowService.loadLastProcessingTask(item, stage);
+                                workflowService.finishTask(itemTask, params);
+                            }
+                        }
+                    } finally {
+                        table.getDatasource().refresh();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(messages.getMainMessage("workflow.processingError"), e);
+        }
+    }
+
+    /**
+     * Cumulative workflow action perming
+     * <p>
+     * Usage:
+     * <p>
+     * import com.groupstp.workflowstp.web.util.WebUiHelper;
+     * import com.groupstp.workflowstp.web.util.MapHelper;
+     * <p>
+     * Map params = MapHelper.asMap("one", "true");
+     * QueryHelper.get().performDoubleWorkflowAction(entity, target, workflowInstanceTask, workflowInstance, stage, screen, "ctx_key", params);
+     * <p>
+     *
+     * @param entity   editor screen entity
+     * @param target   target actions UI component
+     * @param task     editor screen task
+     * @param instance editro screen workflow instance
+     * @param stage    browser screen stage
+     * @param screen   UI calling frame
+     * @param key      cumulative context property key
+     * @param params   processing parameters
+     */
+    public static void performDoubleWorkflowAction(@Nullable WorkflowEntity entity,
+                                            Object target,
+                                            @Nullable WorkflowInstanceTask task,
+                                            @Nullable WorkflowInstance instance,
+                                            @Nullable Stage stage,
+                                            AbstractWindow screen,
+                                            String key,
+                                            Map<String, String> params) {
+        ((WebUiHelper) AppBeans.get(NAME)).performDoubleWorkflowActionInternal(
+                entity, target, task, instance, stage, screen, key, params);
+    }
+
+    protected void performDoubleWorkflowActionInternal(@Nullable WorkflowEntity entity,
+                                            Object target,
+                                            @Nullable WorkflowInstanceTask task,
+                                            @Nullable WorkflowInstance instance,
+                                            @Nullable Stage stage,
+                                            AbstractWindow screen,
+                                            String key,
+                                            Map<String, String> params) {
+        try {
+            if (instance != null) {//this is editor
+                commitEditorIfNeed((AbstractEditor) screen);
+
+                WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);
+                boolean performed = doubleActionPerformed(ctx, key);
+                if (performed) {
+                    for (Map.Entry<String, String> e : params.entrySet()) {
+                        ctx.putParam(e.getKey(), e.getValue());
+                    }
+                    workflowService.finishTask(task, ctx.getParams());
+                } else {
+                    workflowService.setExecutionContext(ctx, instance);
+                }
+                screen.close(Window.COMMIT_ACTION_ID, true);
+            } else if (target instanceof Table) {//this is browser
+                Table<WorkflowEntity> table = (Table) target;
+                Set<WorkflowEntity> selected = table.getSelected();
+                if (!CollectionUtils.isEmpty(selected)) {
+                    commitTableIfNeed(table);
+                    try {
+                        for (WorkflowEntity query : selected) {
+                            WorkflowInstance queryInstance = workflowService.loadActiveWorkflowInstance(query);
+                            WorkflowInstanceTask queryTask = workflowService.loadLastProcessingTask(query, stage);
+                            WorkflowExecutionContext ctx = workflowService.getExecutionContext(queryInstance);
+                            boolean performed = doubleActionPerformed(ctx, key);
+                            if (performed) {
+                                for (Map.Entry<String, String> e : params.entrySet()) {
+                                    ctx.putParam(e.getKey(), e.getValue());
+                                }
+                                workflowService.finishTask(queryTask, ctx.getParams());
+                            } else {
+                                workflowService.setExecutionContext(ctx, queryInstance);
+                            }
+                        }
+                    } finally {
+                        ((Table) target).getDatasource().refresh();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(messages.getMainMessage("workflow.processingError"), e);
+        }
+    }
+
+    private boolean doubleActionPerformed(WorkflowExecutionContext context, String key) {
+        boolean doubleAccepted = false;
+
+        User user = userSessionSource.getUserSession().getUser();
+        String value = context.getParam(key);
+        if (StringUtils.isEmpty(value)) {
+            value = user.getLogin();
+        } else {
+            value = value + "," + user.getLogin();
+            doubleAccepted = true;
+        }
+        context.putParam(key, value);
+
+        return doubleAccepted;
+    }
+
+    /**
+     * Checkup of performing double cumulative action
+     * <p>
+     * Usage:
+     * <p>
+     * import com.groupstp.workflowstp.web.util.WebUiHelper;
+     * <p>
+     * return WebUiHelper.isDoubleWorkflowActionPerformable(target, workflowInstance, workflowInstanceTask, stage, "ctx_key");
+     * <p>
+     *
+     * @param target   target actions UI component
+     * @param instance editro screen workflow instance
+     * @param key      cumulative context property key
+     * @param stage    processing stage
+     * @return answer which should be used in "isPermit" actions method
+     */
+    public boolean isDoubleWorkflowActionPerformable(Object target,
+                                                     @Nullable WorkflowInstance instance,
+                                                     @Nullable WorkflowInstanceTask task,
+                                                     @Nullable Stage stage,
+                                                     String key) {
+        return ((WebUiHelper) AppBeans.get(NAME)).isDoubleWorkflowActionPerformableInternal(target, instance, task, stage, key);
+    }
+
+    protected boolean isDoubleWorkflowActionPerformableInternal(Object target,
+                                                     @Nullable WorkflowInstance instance,
+                                                     @Nullable WorkflowInstanceTask task,
+                                                     @Nullable Stage stage,
+                                                     String key) {
+        if (target instanceof Table) {
+            Table<WorkflowEntity> table = (Table) target;
+            assert stage != null;
+            Set<WorkflowEntity> selected = table.getSelected();
+            if (!CollectionUtils.isEmpty(selected)) {
+                for (WorkflowEntity item : selected) {
+                    WorkflowInstance queryInstance = workflowService.loadActiveWorkflowInstance(item);
+                    if (queryInstance == null) {
+                        return false;
+                    }
+                    WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);
+                    if (!isDoubleWorkflowActionPerformable(ctx, key, stage)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        } else {
+            if (instance == null || task == null || task.getStep() == null || task.getStep().getStage() == null) {
+                return false;
+            }
+            WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);
+            if (!isDoubleWorkflowActionPerformable(ctx, key, task.getStep().getStage())) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    protected boolean isDoubleWorkflowActionPerformable(WorkflowExecutionContext context, String key, Stage stage) {
+        User user = userSessionSource.getUserSession().getUser();
+        if (!isUserSatisfy(user, stage)) {
+            return false;
+        }
+        String value = context.getParam(key);
+        if (!StringUtils.isEmpty(value)) {
+            String[] acceptedUsers = value.split(",");
+            if (acceptedUsers.length > 0) {
+                for (String acceptedUser : acceptedUsers) {
+                    if (Objects.equals(acceptedUser, user.getLogin())) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check can user perform task on this stage
+     *
+     * @param user  current user
+     * @param stage processing stage
+     * @return can current user perform task on this stage
+     */
+    protected boolean isUserSatisfy(User user, Stage stage) {
+        if (!PersistenceHelper.isLoadedWithView(stage, "stage-actors")) {
+            stage = dataManager.reload(stage, "stage-actors");
+        }
+        if (!CollectionUtils.isEmpty(stage.getActors())) {
+            return stage.getActors().contains(user);
+        }
+        if (!CollectionUtils.isEmpty(stage.getActorsRoles())) {
+            if (!CollectionUtils.isEmpty(user.getUserRoles())) {
+                for (UserRole userRole : user.getUserRoles()) {
+                    if (stage.getActorsRoles().contains(userRole.getRole())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+    protected void commitEditorIfNeed(AbstractEditor editor) {
+        if (editor.isModified()) {
+            editor.commitAndClose();
+        }
+    }
+
+    protected void commitTableIfNeed(Table table) {
+        if (table.getDatasource().isModified()) {
+            table.getDatasource().commit();
         }
     }
 }

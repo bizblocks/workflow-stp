@@ -80,6 +80,17 @@ public class Stage extends StandardEntity {
     @Column(name = "EDITOR_SCREEN_CONSTRUCTOR")
     private String editorScreenConstructor;
 
+    @Lob
+    @Column(name = "DIRECTION_VARIABLES")
+    private String directionVariables;
+
+
+    @MetaProperty
+    public String getEntityCaption() {
+        MessageTools messageTools = AppBeans.get(MessageTools.NAME);
+        Metadata metadata = AppBeans.get(Metadata.NAME);
+        return messageTools.getEntityCaption(metadata.getClassNN(getEntityName()));
+    }
 
     public String getName() {
         return name;
@@ -181,10 +192,11 @@ public class Stage extends StandardEntity {
         this.editorScreenConstructor = editorScreenConstructor;
     }
 
-    @MetaProperty
-    public String getEntityCaption() {
-        MessageTools messageTools = AppBeans.get(MessageTools.NAME);
-        Metadata metadata = AppBeans.get(Metadata.NAME);
-        return messageTools.getEntityCaption(metadata.getClassNN(getEntityName()));
+    public String getDirectionVariables() {
+        return directionVariables;
+    }
+
+    public void setDirectionVariables(String directionVariables) {
+        this.directionVariables = directionVariables;
     }
 }

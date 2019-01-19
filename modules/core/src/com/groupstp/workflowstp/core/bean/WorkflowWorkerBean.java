@@ -189,8 +189,71 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     @Override
+    public void resetWorkflow(WorkflowInstance instance, Workflow wf) throws WorkflowException {
+        Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
+        Preconditions.checkNotNullArgument(wf, getMessage("WorkflowWorkerBean.emptyWorkflow"));
+
+        WorkflowEntity entity = getWorkflowEntity(instance);
+        //noinspection ConstantConditions
+        Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWorkerBean.emptyEntity"));
+
+        try (Transaction tr = persistence.getTransaction()) {
+            EntityManager em = persistence.getEntityManager();
+
+            wf = em.reloadNN(wf, "workflow-process");
+            if (!Boolean.TRUE.equals(wf.getActive())) {
+                throw new WorkflowException(getMessage("WorkflowWorkerBean.workflowNotInActiveState"));
+            }
+            MetaClass metaClass = metadata.getClassNN(entity.getClass());
+            if (!Objects.equals(metaClass.getName(), wf.getEntityName())) {
+                throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.workflowIncompatible"),
+                        wf.getEntityName(), metaClass.getName()));
+            }
+
+            instance = em.reloadNN(instance, "workflowInstance-process");
+            instance.setWorkflow(wf);
+            instance.setContext(null);
+
+            List<WorkflowInstanceComment> comments = instance.getComments();
+            if (!CollectionUtils.isEmpty(comments)) {
+                for (WorkflowInstanceComment comment : comments) {
+                    em.remove(comment);
+                }
+            }
+
+            List<WorkflowInstanceTask> tasks = instance.getTasks();
+            if (!CollectionUtils.isEmpty(tasks)) {
+                for (WorkflowInstanceTask task : tasks) {
+                    em.remove(task);
+                }
+            }
+
+            instance.setStartDate(timeSource.currentTimestamp());
+            instance.setEndDate(null);
+            instance.setError(null);
+            instance.setErrorInTask(null);
+
+            entity = em.reloadNN(entity, View.LOCAL);
+            entity.setStatus(WorkflowEntityStatus.IN_PROGRESS);
+            entity.setWorkflow(wf);
+            entity.setStepName(null);
+
+            tr.commit();
+        } catch (Exception e) {
+            if (e instanceof WorkflowException) {
+                throw e;
+            }
+            log.error("Workflow instance reset failed", e);
+            throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.failedToResetWorkflowInstance"),
+                    instance, instance.getId(), e.getMessage()));
+        }
+
+        start(instance);
+    }
+
+    @Override
     public void recreateTasks(WorkflowInstance instance) throws WorkflowException {
-        iterate(instance);
+        start(instance);
     }
 
     @Override
@@ -508,6 +571,22 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             task.setPerformer(performer);
 
             instance = task.getInstance();
+
+            //cleanup variable directions
+            String directionVariables = task.getStep().getStage().getDirectionVariables();
+            if (!StringUtils.isEmpty(directionVariables)) {
+                String[] variables = directionVariables.split(",");
+                if (variables.length > 0) {
+                    Map<String, String> parameters = new HashMap<>();
+                    for (String variable : variables) {
+                        parameters.put(variable, null);
+                    }
+                    if (params != null && params.size() > 0) {
+                        parameters.putAll(params);
+                    }
+                    params = parameters;
+                }
+            }
 
             if (params != null && params.size() > 0) {
                 WorkflowExecutionContext ctx = getExecutionContext(instance);

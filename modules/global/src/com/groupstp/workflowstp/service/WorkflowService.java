@@ -45,6 +45,15 @@ public interface WorkflowService {
     void restartWorkflow(WorkflowInstance instance) throws WorkflowException;
 
     /**
+     * Fully reset of workflow instance
+     *
+     * @param instance reset workflow instance
+     * @param wf       expecting workflow
+     * @throws WorkflowException in case of any unexpected problems
+     */
+    void resetWorkflow(WorkflowInstance instance, Workflow wf) throws WorkflowException;
+
+    /**
      * Recreate tasks if workflow process stopped
      *
      * @param instance worflow instance task

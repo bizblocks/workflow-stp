@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowChooserDialog.caption"
+        class="com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowChooserDialog"
+        messagesPack="com.groupstp.workflowstp.web.workflowinstance.dialog">
+    <dialogMode height="600"
+                resizable="true"
+                width="800"/>
+    <layout expand="mainBox" spacing="true">
+        <hbox id="mainBox" width="100%" expand="workflowField">
+            <lookupField id="workflowField"/>
+            <button id="workflowDeterminationBtn"
+                    invoke="onDeterminate"
+                    caption="msg://workflowChooserDialog.autoDeterminate"
+                    icon="REFRESH"/>
+        </hbox>
+        <hbox spacing="true" expand="fakeLabel" width="100%">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOk"/>
+            <button id="cancelBtn"
+                    caption="mainMsg://actions.Cancel"
+                    icon="icons/cancel.png"
+                    invoke="onCancel"/>
+            <label id="fakeLabel"/>
+        </hbox>
+    </layout>
+</window>

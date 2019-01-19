@@ -6,10 +6,15 @@ import com.groupstp.workflowstp.web.bean.WorkflowWebBean;
 import com.groupstp.workflowstp.web.screenconstructor.ScreenConstructorEditor;
 import com.groupstp.workflowstp.web.util.codedialog.CodeDialog;
 import com.haulmont.chile.core.model.MetaClass;
+import com.haulmont.cuba.core.entity.KeyValueEntity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.components.*;
 import com.groupstp.workflowstp.entity.Stage;
+import com.haulmont.cuba.gui.components.actions.AddAction;
+import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.data.Datasource;
+import com.haulmont.cuba.gui.data.impl.ValueCollectionDatasourceImpl;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
@@ -34,6 +39,8 @@ public class StageEdit extends AbstractEditor<Stage> {
     private WorkflowWebBean workflowWebBean;
     @Inject
     private Metadata metadata;
+    @Inject
+    private ComponentsFactory componentsFactory;
 
     @Inject
     private Datasource<Stage> stageDs;
@@ -71,6 +78,11 @@ public class StageEdit extends AbstractEditor<Stage> {
     private TextArea editorScreenConstructor;
     @Inject
     private BoxLayout mainBox;
+    @Inject
+    private Table<KeyValueEntity> directionVariablesTable;
+    @Inject
+    private ValueCollectionDatasourceImpl directionVariablesDs;
+
 
     @Override
     public void init(Map<String, Object> params) {
@@ -193,6 +205,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         }
 
         initConstructors();
+        initDirectionVariables();
     }
 
     private void initConstructors() {
@@ -205,6 +218,76 @@ public class StageEdit extends AbstractEditor<Stage> {
         });
         browserScreenConstructor.setValue(pettyPrint(getItem().getBrowserScreenConstructor()));
         editorScreenConstructor.setValue(pettyPrint(getItem().getEditorScreenConstructor()));
+    }
+
+    private void initDirectionVariables() {
+        directionVariablesDs.clear();
+        directionVariablesTable.removeAllActions();
+
+        directionVariablesTable.addAction(new AddAction(directionVariablesTable) {
+            @Override
+            public void actionPerform(Component component) {
+                KeyValueEntity entity = metadata.create(KeyValueEntity.class);
+                entity.setMetaClass(directionVariablesDs.getMetaClass());
+                directionVariablesDs.addItem(entity);
+            }
+        });
+        directionVariablesTable.addAction(new RemoveAction(directionVariablesTable) {
+            @Override
+            public void actionPerform(Component component) {
+                Set<KeyValueEntity> selected = directionVariablesTable.getSelected();
+                if (!CollectionUtils.isEmpty(selected)) {
+                    for (KeyValueEntity entity : selected) {
+                        directionVariablesDs.removeItem(entity);
+                    }
+                }
+            }
+        });
+        directionVariablesTable.addGeneratedColumn("name", entity -> {
+            TextField textField = componentsFactory.createComponent(TextField.class);
+            textField.setValue(entity.getValue("name"));
+            textField.addValueChangeListener(e -> {
+                entity.setValue("name", textField.getValue());
+                onDirectionVariablesChanged();
+            });
+            return textField;
+        });
+
+        setupDirectionVariables();
+
+        directionVariablesDs.addCollectionChangeListener(e -> onDirectionVariablesChanged());
+    }
+
+    private void setupDirectionVariables() {
+        String variables = getItem().getDirectionVariables();
+        if (!StringUtils.isEmpty(variables)) {
+            String[] items = variables.split(",");
+            for (String item : items) {
+                KeyValueEntity entity = metadata.create(KeyValueEntity.class);
+                entity.setMetaClass(directionVariablesDs.getMetaClass());
+                entity.setValue("name", item);
+                directionVariablesDs.includeItem(entity);
+            }
+        }
+    }
+
+    private void onDirectionVariablesChanged() {
+        String value = null;
+        Collection<KeyValueEntity> items = directionVariablesDs.getItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            StringBuilder sb = new StringBuilder();
+            for (KeyValueEntity item : items) {
+                String itemValue = item.getValue("name");
+                if (!StringUtils.isEmpty(itemValue)) {
+                    if (sb.length() > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(itemValue);
+                }
+            }
+            value = sb.toString();
+        }
+        getItem().setDirectionVariables(StringUtils.isEmpty(value) ? null : value);
     }
 
     @Nullable

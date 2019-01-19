@@ -52,6 +52,9 @@
                     <field id="recreateTask">
                         <button id="recreateTaskBtn" caption="msg://workflowInstanceEdit.recreateTasks"/>
                     </field>
+                    <field id="reset">
+                        <button id="resetBtn" caption="msg://workflowInstanceEdit.reset"/>
+                    </field>
                 </column>
             </fieldGroup>
         </groupBox>

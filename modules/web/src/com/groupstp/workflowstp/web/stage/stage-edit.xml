@@ -28,6 +28,11 @@
                 <![CDATA[select e from sec$Role e order by e.name]]>
             </query>
         </collectionDatasource>
+        <valueCollectionDatasource id="directionVariablesDs">
+            <properties>
+                <property name="name"/>
+            </properties>
+        </valueCollectionDatasource>
     </dsContext>
     <dialogMode height="600" width="800"/>
     <layout expand="mainBox" spacing="true">
@@ -82,8 +87,8 @@
                         </vbox>
                     </tab>
                 </tabSheet>
-                <vbox height="100%" id="screenGroovyBox" expand="screenTabSheet">
-                    <tabSheet id="screenTabSheet" stylename="centered-tabs">
+                <split height="100%" id="screenGroovyBox" pos="80%">
+                    <tabSheet id="screenTabSheet" stylename="centered-tabs" width="100%" height="100%">
                         <tab id="browseScreenTab" caption="msg://stageEdit.browserScreen">
                             <tabSheet id="browseScreenConstructorTab" width="100%" height="100%">
                                 <tab id="browserScreenConstructorTab" caption="msg://stageEdit.screenConstructor"
@@ -135,7 +140,16 @@
                             </tabSheet>
                         </tab>
                     </tabSheet>
-                </vbox>
+                    <vbox caption="msg://com.groupstp.workflowstp.entity/Stage.directionVariables" width="100%" height="100%" expand="directionVariablesTable">
+                        <table id="directionVariablesTable" width="100%">
+                            <columns>
+                                <column id="name" caption="msg://stageEdit.name"/>
+                            </columns>
+                            <rows datasource="directionVariablesDs"/>
+                        </table>
+                        <label/>
+                    </vbox>
+                </split>
             </hbox>
 
             <vbox id="executionBox" spacing="true" width="100%" height="100%" expand="executionCode"
