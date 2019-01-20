@@ -69,9 +69,9 @@ public abstract class AbstractScreenConstructorFrame extends AbstractFrame {
     /**
      * Setup external generic screen constructor
      *
-     * @param screenConstructor generic screen constructor
+     * @param genericScreenConstructor generic screen constructor
      */
-    public void setGenericScreenConstructor(@Nullable ScreenConstructor screenConstructor) {
+    public void setGenericScreenConstructor(@Nullable ScreenConstructor genericScreenConstructor) {
         this.genericScreenConstructor = genericScreenConstructor;
     }
 

@@ -403,12 +403,19 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
 
     protected void populateConstructor(ScreenConstructor to, ScreenConstructor from) {
         if (!CollectionUtils.isEmpty(from.getActions())) {
+            List<ScreenAction> genericActions = new ArrayList<>(from.getActions());
+            orderBy(genericActions, "order");
+
             List<ScreenAction> actions = to.getActions();
-            if (actions == null) {
-                actions = new ArrayList<>();
-                to.setActions(actions);
+            if (!CollectionUtils.isEmpty(actions)) {
+                orderBy(actions, "order");
+                genericActions.addAll(actions);
+
+                for (int i = 0; i < genericActions.size(); i++) {
+                    genericActions.get(i).setOrder(i);
+                }
             }
-            actions.addAll(from.getActions());
+            to.setActions(genericActions);
         }
     }
 
