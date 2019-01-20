@@ -17,6 +17,7 @@ create table WFSTP_STAGE (
     BROWSER_SCREEN_CONSTRUCTOR text,
     EDITOR_SCREEN_GROOVY_SCRIPT text,
     EDITOR_SCREEN_CONSTRUCTOR text,
+    SCREEN_CONSTRUCTOR text,
     DIRECTION_VARIABLES text,
     --
     primary key (ID)

@@ -95,7 +95,7 @@
                         <label/>
                     </tab>
                 </tabSheet>
-                <split height="100%" id="screenGroovyBox" pos="80%" orientation="horizontal">
+                <split height="100%" id="screenGroovyBox" pos="70%" orientation="horizontal">
                     <vbox width="100%" height="100%" expand="screenTabSheet" margin="false,true,false,false">
                         <tabSheet id="screenTabSheet" stylename="centered-tabs" width="100%">
                             <tab id="browseScreenTab" caption="msg://stageEdit.browserScreen">
