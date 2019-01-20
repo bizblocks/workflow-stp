@@ -183,6 +183,8 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     }
 
     private boolean isAllTasksFinished() {
+        tasksDs.refresh();
+
         Collection<WorkflowInstanceTask> tasks = tasksDs.getItems();
         if (!CollectionUtils.isEmpty(tasks)) {
             for (WorkflowInstanceTask task : tasks) {
