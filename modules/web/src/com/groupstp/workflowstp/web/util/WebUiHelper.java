@@ -924,7 +924,7 @@ public class WebUiHelper {
 
     protected void commitEditorIfNeed(AbstractEditor editor) {
         if (editor.isModified()) {
-            editor.commitAndClose();
+            editor.commit();
         }
     }
 
