@@ -8,6 +8,8 @@
                               class="com.groupstp.workflowstp.entity.ScreenActionTemplate"
                               allowCommit="false"
                               refreshMode="NEVER"/>
+        <collectionDatasource id="genericActionsDs"
+                              class="com.groupstp.workflowstp.entity.ScreenAction"/>
     </dsContext>
     <dialogMode height="100%"
                 width="100%"/>
@@ -38,7 +40,16 @@
                         <button id="downActionBtn" action="actionsTable.down" icon="CARET_DOWN" caption=""/>
                     </buttonsPanel>
                 </table>
-                <label id="fakeLabel"/>
+                <label/>
+                <table id="genericActionsTable" width="100%" height="200px">
+                    <columns>
+                        <column id="order"/>
+                        <column id="caption"/>
+                        <column id="icon"/>
+                        <column id="template"/>
+                    </columns>
+                    <rows datasource="genericActionsDs"/>
+                </table>
             </vbox>
             <vbox width="100%" height="100%" expand="actionDetail" spacing="true">
                 <scrollBox id="actionDetail" spacing="true" width="100%">

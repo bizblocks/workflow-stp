@@ -81,6 +81,10 @@ public class Stage extends StandardEntity {
     private String editorScreenConstructor;
 
     @Lob
+    @Column(name = "SCREEN_CONSTRUCTOR")
+    private String screenConstructor;
+
+    @Lob
     @Column(name = "DIRECTION_VARIABLES")
     private String directionVariables;
 
@@ -190,6 +194,14 @@ public class Stage extends StandardEntity {
 
     public void setEditorScreenConstructor(String editorScreenConstructor) {
         this.editorScreenConstructor = editorScreenConstructor;
+    }
+
+    public String getScreenConstructor() {
+        return screenConstructor;
+    }
+
+    public void setScreenConstructor(String screenConstructor) {
+        this.screenConstructor = screenConstructor;
     }
 
     public String getDirectionVariables() {

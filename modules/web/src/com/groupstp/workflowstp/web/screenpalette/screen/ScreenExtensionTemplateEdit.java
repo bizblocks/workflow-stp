@@ -88,7 +88,7 @@ public class ScreenExtensionTemplateEdit extends AbstractEditor<ScreenExtensionT
         String constructorJson = getItem().getScreenConstructor();
         boolean isBrowser = Boolean.TRUE.equals(getItem().getIsBrowser());
 
-        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, isBrowser, constructorJson);
+        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, isBrowser, constructorJson, null);
         screen.addCloseWithCommitListener(() -> getItem().setScreenConstructor(screen.getScreenConstructor()));
         screen.addCloseWithCommitListener(() -> {
             getItem().setScreenConstructor(screen.getScreenConstructor());

@@ -14,6 +14,7 @@ import com.haulmont.cuba.gui.components.actions.AddAction;
 import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.impl.ValueCollectionDatasourceImpl;
+import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -95,6 +96,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         initActorsSelectionBehaviour();
         initViewerSelectionBehaviour();
         initDirectionVariables();
+        initGenericConstruct();
 
         browseScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getBrowseScreenGroovyHint());
         editorScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getEditorScreenGroovyHint());
@@ -203,6 +205,31 @@ public class StageEdit extends AbstractEditor<Stage> {
             return textField;
         });
         directionVariablesDs.addCollectionChangeListener(e -> onDirectionVariablesChanged());
+    }
+
+    private void initGenericConstruct() {
+        directionVariablesTable.addAction(new AbstractAction("genericConstruct") {
+            @Override
+            public String getCaption() {
+                return getMessage("stageEdit.genericActions");
+            }
+
+            @Override
+            public String getIcon() {
+                return CubaIcon.GEAR.source();
+            }
+
+            @Override
+            public void actionPerform(Component component) {
+                MetaClass metaClass = getMetaClassNN();
+                String entityName = metaClass.getName();
+                String screenId = workflowWebBean.getWorkflowEntityScreens(metaClass).getBrowserScreenId();
+                String genericJson = getItem().getScreenConstructor();
+
+                ScreenConstructorEditor screen = ScreenConstructorEditor.show(StageEdit.this, entityName, screenId, genericJson);
+                screen.addCloseWithCommitListener(() -> getItem().setScreenConstructor(screen.getScreenConstructor()));
+            }
+        });
     }
 
     private void getBrowseScreenGroovyHint() {
@@ -330,8 +357,9 @@ public class StageEdit extends AbstractEditor<Stage> {
         String entityName = metaClass.getName();
         String screenId = workflowWebBean.getWorkflowEntityScreens(metaClass).getBrowserScreenId();
         String constructorJson = getItem().getBrowserScreenConstructor();
+        String genericJson = getItem().getScreenConstructor();
 
-        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, true, constructorJson);
+        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, true, constructorJson, genericJson);
         screen.addCloseWithCommitListener(() -> getItem().setBrowserScreenConstructor(screen.getScreenConstructor()));
     }
 
@@ -344,8 +372,9 @@ public class StageEdit extends AbstractEditor<Stage> {
         String entityName = metaClass.getName();
         String screenId = workflowWebBean.getWorkflowEntityScreens(metaClass).getEditorScreenId();
         String constructorJson = getItem().getEditorScreenConstructor();
+        String genericJson = getItem().getScreenConstructor();
 
-        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, false, constructorJson);
+        ScreenConstructorEditor screen = ScreenConstructorEditor.show(this, entityName, screenId, false, constructorJson, genericJson);
         screen.addCloseWithCommitListener(() -> getItem().setEditorScreenConstructor(screen.getScreenConstructor()));
     }
 
@@ -431,6 +460,6 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     private enum ActorsType {
-        USER, ROLE;
+        USER, ROLE
     }
 }

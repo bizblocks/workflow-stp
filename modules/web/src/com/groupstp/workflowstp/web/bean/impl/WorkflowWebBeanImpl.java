@@ -151,7 +151,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         if (EqualsUtils.equalAny(stage.getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {
             StopWatch sw = new Slf4JStopWatch(log);
             try {
-                String script = constructScript(screen, stage.getBrowserScreenConstructor());
+                String script = constructScript(screen, stage.getBrowserScreenConstructor(), stage.getScreenConstructor());
                 if (StringUtils.isEmpty(script)) {
                     script = stage.getBrowseScreenGroovyScript();
                 }
@@ -287,7 +287,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         if (EqualsUtils.equalAny(stage.getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {
             StopWatch sw = new Slf4JStopWatch(log);
             try {
-                String script = constructScript(screen, stage.getEditorScreenConstructor());
+                String script = constructScript(screen, stage.getEditorScreenConstructor(), stage.getScreenConstructor());
                 if (StringUtils.isEmpty(script)) {
                     script = stage.getEditorScreenGroovyScript();
                 }
@@ -328,7 +328,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         if (template != null) {
             StopWatch sw = new Slf4JStopWatch(log);
             try {
-                String script = constructScript(screen, template.getScreenConstructor());
+                String script = constructScript(screen, template.getScreenConstructor(), null);
                 if (!StringUtils.isEmpty(script)) {
                     Map<String, Object> binding = new HashMap<>();
                     binding.put(SCREEN, screen);
@@ -367,9 +367,15 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Nullable
-    protected String constructScript(Frame screen, String constructorJson) throws Exception {
+    protected String constructScript(Frame screen, String constructorJson, @Nullable String genericConstructorJson) throws Exception {
         if (!StringUtils.isEmpty(constructorJson)) {
-            ScreenConstructor constructor = new ObjectMapper().readValue(constructorJson, ScreenConstructor.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            ScreenConstructor constructor = objectMapper.readValue(constructorJson, ScreenConstructor.class);
+
+            if (!StringUtils.isEmpty(genericConstructorJson)) {
+                populateConstructor(constructor, objectMapper.readValue(genericConstructorJson, ScreenConstructor.class));
+            }
 
             Set<String> imports = new HashSet<>();
             Set<String> initSection = new LinkedHashSet<>();
@@ -393,6 +399,17 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
             return script;
         }
         return null;
+    }
+
+    protected void populateConstructor(ScreenConstructor to, ScreenConstructor from) {
+        if (!CollectionUtils.isEmpty(from.getActions())) {
+            List<ScreenAction> actions = to.getActions();
+            if (actions == null) {
+                actions = new ArrayList<>();
+                to.setActions(actions);
+            }
+            actions.addAll(from.getActions());
+        }
     }
 
     protected void setupStandardImports(Set<String> imports) {

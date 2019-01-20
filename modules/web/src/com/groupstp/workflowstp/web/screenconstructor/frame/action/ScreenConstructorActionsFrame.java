@@ -11,6 +11,8 @@ import com.haulmont.cuba.gui.components.actions.CreateAction;
 import com.haulmont.cuba.gui.components.actions.EditAction;
 import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
+import com.haulmont.cuba.gui.data.Datasource;
+import com.haulmont.cuba.gui.data.impl.CollectionDatasourceImpl;
 import com.haulmont.cuba.gui.data.impl.CollectionPropertyDatasourceImpl;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
 import com.haulmont.cuba.gui.icons.CubaIcon;
@@ -49,6 +51,10 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     private Table<ScreenAction> actionsTable;
     @Inject
     private CollectionPropertyDatasourceImpl<ScreenAction, UUID> actionsDs;
+    @Inject
+    private Table<ScreenAction> genericActionsTable;
+    @Inject
+    private CollectionDatasourceImpl<ScreenAction, UUID> genericActionsDs;
     @Inject
     private FieldGroup actionsFieldGroup;
     @Inject
@@ -108,6 +114,11 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
 
         disableEdit();
         sortTable(actionsTable, "order");
+        sortTable(genericActionsTable, "order");
+
+        if (constructGeneric) {
+            genericActionsTable.setVisible(false);
+        }
     }
 
     private void initTemplates() {
@@ -124,7 +135,9 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     }
 
     private void initTableColumns() {
-        actionsTable.addGeneratedColumn("caption", entity -> {
+        Table.ColumnGenerator<ScreenAction> generator;
+
+        generator = entity -> {
             String value = entity.getCaption();
             if (StringUtils.isEmpty(value)) {
                 ScreenActionTemplate template = getTemplate(entity);
@@ -133,8 +146,11 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
                 }
             }
             return new Table.PlainTextCell(StringUtils.isEmpty(value) ? StringUtils.EMPTY : value);
-        });
-        actionsTable.addGeneratedColumn("icon", entity -> {
+        };
+        actionsTable.addGeneratedColumn("caption", generator);
+        genericActionsTable.addGeneratedColumn("caption", generator);
+
+        generator = entity -> {
             String value = entity.getIcon();
             if (StringUtils.isEmpty(value)) {
                 ScreenActionTemplate template = getTemplate(entity);
@@ -145,15 +161,20 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
             Label label = componentsFactory.createComponent(Label.class);
             label.setIcon(StringUtils.isEmpty(value) ? StringUtils.EMPTY : value);
             return label;
-        });
-        actionsTable.addGeneratedColumn("template", entity -> {
+        };
+        actionsTable.addGeneratedColumn("icon",generator);
+        genericActionsTable.addGeneratedColumn("icon",generator);
+
+        generator = entity -> {
             String value = StringUtils.EMPTY;
             ScreenActionTemplate template = getTemplate(entity);
             if (template != null) {
                 value = template.getName();
             }
             return new Table.PlainTextCell(StringUtils.isEmpty(value) ? StringUtils.EMPTY : value);
-        });
+        };
+        actionsTable.addGeneratedColumn("template", generator);
+        genericActionsTable.addGeneratedColumn("template", generator);
     }
 
     private void initTableActions() {
@@ -207,30 +228,34 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     }
 
     private void initTableBehaviour() {
-        actionsDs.addItemChangeListener(e -> {
-            boolean modified = actionsDs.isModified();
+        actionsDs.addItemChangeListener(e -> selected(actionsDs, actionsTable, e));
+        genericActionsDs.addItemChangeListener(e-> selected(genericActionsDs, genericActionsTable, e));
 
-            cleanupIfSame(getTemplate(e.getPrevItem()), e.getPrevItem());
-
-            ScreenAction select = null;
-            Set<ScreenAction> selected = actionsTable.getSelected();
-            if (!CollectionUtils.isEmpty(selected)) {
-                if (selected.size() == 1) {
-                    select = IterableUtils.get(selected, 0);
-                }
-            }
-            if (select != null) {
-                setupIfEmpty(getTemplate(select), select);
-            }
-            actionDs.setItem(select);
-            actionDs.refresh();
-            actionDs.setModified(false);
-
-            actionsDs.setModified(modified);
-        });
         actionsDs.addCollectionChangeListener(e -> {
             correctOrderIfNeed(actionsTable, "order");
         });
+    }
+
+    private void selected(DatasourceImplementation ds, Table<ScreenAction> table, Datasource.ItemChangeEvent<ScreenAction> e) {
+        boolean modified = ds.isModified();
+
+        cleanupIfSame(getTemplate(e.getPrevItem()), e.getPrevItem());
+
+        ScreenAction select = null;
+        Set<ScreenAction> selected = table.getSelected();
+        if (!CollectionUtils.isEmpty(selected)) {
+            if (selected.size() == 1) {
+                select = IterableUtils.get(selected, 0);
+            }
+        }
+        if (select != null) {
+            setupIfEmpty(getTemplate(select), select);
+        }
+        actionDs.setItem(select);
+        actionDs.refresh();
+        actionDs.setModified(false);
+
+        ds.setModified(modified);
     }
 
     private void initTemplateField() {

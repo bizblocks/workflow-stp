@@ -35,9 +35,13 @@ public class ScreenConstructorEditor extends AbstractWindow {
     private static final String EXTENDING_SCREEN_ID = "extending-screen-id";
     private static final String BROWSER_SCREEN = "browser";
     private static final String CONSTRUCTOR_JSON = "constructor-json";
+    private static final String GENERIC_CONSTRUCTOR_JSON = "generic-constructor-json";
+    private static final String GENERIC_CONSTRUCTOR_MODE = "generic-constructor-mode";
 
+    private static final String ACTION_TAB = "actionTab";
     private static final String BROWSER_TAB = "browserTab";
     private static final String EDITOR_TAB = "editorTab";
+    private static final String CUSTOM_TAB = "customTab";
 
     /**
      * Show up the screen extending constructor
@@ -47,15 +51,36 @@ public class ScreenConstructorEditor extends AbstractWindow {
      * @param screenId        extending screen id
      * @param browse          is extending screen are browser or not
      * @param constructorJson previous screen constructor json, may be null
+     * @param genericJson     generic screen extension json, may be null
      * @return opened constructor window
      */
-    public static ScreenConstructorEditor show(Frame frame, String entityName, String screenId, boolean browse, String constructorJson) {
+    public static ScreenConstructorEditor show(Frame frame, String entityName, String screenId, boolean browse, String constructorJson, String genericJson) {
         Preconditions.checkNotNullArgument(frame, "Frame is empty");
         Preconditions.checkNotEmptyString(entityName, "Entity name not specified");
         Preconditions.checkNotEmptyString(screenId, "Extending screen id is empty");
 
         return (ScreenConstructorEditor) frame.openWindow(SCREEN_ID, WindowManager.OpenType.THIS_TAB,
-                ParamsMap.of(ENTITY_NAME, entityName, EXTENDING_SCREEN_ID, screenId, BROWSER_SCREEN, browse, CONSTRUCTOR_JSON, constructorJson));
+                ParamsMap.of(ENTITY_NAME, entityName, EXTENDING_SCREEN_ID, screenId, BROWSER_SCREEN, browse,
+                        CONSTRUCTOR_JSON, constructorJson, GENERIC_CONSTRUCTOR_JSON, genericJson));
+    }
+
+    /**
+     * Show up the screen extending constructor for generic mode
+     *
+     * @param frame       calling UI frame
+     * @param entityName  extending screen entity name
+     * @param screenId    extending screen id
+     * @param genericJson generic screen extension json, may be null
+     * @return opened constructor window
+     */
+    public static ScreenConstructorEditor show(Frame frame, String entityName, String screenId, String genericJson) {
+        Preconditions.checkNotNullArgument(frame, "Frame is empty");
+        Preconditions.checkNotEmptyString(entityName, "Entity name not specified");
+        Preconditions.checkNotEmptyString(screenId, "Extending screen id is empty");
+
+        return (ScreenConstructorEditor) frame.openWindow(SCREEN_ID, WindowManager.OpenType.THIS_TAB,
+                ParamsMap.of(ENTITY_NAME, entityName, EXTENDING_SCREEN_ID, screenId,
+                        CONSTRUCTOR_JSON, genericJson, GENERIC_CONSTRUCTOR_MODE, Boolean.TRUE));
     }
 
     @Inject
@@ -92,7 +117,7 @@ public class ScreenConstructorEditor extends AbstractWindow {
 
         getItem().setIsBrowserScreen(Boolean.TRUE.equals(params.get(BROWSER_SCREEN)));
 
-        initTabSheet();
+        initTabSheet(params);
     }
 
     private void initEntity(Map<String, Object> params) {
@@ -119,8 +144,21 @@ public class ScreenConstructorEditor extends AbstractWindow {
         screenConstructorDs.setModified(false);
     }
 
-    private void initTabSheet() {
-        mainTabSheet.removeTab(Boolean.TRUE.equals(getItem().getIsBrowserScreen()) ? EDITOR_TAB : BROWSER_TAB);
+    private void initTabSheet(Map<String, Object> params) {
+        ScreenConstructor genericScreenConstructor = null;
+        String json = (String) params.get(GENERIC_CONSTRUCTOR_JSON);
+        if (!StringUtils.isEmpty(json)) {
+            genericScreenConstructor = fromJson(json, ScreenConstructor.class);
+        }
+
+        boolean constructGeneric = Boolean.TRUE.equals(params.get(GENERIC_CONSTRUCTOR_MODE));
+        if (constructGeneric) {
+            mainTabSheet.removeTab(EDITOR_TAB);
+            mainTabSheet.removeTab(BROWSER_TAB);
+            mainTabSheet.removeTab(CUSTOM_TAB);
+        } else {
+            mainTabSheet.removeTab(Boolean.TRUE.equals(getItem().getIsBrowserScreen()) ? EDITOR_TAB : BROWSER_TAB);
+        }
 
         frames = new ArrayList<>();
         for (String name : Arrays.asList("actionsFrame", "browserFrame", "editorFrame", "customFrame")) {
@@ -128,7 +166,9 @@ public class ScreenConstructorEditor extends AbstractWindow {
             if (frame != null) {
                 frame.setEntityMetaClass(entityClass);
                 frame.setScreenConstructor(getItem());
+                frame.setGenericScreenConstructor(genericScreenConstructor);
                 frame.setExtendingWindow(extendingWindow);
+                frame.setConstructGeneric(constructGeneric);
 
                 frames.add(frame);
             }

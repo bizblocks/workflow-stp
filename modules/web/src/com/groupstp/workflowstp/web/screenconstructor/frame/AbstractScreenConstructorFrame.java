@@ -20,6 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,7 +43,10 @@ public abstract class AbstractScreenConstructorFrame extends AbstractFrame {
 
     protected MetaClass entityMetaClass;
     protected ScreenConstructor screenConstructor;
+    protected ScreenConstructor genericScreenConstructor;
     protected Window extendingWindow;
+
+    protected boolean constructGeneric;
 
     /**
      * Setup editing entity meta class
@@ -63,12 +67,30 @@ public abstract class AbstractScreenConstructorFrame extends AbstractFrame {
     }
 
     /**
+     * Setup external generic screen constructor
+     *
+     * @param screenConstructor generic screen constructor
+     */
+    public void setGenericScreenConstructor(@Nullable ScreenConstructor screenConstructor) {
+        this.genericScreenConstructor = genericScreenConstructor;
+    }
+
+    /**
      * Editing UI screen window
      *
      * @param extendingWindow UI screen window
      */
     public void setExtendingWindow(Window extendingWindow) {
         this.extendingWindow = extendingWindow;
+    }
+
+    /**
+     * Setup flag what current frame opened for construction generic stuff
+     *
+     * @param constructGeneric is construct generic screen
+     */
+    public void setConstructGeneric(boolean constructGeneric) {
+        this.constructGeneric = constructGeneric;
     }
 
     /**

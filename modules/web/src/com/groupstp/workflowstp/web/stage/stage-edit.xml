@@ -158,6 +158,7 @@
                             <actions>
                                 <action id="add"/>
                                 <action id="remove"/>
+                                <action id="genericConstruct"/>
                             </actions>
                             <columns>
                                 <column id="name" caption="msg://stageEdit.name"/>
@@ -166,6 +167,7 @@
                             <buttonsPanel>
                                 <button action="directionVariablesTable.add"/>
                                 <button action="directionVariablesTable.remove"/>
+                                <button action="directionVariablesTable.genericConstruct"/>
                             </buttonsPanel>
                         </table>
                         <label/>
