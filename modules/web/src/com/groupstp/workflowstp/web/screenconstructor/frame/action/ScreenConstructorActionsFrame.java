@@ -105,6 +105,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         initTemplates();
         initTableColumns();
         initTableActions();
+        initGenericTableActions();
         initTableBehaviour();
 
         initTemplateField();
@@ -225,6 +226,14 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         });
         actionsTable.addAction(new ItemMoveAction(actionsTable, true));
         actionsTable.addAction(new ItemMoveAction(actionsTable, false));
+    }
+
+    private void initGenericTableActions() {
+        if (genericScreenConstructor != null && !CollectionUtils.isEmpty(genericScreenConstructor.getActions())) {
+            for (ScreenAction action : genericScreenConstructor.getActions()) {
+                genericActionsDs.includeItem(action);
+            }
+        }
     }
 
     private void initTableBehaviour() {
