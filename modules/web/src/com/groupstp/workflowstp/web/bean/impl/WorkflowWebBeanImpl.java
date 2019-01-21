@@ -520,7 +520,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
 
                 String actionId = "action" + index;
                 String buttonId = "button" + index;
-                String actionClass = Boolean.TRUE.equals(action.getAlwaysEnabled()) ?
+                String actionClass = getValue(action, template, "alwaysEnabled", Boolean.TRUE) ?
                         "com.groupstp.workflowstp.web.util.action.AlwaysActiveBaseAction" :
                         "com.haulmont.cuba.gui.components.actions.BaseAction";
 
