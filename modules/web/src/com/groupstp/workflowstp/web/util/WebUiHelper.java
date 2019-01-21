@@ -140,14 +140,14 @@ public class WebUiHelper {
     /**
      * Hide up all lookup actions from screen if user do not have permission to reach them
      *
-     * @param window user opened window
+     * @param screen user opened window
      */
-    public static void hideLookupActionInFields(AbstractWindow window) {
-        ((WebUiHelper) AppBeans.get(NAME)).hideLookupActionInFieldsInternal(window);
+    public static void hideLookupActionInFields(Frame screen) {
+        ((WebUiHelper) AppBeans.get(NAME)).hideLookupActionInFieldsInternal(screen);
     }
 
-    protected void hideLookupActionInFieldsInternal(AbstractWindow window) {
-        Collection<Component> components = window.getComponents();
+    protected void hideLookupActionInFieldsInternal(Frame screen) {
+        Collection<Component> components = screen.getComponents();
         if (!CollectionUtils.isEmpty(components)) {
             for (Component component : components) {
                 if (component instanceof LookupPickerField) {
@@ -639,7 +639,7 @@ public class WebUiHelper {
                                              @Nullable WorkflowInstanceTask task,
                                              @Nullable WorkflowInstance instance,
                                              @Nullable Stage stage,
-                                             AbstractWindow screen,
+                                             Frame screen,
                                              Map<String, String> params) {
         performWorkflowAction(entity, target, task, instance, stage, screen, params, null);
     }
@@ -660,7 +660,7 @@ public class WebUiHelper {
                                              @Nullable WorkflowInstanceTask task,
                                              @Nullable WorkflowInstance instance,
                                              @Nullable Stage stage,
-                                             AbstractWindow screen,
+                                             Frame screen,
                                              Map<String, String> params,
                                              @Nullable Predicate<WorkflowEntity> predicate) {
         ((WebUiHelper) AppBeans.get(NAME)).performWorkflowActionInternal(
@@ -683,7 +683,7 @@ public class WebUiHelper {
                                                  @Nullable WorkflowInstanceTask task,
                                                  @Nullable WorkflowInstance instance,
                                                  @Nullable Stage stage,
-                                                 AbstractWindow screen,
+                                                 Frame screen,
                                                  Map<String, String> params,
                                                  @Nullable Predicate<WorkflowEntity> predicate) {
         try {
@@ -691,7 +691,7 @@ public class WebUiHelper {
                 if (predicate == null || predicate.test(entity)) {
                     commitEditorIfNeed((AbstractEditor) screen);
                     workflowService.finishTask(task, params);
-                    screen.close(Window.COMMIT_ACTION_ID, true);
+                    ((AbstractEditor) screen).close(Window.COMMIT_ACTION_ID, true);
                 }
             } else if (target instanceof Table) { //this is browser screen
                 Table<WorkflowEntity> table = (Table) target;
@@ -737,25 +737,25 @@ public class WebUiHelper {
      * @param params   processing parameters
      */
     public static void performDoubleWorkflowAction(@Nullable WorkflowEntity entity,
-                                            Object target,
-                                            @Nullable WorkflowInstanceTask task,
-                                            @Nullable WorkflowInstance instance,
-                                            @Nullable Stage stage,
-                                            AbstractWindow screen,
-                                            String key,
-                                            Map<String, String> params) {
+                                                   Object target,
+                                                   @Nullable WorkflowInstanceTask task,
+                                                   @Nullable WorkflowInstance instance,
+                                                   @Nullable Stage stage,
+                                                   Frame screen,
+                                                   String key,
+                                                   Map<String, String> params) {
         ((WebUiHelper) AppBeans.get(NAME)).performDoubleWorkflowActionInternal(
                 entity, target, task, instance, stage, screen, key, params);
     }
 
     protected void performDoubleWorkflowActionInternal(@Nullable WorkflowEntity entity,
-                                            Object target,
-                                            @Nullable WorkflowInstanceTask task,
-                                            @Nullable WorkflowInstance instance,
-                                            @Nullable Stage stage,
-                                            AbstractWindow screen,
-                                            String key,
-                                            Map<String, String> params) {
+                                                       Object target,
+                                                       @Nullable WorkflowInstanceTask task,
+                                                       @Nullable WorkflowInstance instance,
+                                                       @Nullable Stage stage,
+                                                       Frame screen,
+                                                       String key,
+                                                       Map<String, String> params) {
         try {
             if (instance != null) {//this is editor
                 commitEditorIfNeed((AbstractEditor) screen);
@@ -770,7 +770,7 @@ public class WebUiHelper {
                 } else {
                     workflowService.setExecutionContext(ctx, instance);
                 }
-                screen.close(Window.COMMIT_ACTION_ID, true);
+                ((AbstractEditor) screen).close(Window.COMMIT_ACTION_ID, true);
             } else if (target instanceof Table) {//this is browser
                 Table<WorkflowEntity> table = (Table) target;
                 Set<WorkflowEntity> selected = table.getSelected();
@@ -842,10 +842,10 @@ public class WebUiHelper {
     }
 
     protected boolean isDoubleWorkflowActionPerformableInternal(Object target,
-                                                     @Nullable WorkflowInstance instance,
-                                                     @Nullable WorkflowInstanceTask task,
-                                                     @Nullable Stage stage,
-                                                     String key) {
+                                                                @Nullable WorkflowInstance instance,
+                                                                @Nullable WorkflowInstanceTask task,
+                                                                @Nullable Stage stage,
+                                                                String key) {
         if (target instanceof Table) {
             Table<WorkflowEntity> table = (Table) target;
             assert stage != null;
