@@ -83,6 +83,10 @@ public class StageEdit extends AbstractEditor<Stage> {
     private Table<KeyValueEntity> directionVariablesTable;
     @Inject
     private ValueCollectionDatasourceImpl directionVariablesDs;
+    @Inject
+    private TabSheet browseScreenTabSheet;
+    @Inject
+    private TabSheet editorScreenTabSheet;
 
     private boolean ignoreDirectionVariablesChanges = false;
 
@@ -121,7 +125,6 @@ public class StageEdit extends AbstractEditor<Stage> {
             }
 
             userInteractionBox.setVisible(userInteraction);
-            editorScreenGroovyScript.setRequired(userInteraction);
             executionBox.setVisible(execution);
             executionCode.setRequired(execution);
         });
@@ -269,6 +272,7 @@ public class StageEdit extends AbstractEditor<Stage> {
 
         initConstructors();
         setupDirectionVariables();
+        initShowDirectGroovyExtensionScript();
     }
 
     private void initConstructors() {
@@ -335,6 +339,18 @@ public class StageEdit extends AbstractEditor<Stage> {
             }
         }
         return null;
+    }
+
+    private void initShowDirectGroovyExtensionScript() {
+        if (!showDirectGroovyScriptsEditor()) {
+            browseScreenTabSheet.removeTab("browserScreenScriptTab");
+            editorScreenTabSheet.removeTab("editorScreenScriptTab");
+        }
+    }
+
+    protected boolean showDirectGroovyScriptsEditor() {
+        return !PersistenceHelper.isNew(getItem()) &&
+                (!StringUtils.isEmpty(getItem().getBrowseScreenGroovyScript()) || !StringUtils.isEmpty(getItem().getEditorScreenGroovyScript()));
     }
 
     public void editBrowseScreenGroovy() {

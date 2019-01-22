@@ -99,7 +99,7 @@
                     <vbox width="100%" height="100%" expand="screenTabSheet" margin="false,true,false,false">
                         <tabSheet id="screenTabSheet" stylename="centered-tabs" width="100%">
                             <tab id="browseScreenTab" caption="msg://stageEdit.browserScreen">
-                                <tabSheet id="browseScreenConstructorTab" width="100%" height="100%">
+                                <tabSheet id="browseScreenTabSheet" width="100%" height="100%">
                                     <tab id="browserScreenConstructorTab" caption="msg://stageEdit.screenConstructor"
                                          expand="browserScreenConstructor">
                                         <hbox margin="true,false,true,false" spacing="true">
