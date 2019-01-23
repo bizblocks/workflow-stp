@@ -12,6 +12,8 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
+ * Particular step of workflow
+ *
  * @author adiatullin
  */
 @NamePattern("%s|stage")

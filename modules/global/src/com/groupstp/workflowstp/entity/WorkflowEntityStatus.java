@@ -3,6 +3,8 @@ package com.groupstp.workflowstp.entity;
 import com.haulmont.chile.core.datatypes.impl.EnumClass;
 
 /**
+ * Workflow entities status enum
+ *
  * @author adiatullin
  */
 public enum WorkflowEntityStatus implements EnumClass<Integer> {

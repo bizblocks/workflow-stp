@@ -2,7 +2,9 @@ package com.groupstp.workflowstp.util;
 
 import java.util.Objects;
 
-/*
+/**
+ * Special java equals util class
+ *
  * @author adiatullin
  */
 public final class EqualsUtils {

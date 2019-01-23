@@ -15,6 +15,8 @@ import java.util.UUID;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
 /**
+ * UI screen table abstract column representation
+ *
  * @author adiatullin
  */
 @MetaClass(name = "wfstp$ScreenTableColumn")

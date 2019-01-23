@@ -3,6 +3,8 @@ package com.groupstp.workflowstp.entity;
 import com.haulmont.chile.core.datatypes.impl.EnumClass;
 
 /**
+ * Workflow stage type
+ *
  * @author adiatullin
  */
 public enum StageType implements EnumClass<Integer> {

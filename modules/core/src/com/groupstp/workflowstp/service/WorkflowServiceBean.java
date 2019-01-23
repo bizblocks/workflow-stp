@@ -53,6 +53,11 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
+    public WorkflowInstanceTask loadLastTask(WorkflowEntity entity) {
+        return worker.loadLastTask(entity);
+    }
+
+    @Override
     public WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity) {
         return worker.loadActiveWorkflowInstance(entity);
     }

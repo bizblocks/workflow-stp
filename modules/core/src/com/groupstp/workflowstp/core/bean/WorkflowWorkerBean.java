@@ -117,6 +117,9 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             instance.setEntityId(entityId.toString());
             instance.setStartDate(timeSource.currentTimestamp());
 
+            if (entity.getWorkflow() != null) {
+                throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.workflowEntityAlreadyProcessing"), entity.getId()));
+            }
             entity.setStatus(WorkflowEntityStatus.IN_PROGRESS);
             entity.setWorkflow(wf);
             entity.setStepName(null);
@@ -279,6 +282,17 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         throw new RuntimeException(String.format(getMessage("WorkflowWorkerBean.taskAlreadyExecuted"), stage.getName(), entity.getInstanceName()));
     }
 
+    @Nullable
+    @Override
+    public WorkflowInstanceTask loadLastTask(WorkflowEntity entity) {
+        WorkflowInstance instance = loadActiveWorkflowInstance(entity);
+        if (instance != null) {
+            return getLastTask(instance);
+        }
+        return null;
+    }
+
+    @Nullable
     @Override
     public WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity) {
         return dataManager.load(LoadContext.create(WorkflowInstance.class)

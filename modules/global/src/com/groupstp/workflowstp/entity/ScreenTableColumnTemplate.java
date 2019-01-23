@@ -10,6 +10,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 /**
+ * UI screen table column template representation
+ *
  * @author adiatullin
  */
 @NamePattern("%s|name")

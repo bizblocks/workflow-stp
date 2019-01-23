@@ -9,6 +9,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Definition of workflow usage
+ *
  * @author adiatullin
  */
 @NamePattern("%s - %s|entityName,priority")

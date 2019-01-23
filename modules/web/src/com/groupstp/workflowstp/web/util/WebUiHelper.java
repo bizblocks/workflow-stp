@@ -42,7 +42,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * This util class which using for construct flexible screens
+ * Web side workflow screen extension util class
  *
  * @author adiatullin
  */
@@ -220,8 +220,9 @@ public class WebUiHelper {
     /**
      * Setup table columns from specified set
      *
-     * @param table   UI table
-     * @param columns which properties are should shown
+     * @param table      UI table
+     * @param columns    which properties are should shown
+     * @param generators custom column generators map
      */
     public static void showColumns(Table table, List<String> columns, Map<String, ColumnGenerator> generators) {
         ((WebUiHelper) AppBeans.get(NAME)).showColumnsInternal(table, columns, generators);
@@ -647,13 +648,14 @@ public class WebUiHelper {
     /**
      * Default workflow execution action with predicate which can filter processing items
      *
-     * @param entity   editor screen entity
-     * @param target   target actions UI component
-     * @param task     editor screen task
-     * @param instance editor screen workflow instance
-     * @param stage    browser screen stage
-     * @param screen   UI calling frame
-     * @param params   processing parameters
+     * @param entity    editor screen entity
+     * @param target    target actions UI component
+     * @param task      editor screen task
+     * @param instance  editor screen workflow instance
+     * @param stage     browser screen stage
+     * @param screen    UI calling frame
+     * @param params    processing parameters
+     * @param predicate special entities filtering predicate
      */
     public static void performWorkflowAction(@Nullable WorkflowEntity entity,
                                              Object target,
@@ -828,7 +830,8 @@ public class WebUiHelper {
      * <p>
      *
      * @param target   target actions UI component
-     * @param instance editro screen workflow instance
+     * @param instance workflow instance reference
+     * @param task     current performing workflow instance task
      * @param key      cumulative context property key
      * @param stage    processing stage
      * @return answer which should be used in "isPermit" actions method

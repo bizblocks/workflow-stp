@@ -14,6 +14,8 @@ import java.util.List;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
 /**
+ * UI screen extension constructor representation
+ *
  * @author adiatullin
  */
 @MetaClass(name = "wfstp$ScreenConstructor")

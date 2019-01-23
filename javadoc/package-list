@@ -1,0 +1,15 @@
+com.groupstp.workflowstp.core.bean
+com.groupstp.workflowstp.core.config
+com.groupstp.workflowstp.core.util
+com.groupstp.workflowstp.dto
+com.groupstp.workflowstp.entity
+com.groupstp.workflowstp.exception
+com.groupstp.workflowstp.service
+com.groupstp.workflowstp.web.bean
+com.groupstp.workflowstp.web.components
+com.groupstp.workflowstp.web.config
+com.groupstp.workflowstp.web.util
+com.groupstp.workflowstp.web.util.action
+com.groupstp.workflowstp.web.util.codedialog
+com.groupstp.workflowstp.web.util.data
+com.groupstp.workflowstp.web.util.messagedialog

@@ -3,6 +3,8 @@ package com.groupstp.workflowstp.entity;
 import com.haulmont.chile.core.datatypes.impl.EnumClass;
 
 /**
+ * Compare type enum
+ *
  * @author adiatullin
  */
 public enum ComparingType implements EnumClass<Integer> {
@@ -23,6 +25,9 @@ public enum ComparingType implements EnumClass<Integer> {
         return id;
     }
 
+    /**
+     * @return compare operator
+     */
     public String getOperator() {
         return operator;
     }

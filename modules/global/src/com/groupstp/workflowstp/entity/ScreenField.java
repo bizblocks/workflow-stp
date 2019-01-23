@@ -14,6 +14,8 @@ import java.io.Serializable;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
 /**
+ * UI screen abstract field with data
+ *
  * @author adiatullin
  */
 @MetaClass(name = "wfstp$ScreenField")

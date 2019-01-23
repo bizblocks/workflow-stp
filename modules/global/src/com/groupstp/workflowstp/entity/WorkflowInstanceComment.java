@@ -9,6 +9,8 @@ import com.haulmont.cuba.security.entity.User;
 import javax.persistence.*;
 
 /**
+ * Workflow execution comment
+ *
  * @author adiatullin
  */
 @Table(name = "WFSTP_WORKFLOW_INSTANCE_COMMENT")

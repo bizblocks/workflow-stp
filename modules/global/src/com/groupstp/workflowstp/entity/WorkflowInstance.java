@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * Working workflow instance representation
+ *
  * @author adiatullin
  */
 @NamePattern("%s-%s|workflow,entityId,entityName")

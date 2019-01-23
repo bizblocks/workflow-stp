@@ -25,6 +25,7 @@ public class CodeDialog extends AbstractWindow {
      *
      * @param frame opening screen frame
      * @param code  code text to show
+     * @return opened code dialog
      */
     public static CodeDialog show(Frame frame, String code) {
         return show(frame, code, null);
@@ -36,6 +37,7 @@ public class CodeDialog extends AbstractWindow {
      * @param frame opening screen frame
      * @param code  code text to show
      * @param mode  code mode (language)
+     * @return opened code dialog
      */
     public static CodeDialog show(Frame frame, String code, String mode) {
         return (CodeDialog) frame.openWindow(SCREEN_ID, WindowManager.OpenType.DIALOG, ParamsMap.of(CODE, code, MODE, mode));

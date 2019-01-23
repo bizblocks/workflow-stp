@@ -10,6 +10,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 /**
+ * UI screen action template
+ *
  * @author adiatullin
  */
 @NamePattern("%s|name")

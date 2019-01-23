@@ -15,6 +15,8 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
+ * Basic workflow representation
+ *
  * @author adiatullin
  */
 @NamePattern("%s|name,entityName,code")

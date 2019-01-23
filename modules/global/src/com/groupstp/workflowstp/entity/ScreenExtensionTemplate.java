@@ -14,6 +14,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 /**
+ * UI screen extension template
+ *
  * @author adiatullin
  */
 @NamePattern("%s|name,key")

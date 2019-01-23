@@ -8,6 +8,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
+ * Workflow step execution task
+ *
  * @author adiatullin
  */
 @Table(name = "WFSTP_WORKFLOW_INSTANCE_TASK")

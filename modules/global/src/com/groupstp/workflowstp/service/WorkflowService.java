@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * This service provide all functional for executing workflow under application
+ * This service provide all functional of workflow execution
  *
  * @author adiatullin
  */
@@ -62,20 +62,30 @@ public interface WorkflowService {
     void recreateTasks(WorkflowInstance instance) throws WorkflowException;
 
     /**
-     * Load query processing workflow instance task
+     * Load entity last processing workflow instance task by provided stage
      *
-     * @param entity entity
-     * @param stage  query current stage
+     * @param entity workflow entity
+     * @param stage  current stage
      * @return processing workflow instance task
      */
     WorkflowInstanceTask loadLastProcessingTask(WorkflowEntity entity, Stage stage);
 
     /**
+     * Load entity last processing (or processed) workflow instance task.
+     *
+     * @param entity workflow entity
+     * @return last processing(or processed) workflow instance task
+     */
+    @Nullable
+    WorkflowInstanceTask loadLastTask(WorkflowEntity entity);
+
+    /**
      * Load last active workflow instace by workflow entity
      *
-     * @param entity entity
+     * @param entity workflow entity
      * @return active current entity workflow instance
      */
+    @Nullable
     WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity);
 
     /**

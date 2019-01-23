@@ -7,6 +7,8 @@ import com.haulmont.cuba.core.global.View;
 import java.util.Collection;
 
 /**
+ * Extended entities import export service component
+ *
  * @author adiatullin
  */
 public interface ExtEntityImportExportAPI extends EntityImportExportAPI {

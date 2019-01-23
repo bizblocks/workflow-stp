@@ -3,7 +3,7 @@ package com.groupstp.workflowstp.entity;
 import com.haulmont.cuba.core.entity.Entity;
 
 /**
- * All Entities which using in workflow process must implement this interface
+ * All entities which are using in workflow process must implement this interface
  *
  * @author adiatullin
  */

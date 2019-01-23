@@ -14,6 +14,8 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
+ * Workflow stage class
+ *
  * @author adiatullin
  */
 @NamePattern("%s|name,entityName,type")

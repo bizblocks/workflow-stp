@@ -9,6 +9,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Workflow steps direction
+ *
  * @author adiatullin
  */
 @NamePattern("%s-%s|from,to")
