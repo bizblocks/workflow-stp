@@ -261,8 +261,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     @Override
     public boolean isProcessing(WorkflowEntity entity) {
-        WorkflowInstance instance = getWorkflowInstance(entity);
-        return instance != null && instance.getEndDate() != null;
+        return getWorkflowInstance(entity) != null;
     }
 
     @Nullable
@@ -291,7 +290,12 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
         if (workflow != null) {
             return dataManager.load(WorkflowInstance.class)
-                    .query("select e from wfstp$WorkflowInstance e where e.entityName = :entityName and e.entityId = :entityId and e.workflow.id = :workflowId order by e.createTs desc")
+                    .query("select e from wfstp$WorkflowInstance e where " +
+                            "e.entityName = :entityName and " +
+                            "e.entityId = :entityId and " +
+                            "e.workflow.id = :workflowId and " +
+                            "e.endDate is null " +
+                            "order by e.createTs desc")
                     .parameter("entityName", entity.getMetaClass().getName())
                     .parameter("entityId", entity.getId().toString())
                     .parameter("workflowId", workflow.getId())
@@ -300,6 +304,37 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     .orElse(null);
         }
         return null;
+    }
+
+
+    @Nullable
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
+        Preconditions.checkNotNullArgument(entity);
+
+        Workflow workflow;
+        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity);
+        } else {
+            workflow = entity.getWorkflow();
+        }
+        if (workflow == null) {
+            return null;
+        }
+
+        return dataManager.load(WorkflowInstanceTask.class)
+                .query("select e from wfstp$WorkflowInstanceTask e " +
+                        "join e.instance i " +
+                        "where i.workflow.id = :workflowId and i.entityId = :entityId and i.entityName = :entityName and e.endDate is null " +
+                        "order by e.createTs desc")
+                .parameter("workflowId", workflow.getId())
+                .parameter("entityName", entity.getMetaClass().getName())
+                .parameter("entityId", entity.getId().toString())
+                .maxResults(1)
+                .view("workflowInstanceTask-process")
+                .optional()
+                .orElse(null);
+
     }
 
     @Override
@@ -320,10 +355,11 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 .setQuery(new LoadContext.Query("select e from wfstp$WorkflowInstanceTask e " +
                         "join e.instance i " +
                         "join e.step s " +
-                        "where i.workflow.id = :workflowId and i.entityId = :entityId and s.stage.id = :stageId and s.workflow.id = :workflowId " +
+                        "where i.workflow.id = :workflowId and i.entityId = :entityId and i.entityName = :entityName and s.stage.id = :stageId and s.workflow.id = :workflowId " +
                         "and e.endDate is null order by e.createTs desc")
                         .setParameter("workflowId", workflow.getId())
                         .setParameter("entityId", entity.getId().toString())
+                        .setParameter("entityName", entity.getMetaClass().getName())
                         .setParameter("stageId", stage.getId())
                         .setMaxResults(1))
                 .setView("workflowInstanceTask-browse"));
@@ -335,35 +371,6 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             return task;
         }
         throw new RuntimeException(String.format(getMessage("WorkflowWorkerBean.taskAlreadyExecuted"), stage.getName(), entity.getInstanceName()));
-    }
-
-    @Nullable
-    @Override
-    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
-        Preconditions.checkNotNullArgument(entity);
-
-        Workflow workflow;
-        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
-            workflow = getWorkflow(entity);
-        } else {
-            workflow = entity.getWorkflow();
-        }
-        if (workflow == null) {
-            return null;
-        }
-
-        return dataManager.load(WorkflowInstanceTask.class)
-                .query("select e from wfstp$WorkflowInstanceTask e " +
-                        "join e.instance i " +
-                        "where i.workflow.id = :workflowId and i.entityId = :entityId " +
-                        "order by e.createTs desc")
-                .parameter("entityId", entity.getId().toString())
-                .parameter("workflowId", workflow.getId())
-                .maxResults(1)
-                .view("workflowInstanceTask-process")
-                .optional()
-                .orElse(null);
-
     }
 
     @Nullable
