@@ -48,18 +48,37 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
-    public WorkflowInstanceTask loadLastProcessingTask(WorkflowEntity entity, Stage stage) {
-        return worker.loadLastProcessingTask(entity, stage);
+    public boolean isProcessing(WorkflowEntity entity) {
+        return worker.isProcessing(entity);
+    }
+
+    @Nullable
+    @Override
+    public Workflow getWorkflow(WorkflowEntity entity) {
+        return worker.getWorkflow(entity);
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstance getWorkflowInstance(WorkflowEntity entity) {
+        return worker.getWorkflowInstance(entity);
     }
 
     @Override
-    public WorkflowInstanceTask loadLastTask(WorkflowEntity entity) {
-        return worker.loadLastTask(entity);
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, Stage stage) {
+        return worker.getWorkflowInstanceTask(entity, stage);
     }
 
+    @Nullable
     @Override
-    public WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity) {
-        return worker.loadActiveWorkflowInstance(entity);
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
+        return worker.getWorkflowInstanceTask(entity);
+    }
+
+    @Nullable
+    @Override
+    public Stage getStage(WorkflowEntity entity) {
+        return worker.getStage(entity);
     }
 
     @Override

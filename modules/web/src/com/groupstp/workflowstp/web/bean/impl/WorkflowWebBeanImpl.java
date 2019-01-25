@@ -185,90 +185,31 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         Preconditions.checkNotNullArgument(screen, getMessage("WorkflowWebBeanImpl.frameIsEmpty"));
 
         entity = reloadIfNeed(entity, View.LOCAL);
-        final Stage stage = getStage(entity);
+        final Stage stage = service.getStage(entity);
         if (stage == null) {
             log.warn(String.format("Extension of editor ignored since stage for entity '%s' not found", entity.getInstanceName()));
             return;
         }
 
-        final Workflow workflow = getWorkflow(entity);
+        final Workflow workflow = service.getWorkflow(entity);
         if (workflow == null || !Boolean.TRUE.equals(workflow.getActive())) {
             log.warn(String.format("Extension of editor ignored since workflow for entity '%s' are missing or deactivated", entity.getInstanceName()));
             return;
         }
 
-        final WorkflowInstance instance = getWorkflowInstance(workflow, entity);
+        final WorkflowInstance instance = service.getWorkflowInstance(entity);
         if (instance == null) {
             log.warn(String.format("Extension of editor ignored since workflow instance for entity '%s' are missing or finished", entity.getInstanceName()));
             return;
         }
 
-        final WorkflowInstanceTask task = getWorkflowInstanceTask(instance, stage);
+        final WorkflowInstanceTask task = service.getWorkflowInstanceTask(entity, stage);
         if (task == null || task.getEndDate() != null) {
             log.warn(String.format("Extension of editor ignored since workflow instance task for entity '%s' are missing", entity.getInstanceName()));
             return;
         }
 
         extendEditor(stage, entity, screen, instance, task);
-    }
-
-    @Nullable
-    protected Stage getStage(WorkflowEntity entity) {
-        if (!StringUtils.isEmpty(entity.getStepName())) {
-            return dataManager.load(Stage.class)
-                    .query("select e from wfstp$Stage e where e.entityName = :entityName and e.name = :name")
-                    .parameter("entityName", entity.getMetaClass().getName())
-                    .parameter("name", entity.getStepName())
-                    .view("stage-process")
-                    .optional()
-                    .orElse(null);
-        }
-        return null;
-    }
-
-    @Nullable
-    protected Workflow getWorkflow(WorkflowEntity entity) {
-        if (entity.getWorkflow() != null) {
-            return dataManager.load(Workflow.class)
-                    .query("select e.workflow from " + entity.getMetaClass().getName() + " e where e.id = :id")
-                    .parameter("id", entity.getId())
-                    .view(View.LOCAL)
-                    .optional()
-                    .orElse(null);
-        }
-        return null;
-    }
-
-    @Nullable
-    protected WorkflowInstance getWorkflowInstance(Workflow workflow, WorkflowEntity entity) {
-        if (workflow != null) {
-            return dataManager.load(WorkflowInstance.class)
-                    .query("select e from wfstp$WorkflowInstance e where e.entityName = :entityName and e.entityId = :entityId and e.workflow.id = :workflowId order by e.createTs desc")
-                    .parameter("entityName", entity.getMetaClass().getName())
-                    .parameter("entityId", entity.getId().toString())
-                    .parameter("workflowId", workflow.getId())
-                    .view("workflowInstance-process")
-                    .optional()
-                    .orElse(null);
-        }
-        return null;
-    }
-
-    @Nullable
-    protected WorkflowInstanceTask getWorkflowInstanceTask(WorkflowInstance workflowInstance, Stage stage) {
-        if (workflowInstance != null && stage != null) {
-            return dataManager.load(WorkflowInstanceTask.class)
-                    .query("select e from wfstp$WorkflowInstanceTask e " +
-                            "join wfstp$Step s on e.step.id = s.id " +
-                            "join wfstp$Stage ss on s.stage.id = ss.id " +
-                            "where e.instance.id = :instanceId and ss.id = :stageId order by e.createTs desc")
-                    .parameter("instanceId", workflowInstance.getId())
-                    .parameter("stageId", stage.getId())
-                    .view("workflowInstanceTask-process")
-                    .optional()
-                    .orElse(null);
-        }
-        return null;
     }
 
     @Override

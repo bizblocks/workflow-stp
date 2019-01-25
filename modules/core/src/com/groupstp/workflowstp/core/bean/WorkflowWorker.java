@@ -62,22 +62,21 @@ public interface WorkflowWorker {
     void recreateTasks(WorkflowInstance instance) throws WorkflowException;
 
     /**
-     * Load entity last processing workflow instance task by provided stage
+     * Check is current workflow entity processing (processed) or not
      *
      * @param entity workflow entity
-     * @param stage  current stage
-     * @return processing workflow instance task
+     * @return is current workflow entity processing (processed) or not
      */
-    WorkflowInstanceTask loadLastProcessingTask(WorkflowEntity entity, Stage stage);
+    boolean isProcessing(WorkflowEntity entity);
 
     /**
-     * Load entity last processing (or processed) workflow instance task. Can be null.
+     * Retrieve workflow reference of workflow entity
      *
      * @param entity workflow entity
-     * @return last processing(or processed) workflow instance task
+     * @return current related with entity workflow
      */
     @Nullable
-    WorkflowInstanceTask loadLastTask(WorkflowEntity entity);
+    Workflow getWorkflow(WorkflowEntity entity);
 
     /**
      * Load last active workflow instace by workflow entity
@@ -86,7 +85,34 @@ public interface WorkflowWorker {
      * @return active current entity workflow instance
      */
     @Nullable
-    WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity);
+    WorkflowInstance getWorkflowInstance(WorkflowEntity entity);
+
+    /**
+     * Load entity last processing workflow instance task by provided stage
+     *
+     * @param entity workflow entity
+     * @param stage  current stage
+     * @return processing workflow instance task
+     */
+    WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, Stage stage);
+
+    /**
+     * Load entity last processing (or processed) workflow instance task by current entity stage
+     *
+     * @param entity workflow entity
+     * @return last processing(or processed) workflow instance task
+     */
+    @Nullable
+    WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity);
+
+    /**
+     * Load entity current processing stage
+     *
+     * @param entity workflow entity
+     * @return entity current processing stage or null
+     */
+    @Nullable
+    Stage getStage(WorkflowEntity entity);
 
     /**
      * Complete (if possible) provided workflow task and move workflow instance to the next step

@@ -260,14 +260,69 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     @Override
-    public WorkflowInstanceTask loadLastProcessingTask(WorkflowEntity entity, Stage stage) {
+    public boolean isProcessing(WorkflowEntity entity) {
+        WorkflowInstance instance = getWorkflowInstance(entity);
+        return instance != null && instance.getEndDate() != null;
+    }
+
+    @Nullable
+    @Override
+    public Workflow getWorkflow(WorkflowEntity entity) {
+        Preconditions.checkNotNullArgument(entity);
+        return dataManager.load(Workflow.class)
+                .query("select e.workflow from " + entity.getMetaClass().getName() + " e where e.id = :id")
+                .parameter("id", entity.getId())
+                .view(View.LOCAL)
+                .optional()
+                .orElse(null);
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstance getWorkflowInstance(WorkflowEntity entity) {
+        Preconditions.checkNotNullArgument(entity);
+
+        Workflow workflow;
+        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity);
+        } else {
+            workflow = entity.getWorkflow();
+        }
+
+        if (workflow != null) {
+            return dataManager.load(WorkflowInstance.class)
+                    .query("select e from wfstp$WorkflowInstance e where e.entityName = :entityName and e.entityId = :entityId and e.workflow.id = :workflowId order by e.createTs desc")
+                    .parameter("entityName", entity.getMetaClass().getName())
+                    .parameter("entityId", entity.getId().toString())
+                    .parameter("workflowId", workflow.getId())
+                    .view("workflowInstance-process")
+                    .optional()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, Stage stage) {
+        Preconditions.checkNotNullArgument(entity);
+        Preconditions.checkNotNullArgument(stage);
+
+        Workflow workflow;
+        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity);
+        } else {
+            workflow = entity.getWorkflow();
+        }
+        if (workflow == null) {
+            throw new RuntimeException(getMessage("WorkflowWorkerBean.workflowNotActive"));
+        }
         List<WorkflowInstanceTask> list = dataManager.loadList(LoadContext.create(WorkflowInstanceTask.class)
                 .setQuery(new LoadContext.Query("select e from wfstp$WorkflowInstanceTask e " +
                         "join e.instance i " +
                         "join e.step s " +
                         "where i.workflow.id = :workflowId and i.entityId = :entityId and s.stage.id = :stageId and s.workflow.id = :workflowId " +
                         "and e.endDate is null order by e.createTs desc")
-                        .setParameter("workflowId", entity.getWorkflow().getId())
+                        .setParameter("workflowId", workflow.getId())
                         .setParameter("entityId", entity.getId().toString())
                         .setParameter("stageId", stage.getId())
                         .setMaxResults(1))
@@ -284,23 +339,46 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     @Nullable
     @Override
-    public WorkflowInstanceTask loadLastTask(WorkflowEntity entity) {
-        WorkflowInstance instance = loadActiveWorkflowInstance(entity);
-        if (instance != null) {
-            return getLastTask(instance);
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
+        Preconditions.checkNotNullArgument(entity);
+
+        Workflow workflow;
+        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity);
+        } else {
+            workflow = entity.getWorkflow();
         }
-        return null;
+        if (workflow == null) {
+            return null;
+        }
+
+        return dataManager.load(WorkflowInstanceTask.class)
+                .query("select e from wfstp$WorkflowInstanceTask e " +
+                        "join e.instance i " +
+                        "where i.workflow.id = :workflowId and i.entityId = :entityId " +
+                        "order by e.createTs desc")
+                .parameter("entityId", entity.getId().toString())
+                .parameter("workflowId", workflow.getId())
+                .maxResults(1)
+                .view("workflowInstanceTask-process")
+                .optional()
+                .orElse(null);
+
     }
 
     @Nullable
     @Override
-    public WorkflowInstance loadActiveWorkflowInstance(WorkflowEntity entity) {
-        return dataManager.load(LoadContext.create(WorkflowInstance.class)
-                .setQuery(new LoadContext.Query("select e from wfstp$WorkflowInstance e " +
-                        "where e.workflow.id = :workflowId and e.entityId = :entityId")
-                        .setParameter("workflowId", entity.getWorkflow().getId())
-                        .setParameter("entityId", entity.getId().toString()))
-                .setView(View.MINIMAL));
+    public Stage getStage(WorkflowEntity entity) {
+        if (!StringUtils.isEmpty(entity.getStepName())) {
+            return dataManager.load(Stage.class)
+                    .query("select e from wfstp$Stage e where e.entityName = :entityName and e.name = :name")
+                    .parameter("entityName", entity.getMetaClass().getName())
+                    .parameter("name", entity.getStepName())
+                    .view("stage-process")
+                    .optional()
+                    .orElse(null);
+        }
+        return null;
     }
 
     /**

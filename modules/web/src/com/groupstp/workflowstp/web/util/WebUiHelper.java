@@ -703,7 +703,7 @@ public class WebUiHelper {
                     try {
                         for (WorkflowEntity item : selected) {
                             if (predicate == null || predicate.test(item)) {
-                                WorkflowInstanceTask itemTask = workflowService.loadLastProcessingTask(item, stage);
+                                WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTask(item, stage);
                                 workflowService.finishTask(itemTask, params);
                             }
                         }
@@ -780,8 +780,8 @@ public class WebUiHelper {
                     commitTableIfNeed(table);
                     try {
                         for (WorkflowEntity query : selected) {
-                            WorkflowInstance queryInstance = workflowService.loadActiveWorkflowInstance(query);
-                            WorkflowInstanceTask queryTask = workflowService.loadLastProcessingTask(query, stage);
+                            WorkflowInstance queryInstance = workflowService.getWorkflowInstance(query);
+                            WorkflowInstanceTask queryTask = workflowService.getWorkflowInstanceTask(query, stage);
                             WorkflowExecutionContext ctx = workflowService.getExecutionContext(queryInstance);
                             boolean performed = doubleActionPerformed(ctx, key);
                             if (performed) {
@@ -855,7 +855,7 @@ public class WebUiHelper {
             Set<WorkflowEntity> selected = table.getSelected();
             if (!CollectionUtils.isEmpty(selected)) {
                 for (WorkflowEntity item : selected) {
-                    WorkflowInstance queryInstance = workflowService.loadActiveWorkflowInstance(item);
+                    WorkflowInstance queryInstance = workflowService.getWorkflowInstance(item);
                     if (queryInstance == null) {
                         return false;
                     }
