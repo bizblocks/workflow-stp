@@ -185,11 +185,6 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         Preconditions.checkNotNullArgument(screen, getMessage("WorkflowWebBeanImpl.frameIsEmpty"));
 
         entity = reloadIfNeed(entity, View.LOCAL);
-        final Stage stage = service.getStage(entity);
-        if (stage == null) {
-            log.warn(String.format("Extension of editor ignored since stage for entity '%s' not found", entity.getInstanceName()));
-            return;
-        }
 
         final Workflow workflow = service.getWorkflow(entity);
         if (workflow == null || !Boolean.TRUE.equals(workflow.getActive())) {
@@ -197,9 +192,9 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
             return;
         }
 
-        final WorkflowInstance instance = service.getWorkflowInstance(entity);
-        if (instance == null) {
-            log.warn(String.format("Extension of editor ignored since workflow instance for entity '%s' are missing or finished", entity.getInstanceName()));
+        final Stage stage = service.getStage(entity);
+        if (stage == null) {
+            log.warn(String.format("Extension of editor ignored since stage for entity '%s' not found", entity.getInstanceName()));
             return;
         }
 
@@ -209,21 +204,20 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
             return;
         }
 
-        extendEditor(stage, entity, screen, instance, task);
+        extendEditor(entity, screen, task);
     }
 
     @Override
-    public void extendEditor(Stage stage, WorkflowEntity entity, Frame screen, WorkflowInstance workflowInstance, WorkflowInstanceTask task) throws WorkflowException {
-        Preconditions.checkNotNullArgument(stage, getMessage("WorkflowWebBeanImpl.stageIsEmpty"));
+    public void extendEditor(WorkflowEntity entity, Frame screen, WorkflowInstanceTask task) throws WorkflowException {
         Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWebBeanImpl.entityIsEmpty"));
         Preconditions.checkNotNullArgument(screen, getMessage("WorkflowWebBeanImpl.frameIsEmpty"));
-        Preconditions.checkNotNullArgument(workflowInstance, getMessage("WorkflowWebBeanImpl.workflowInstanceIsEmpty"));
         Preconditions.checkNotNullArgument(task, getMessage("WorkflowWebBeanImpl.workflowInstanceTaskIsEmpty"));
 
         entity = reloadIfNeed(entity, View.LOCAL);
-        stage = reloadIfNeed(stage, "stage-process");
-        workflowInstance = reloadIfNeed(workflowInstance, "workflowInstance-process");
         task = reloadIfNeed(task, "workflowInstanceTask-process");
+        Stage stage = reloadIfNeed(task.getStep().getStage(), "stage-process");
+        WorkflowInstance workflowInstance = reloadIfNeed(task.getInstance(), "workflowInstance-process");
+
 
         if (EqualsUtils.equalAny(stage.getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {
             StopWatch sw = new Slf4JStopWatch(log);

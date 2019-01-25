@@ -2,7 +2,6 @@ package com.groupstp.workflowstp.web.bean;
 
 import com.groupstp.workflowstp.entity.Stage;
 import com.groupstp.workflowstp.entity.WorkflowEntity;
-import com.groupstp.workflowstp.entity.WorkflowInstance;
 import com.groupstp.workflowstp.entity.WorkflowInstanceTask;
 import com.groupstp.workflowstp.exception.WorkflowException;
 import com.haulmont.chile.core.model.MetaClass;
@@ -75,8 +74,8 @@ public interface WorkflowWebBean {
     /**
      * Extend a editor screen
      *
-     * @param entity           current processing entity
-     * @param screen           extending screen link
+     * @param entity current processing entity
+     * @param screen extending screen link
      * @throws WorkflowException in case of any unexpected problems
      */
     void extendEditor(WorkflowEntity entity, Frame screen) throws WorkflowException;
@@ -84,15 +83,12 @@ public interface WorkflowWebBean {
     /**
      * Extend a editor screen
      *
-     * @param stage            current extending workflow stage
-     * @param entity           current processing entity
-     * @param screen           extending screen link
-     * @param workflowInstance current active workflow instance
-     * @param task             current processing workflow instance task
+     * @param entity current processing entity
+     * @param screen extending screen link
+     * @param task   current processing workflow instance task
      * @throws WorkflowException in case of any unexpected problems
      */
-    void extendEditor(Stage stage, WorkflowEntity entity, Frame screen,
-                      WorkflowInstance workflowInstance, WorkflowInstanceTask task) throws WorkflowException;
+    void extendEditor(WorkflowEntity entity, Frame screen, WorkflowInstanceTask task) throws WorkflowException;
 
     /**
      * External extension of specific screen
