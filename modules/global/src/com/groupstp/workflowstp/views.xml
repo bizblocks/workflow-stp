@@ -59,6 +59,8 @@
                           view="_minimal"/>
             </property>
         </property>
+        <property name="instance"
+                  view="_minimal"/>
     </view>
     <view class="com.groupstp.workflowstp.entity.Step"
           extends="_local"
