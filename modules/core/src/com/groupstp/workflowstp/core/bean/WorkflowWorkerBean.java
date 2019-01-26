@@ -280,6 +280,16 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Nullable
     @Override
     public WorkflowInstance getWorkflowInstance(WorkflowEntity entity) {
+        return getWorkflowInstanceInternal(entity, true);
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity) {
+        return getWorkflowInstanceInternal(entity, false);
+    }
+
+    protected WorkflowInstance getWorkflowInstanceInternal(WorkflowEntity entity, boolean active) {
         Preconditions.checkNotNullArgument(entity);
 
         Workflow workflow;
@@ -294,8 +304,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     .query("select e from wfstp$WorkflowInstance e where " +
                             "e.entityName = :entityName and " +
                             "e.entityId = :entityId and " +
-                            "e.workflow.id = :workflowId and " +
-                            "e.endDate is null " +
+                            "e.workflow.id = :workflowId " +
+                            (active ? "and e.endDate is null " : "") +
                             "order by e.createTs desc")
                     .parameter("entityName", entity.getMetaClass().getName())
                     .parameter("entityId", entity.getId().toString())
@@ -311,6 +321,16 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Nullable
     @Override
     public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
+        return getWorkflowInstanceTaskInternal(entity, true);
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity) {
+        return getWorkflowInstanceTaskInternal(entity, false);
+    }
+
+    protected WorkflowInstanceTask getWorkflowInstanceTaskInternal(WorkflowEntity entity, boolean active) {
         Preconditions.checkNotNullArgument(entity);
 
         Workflow workflow;
@@ -325,8 +345,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                             "join e.instance i where " +
                             "i.entityName = :entityName and " +
                             "i.entityId = :entityId and " +
-                            "i.workflow.id = :workflowId and " +
-                            "e.endDate is null " +
+                            "i.workflow.id = :workflowId " +
+                            (active ? "and e.endDate is null " : "") +
                             "order by e.createTs desc")
                     .parameter("entityName", entity.getMetaClass().getName())
                     .parameter("entityId", entity.getId().toString())
@@ -362,7 +382,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                         "i.entityId = :entityId and " +
                         "i.workflow.id = :workflowId and " +
                         "s.stage.id = :stageId and " +
-                        "s.workflow.id = :workflowId and "+
+                        "s.workflow.id = :workflowId and " +
                         "e.endDate is null " +
                         " order by e.createTs desc")
                 .parameter("entityName", entity.getMetaClass().getName())

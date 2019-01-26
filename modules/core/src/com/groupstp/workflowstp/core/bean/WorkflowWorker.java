@@ -79,7 +79,7 @@ public interface WorkflowWorker {
     Workflow getWorkflow(WorkflowEntity entity);
 
     /**
-     * Load last active workflow instance by workflow entity, or return null if instance are not exist or finished.
+     * Load workflow instance by workflow entity, or return null if instance are not exist or finished.
      *
      * @param entity workflow entity
      * @return active current entity workflow instance
@@ -88,13 +88,31 @@ public interface WorkflowWorker {
     WorkflowInstance getWorkflowInstance(WorkflowEntity entity);
 
     /**
-     * Load entity last active workflow instance task, or return null if all tasks are finished or workflow instance not exist.
+     * Load workflow instance by workflow entity, or return null only if instance not exist (ignore completion)
+     *
+     * @param entity workflow entity
+     * @return current entity workflow instance
+     */
+    @Nullable
+    WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity);
+
+    /**
+     * Load entity last workflow instance task, or return null if all tasks are finished or workflow instance not exist.
      *
      * @param entity workflow entity
      * @return last processing workflow instance task
      */
     @Nullable
     WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity);
+
+    /**
+     * Load entity last workflow instance task, or return null only if tasks not exist (ignore completion)
+     *
+     * @param entity workflow entity
+     * @return last processing(processed) workflow instance task
+     */
+    @Nullable
+    WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity);
 
     /**
      * Load entity last processing active workflow instance task by provided stage, or throw exception if task are not exist or finished.
