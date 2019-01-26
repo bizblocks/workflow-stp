@@ -220,7 +220,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
 
         if (EqualsUtils.equalAny(task.getStep().getStage().getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {
             entity = reloadIfNeed(entity, View.LOCAL);
-            task = reloadIfNeed(task, "workflowInstanceTask-process");
+            task = reloadIfNeed(task, "workflowInstanceTask-detailed");
             Stage stage = reloadIfNeed(task.getStep().getStage(), "stage-process");
             WorkflowInstance workflowInstance = reloadIfNeed(task.getInstance(), "workflowInstance-process");
 

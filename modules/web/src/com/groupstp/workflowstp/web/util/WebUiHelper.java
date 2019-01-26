@@ -726,7 +726,7 @@ public class WebUiHelper {
      * import com.groupstp.workflowstp.web.util.MapHelper;
      * <p>
      * Map params = MapHelper.asMap("one", "true");
-     * QueryHelper.get().performDoubleWorkflowAction(entity, target, workflowInstanceTask, workflowInstance, stage, screen, "ctx_key", params);
+     * WebUiHelper.get().performDoubleWorkflowAction(entity, target, workflowInstanceTask, workflowInstance, stage, screen, "ctx_key", params);
      * <p>
      *
      * @param entity   editor screen entity
@@ -779,18 +779,18 @@ public class WebUiHelper {
                 if (!CollectionUtils.isEmpty(selected)) {
                     commitTableIfNeed(table);
                     try {
-                        for (WorkflowEntity query : selected) {
-                            WorkflowInstance queryInstance = workflowService.getWorkflowInstance(query);
-                            WorkflowInstanceTask queryTask = workflowService.getWorkflowInstanceTaskNN(query, stage);
-                            WorkflowExecutionContext ctx = workflowService.getExecutionContext(queryInstance);
+                        for (WorkflowEntity item : selected) {
+                            WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item);
+                            WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage);
+                            WorkflowExecutionContext ctx = workflowService.getExecutionContext(itemInstance);
                             boolean performed = doubleActionPerformed(ctx, key);
                             if (performed) {
                                 for (Map.Entry<String, String> e : params.entrySet()) {
                                     ctx.putParam(e.getKey(), e.getValue());
                                 }
-                                workflowService.finishTask(queryTask, ctx.getParams());
+                                workflowService.finishTask(itemTask, ctx.getParams());
                             } else {
-                                workflowService.setExecutionContext(ctx, queryInstance);
+                                workflowService.setExecutionContext(ctx, itemInstance);
                             }
                         }
                     } finally {
@@ -855,8 +855,8 @@ public class WebUiHelper {
             Set<WorkflowEntity> selected = table.getSelected();
             if (!CollectionUtils.isEmpty(selected)) {
                 for (WorkflowEntity item : selected) {
-                    WorkflowInstance queryInstance = workflowService.getWorkflowInstance(item);
-                    if (queryInstance == null) {
+                    WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item);
+                    if (itemInstance == null) {
                         return false;
                     }
                     WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);

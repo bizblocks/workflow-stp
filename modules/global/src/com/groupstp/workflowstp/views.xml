@@ -59,8 +59,17 @@
                           view="_minimal"/>
             </property>
         </property>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+          extends="_local"
+          name="workflowInstanceTask-detailed">
+        <property name="step"
+                  view="_local">
+            <property name="stage"
+                      view="stage-process"/>
+        </property>
         <property name="instance"
-                  view="_minimal"/>
+                  view="workflowInstance-process"/>
     </view>
     <view class="com.groupstp.workflowstp.entity.Step"
           extends="_local"

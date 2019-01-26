@@ -352,7 +352,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     .parameter("entityId", entity.getId().toString())
                     .parameter("workflowId", workflow.getId())
                     .maxResults(1)
-                    .view("workflowInstanceTask-process")
+                    .view("workflowInstanceTask-detailed")
                     .optional()
                     .orElse(null);
         }
@@ -390,7 +390,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 .parameter("workflowId", workflow.getId())
                 .parameter("stageId", stage.getId())
                 .maxResults(1)
-                .view("workflowInstanceTask-browse")
+                .view("workflowInstanceTask-detailed")
                 .optional()
                 .orElse(null);
         if (task != null) {
