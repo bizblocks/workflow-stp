@@ -103,7 +103,7 @@ public interface WorkflowService {
      * @param stage  current stage
      * @return processing workflow instance task
      */
-    WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, Stage stage);
+    WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage);
 
     /**
      * Load entity current processing stage

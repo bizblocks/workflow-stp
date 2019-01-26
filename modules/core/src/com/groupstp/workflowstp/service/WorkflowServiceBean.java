@@ -71,8 +71,8 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
-    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, Stage stage) {
-        return worker.getWorkflowInstanceTask(entity, stage);
+    public WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage) {
+        return worker.getWorkflowInstanceTaskNN(entity, stage);
     }
 
     @Nullable

@@ -703,7 +703,7 @@ public class WebUiHelper {
                     try {
                         for (WorkflowEntity item : selected) {
                             if (predicate == null || predicate.test(item)) {
-                                WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTask(item, stage);
+                                WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage);
                                 workflowService.finishTask(itemTask, params);
                             }
                         }
@@ -781,7 +781,7 @@ public class WebUiHelper {
                     try {
                         for (WorkflowEntity query : selected) {
                             WorkflowInstance queryInstance = workflowService.getWorkflowInstance(query);
-                            WorkflowInstanceTask queryTask = workflowService.getWorkflowInstanceTask(query, stage);
+                            WorkflowInstanceTask queryTask = workflowService.getWorkflowInstanceTaskNN(query, stage);
                             WorkflowExecutionContext ctx = workflowService.getExecutionContext(queryInstance);
                             boolean performed = doubleActionPerformed(ctx, key);
                             if (performed) {
