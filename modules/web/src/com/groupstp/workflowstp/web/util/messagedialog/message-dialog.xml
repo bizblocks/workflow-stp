@@ -20,6 +20,7 @@
                     icon="icons/cancel.png"
                     invoke="onCancel"/>
             <label id="fakeLabel"/>
+            <button id="copyBtn"/>
         </hbox>
     </layout>
 </window>

@@ -1,11 +1,13 @@
 package com.groupstp.workflowstp.web.util.messagedialog;
 
 import com.haulmont.bali.util.ParamsMap;
+import com.haulmont.cuba.core.global.UuidProvider;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.components.AbstractWindow;
 import com.haulmont.cuba.gui.components.Button;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.ResizableTextArea;
+import com.haulmont.cuba.web.toolkit.ui.CubaCopyButtonExtension;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -47,23 +49,53 @@ public class MessageDialog extends AbstractWindow {
     }
 
     @Inject
-    private Button okBtn;
+    protected Button okBtn;
     @Inject
-    private Button cancelBtn;
+    protected Button cancelBtn;
     @Inject
-    private ResizableTextArea textArea;
+    protected Button copyBtn;
+    @Inject
+    protected ResizableTextArea textArea;
 
 
     @Override
     public void init(Map<String, Object> params) {
         super.init(params);
 
+        initText(params);
+        initButtons(params);
+        initCopyButton(params);
+    }
+
+    protected void initText(Map<String, Object> params) {
         textArea.setValue(params.get(MESSAGE));
+        textArea.setEditable(Boolean.TRUE.equals(params.get(EDITABLE)));
+    }
+
+    protected void initButtons(Map<String, Object> params) {
         boolean editable = Boolean.TRUE.equals(params.get(EDITABLE));
         boolean okOnly = Boolean.TRUE.equals(params.get(OK_ONLY));
-        textArea.setEditable(editable);
         okBtn.setVisible(okOnly || editable);
         cancelBtn.setVisible(!okOnly);
+    }
+
+    protected void initCopyButton(Map<String, Object> params) {
+        if (CubaCopyButtonExtension.browserSupportCopy()) {
+            com.vaadin.ui.Button button = copyBtn.unwrap(com.vaadin.ui.Button.class);
+            button.setIcon(com.vaadin.server.FontAwesome.CLIPBOARD);
+            button.setDescription(messages.getMainMessage("systemInfoWindow.copy"));
+
+            String contentClass = "copy_message-" + UuidProvider.createUuid();
+            textArea.addStyleName(contentClass);
+            CubaCopyButtonExtension copyExtension = CubaCopyButtonExtension.copyWith(button, contentClass + " textarea");
+
+            String success = messages.getMainMessage("systemInfoWindow.copingSuccessful");
+            String failed = messages.getMainMessage("systemInfoWindow.copingFailed");
+            copyExtension.addCopyListener(e -> com.vaadin.ui.Notification.show(
+                    e.isSuccess() ? success : failed, com.vaadin.ui.Notification.Type.TRAY_NOTIFICATION));
+        } else {
+            copyBtn.setVisible(false);
+        }
     }
 
     public String getMessage() {
