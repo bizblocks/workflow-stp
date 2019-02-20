@@ -6,6 +6,7 @@ import com.haulmont.cuba.security.entity.User;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Workflow step execution task
@@ -35,9 +36,19 @@ public class WorkflowInstanceTask extends StandardEntity {
     @Column(name = "END_DATE")
     private Date endDate;
 
+    /**
+     * @deprecated please migrate your logic to performers field
+     */
+    @Deprecated
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PERFORMER_ID")
     private User performer;
+
+    @ManyToMany
+    @JoinTable(name = "WFSTP_TASK_PERFORMERS_LINK",
+            joinColumns = @JoinColumn(name = "TASK_ID"),
+            inverseJoinColumns = @JoinColumn(name = "PERFORMER_ID"))
+    private Set<User> performers;
 
 
     public WorkflowInstance getInstance() {
@@ -72,11 +83,27 @@ public class WorkflowInstanceTask extends StandardEntity {
         this.endDate = endDate;
     }
 
+    /**
+     * @deprecated please migrate your logic to performers field
+     */
+    @Deprecated
     public User getPerformer() {
         return performer;
     }
 
+    /**
+     * @deprecated please migrate your logic to performers field
+     */
+    @Deprecated
     public void setPerformer(User performer) {
         this.performer = performer;
+    }
+
+    public Set<User> getPerformers() {
+        return performers;
+    }
+
+    public void setPerformers(Set<User> performers) {
+        this.performers = performers;
     }
 }

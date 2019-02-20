@@ -135,20 +135,22 @@ public interface WorkflowService {
     /**
      * Complete (if possible) provided workflow task and move workflow instance to the next step
      *
-     * @param task workflow instance task
+     * @param task            workflow instance task
+     * @param performersLogin task perform users login, or, if nothing passed, only a current user will be used
      * @throws WorkflowException in case of any unexpected problems
      */
-    void finishTask(WorkflowInstanceTask task) throws WorkflowException;
+    void finishTask(WorkflowInstanceTask task, String... performersLogin) throws WorkflowException;
 
     /**
      * Complete (if possible) provided workflow task with additional parameters which will be saved into workflow execution
      * and move workflow instance to the next step
      *
-     * @param task   workflow instance task
-     * @param params additional workflow execution parameters which must be saved
+     * @param task            workflow instance task
+     * @param params          additional workflow execution parameters which must be saved
+     * @param performersLogin task perform users login, or, if nothing passed, only a current user will be used
      * @throws WorkflowException in case of any unexpected problems
      */
-    void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params) throws WorkflowException;
+    void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params, String... performersLogin) throws WorkflowException;
 
     /**
      * Get workflow execution context

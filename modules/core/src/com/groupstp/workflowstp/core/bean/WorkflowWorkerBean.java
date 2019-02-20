@@ -665,29 +665,49 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             if (executed) {
                 fireEvent(entity, previousStep);
 
-                finishTask(task, null, null);
+                finishTask(task, null, (Set<User>) null);
             }
         } else if (StageType.ARCHIVE.equals(stage.getType())) {//this last archive node - mark it's as done and finish workflow
             fireEvent(entity, previousStep);
 
-            finishTask(task, null, null);
+            finishTask(task, null, (Set<User>) null);
         } else {
             fireEvent(entity, previousStep);
         }
     }
 
-
     @Override
-    public void finishTask(WorkflowInstanceTask task) throws WorkflowException {
-        finishTask(task, null);
+    public void finishTask(WorkflowInstanceTask task, String... performersLogin) throws WorkflowException {
+        finishTask(task, null, performersLogin);
     }
 
     @Override
-    public void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params) throws WorkflowException {
-        finishTask(task, params, userSessionSource.getUserSession().getUser());
+    public void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params, String... performersLogin) throws WorkflowException {
+        Set<User> performers;
+        if (performersLogin != null && performersLogin.length > 0) {
+            performers = new HashSet<>(performersLogin.length);
+            for (String login : performersLogin) {
+                if (!StringUtils.isBlank(login)) {
+                    User user = dataManager.load(User.class)
+                            .query("select e from sec$User e where e.loginLowerCase = :login")
+                            .parameter("login", login.toLowerCase())
+                            .view(View.MINIMAL)
+                            .optional()
+                            .orElse(null);
+                    if (user == null) {
+                        log.warn("User with login {} not found", login);
+                    } else {
+                        performers.add(user);
+                    }
+                }
+            }
+        } else {
+            performers = Collections.singleton(userSessionSource.getUserSession().getUser());
+        }
+        finishTask(task, params, performers);
     }
 
-    public void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params, @Nullable User performer) throws WorkflowException {
+    public void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params, Set<User> performers) throws WorkflowException {
         Preconditions.checkNotNullArgument(task, getMessage("WorkflowWorkerBean.emptyWorkflowInstanceTask"));
 
         WorkflowInstance instance;
@@ -699,7 +719,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.workflowInstanceTaskAlreadyFinished"), task));
             }
             task.setEndDate(timeSource.currentTimestamp());
-            task.setPerformer(performer);
+            task.setPerformers(performers);
 
             instance = task.getInstance();
 

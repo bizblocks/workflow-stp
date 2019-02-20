@@ -763,12 +763,12 @@ public class WebUiHelper {
                 commitEditorIfNeed((AbstractEditor) screen);
 
                 WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);
-                boolean performed = doubleActionPerformed(ctx, key);
-                if (performed) {
+                String[] performers = doubleActionPerformed(ctx, key);
+                if (performers != null) {
                     for (Map.Entry<String, String> e : params.entrySet()) {
                         ctx.putParam(e.getKey(), e.getValue());
                     }
-                    workflowService.finishTask(task, ctx.getParams());
+                    workflowService.finishTask(task, ctx.getParams(), performers);
                 } else {
                     workflowService.setExecutionContext(ctx, instance);
                 }
@@ -783,12 +783,12 @@ public class WebUiHelper {
                             WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item);
                             WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage);
                             WorkflowExecutionContext ctx = workflowService.getExecutionContext(itemInstance);
-                            boolean performed = doubleActionPerformed(ctx, key);
-                            if (performed) {
+                            String[] performers = doubleActionPerformed(ctx, key);
+                            if (performers != null) {
                                 for (Map.Entry<String, String> e : params.entrySet()) {
                                     ctx.putParam(e.getKey(), e.getValue());
                                 }
-                                workflowService.finishTask(itemTask, ctx.getParams());
+                                workflowService.finishTask(itemTask, ctx.getParams(), performers);
                             } else {
                                 workflowService.setExecutionContext(ctx, itemInstance);
                             }
@@ -803,20 +803,20 @@ public class WebUiHelper {
         }
     }
 
-    private boolean doubleActionPerformed(WorkflowExecutionContext context, String key) {
-        boolean doubleAccepted = false;
+    private String[] doubleActionPerformed(WorkflowExecutionContext context, String key) {
+        String[] performers = null;
 
         User user = userSessionSource.getUserSession().getUser();
         String value = context.getParam(key);
         if (StringUtils.isEmpty(value)) {
             value = user.getLogin();
         } else {
+            performers = new String[]{value, user.getLogin()};
             value = value + "," + user.getLogin();
-            doubleAccepted = true;
         }
         context.putParam(key, value);
 
-        return doubleAccepted;
+        return performers;
     }
 
     /**

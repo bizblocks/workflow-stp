@@ -73,7 +73,7 @@
                         <column id="step"/>
                         <column id="startDate"/>
                         <column id="endDate"/>
-                        <column id="performer"/>
+                        <column id="performers"/>
                     </columns>
                     <rows datasource="tasksDs"/>
                 </table>

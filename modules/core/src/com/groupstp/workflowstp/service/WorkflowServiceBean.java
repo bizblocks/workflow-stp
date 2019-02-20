@@ -94,13 +94,13 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
-    public void finishTask(WorkflowInstanceTask task) throws WorkflowException {
-        worker.finishTask(task);
+    public void finishTask(WorkflowInstanceTask task, String... performersLogin) throws WorkflowException {
+        worker.finishTask(task, performersLogin);
     }
 
     @Override
-    public void finishTask(WorkflowInstanceTask task, Map<String, String> params) throws WorkflowException {
-        worker.finishTask(task, params);
+    public void finishTask(WorkflowInstanceTask task, Map<String, String> params, String... performersLogin) throws WorkflowException {
+        worker.finishTask(task, params, performersLogin);
     }
 
     @Override

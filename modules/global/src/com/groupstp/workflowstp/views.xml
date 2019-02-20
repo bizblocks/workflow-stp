@@ -22,6 +22,8 @@
         </property>
         <property name="performer"
                   view="_minimal"/>
+        <property name="performers"
+                  view="_minimal"/>
         <property name="step"
                   view="_minimal"/>
     </view>

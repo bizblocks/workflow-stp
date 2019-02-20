@@ -1,0 +1,2 @@
+alter table WFSTP_TASK_PERFORMERS_LINK add constraint FK_TASPER_ON_WORKFLOW_INSTANCE_TASK foreign key (TASK_ID) references WFSTP_WORKFLOW_INSTANCE_TASK(ID);
+alter table WFSTP_TASK_PERFORMERS_LINK add constraint FK_TASPER_ON_USER foreign key (PERFORMER_ID) references SEC_USER(ID);

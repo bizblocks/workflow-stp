@@ -8,6 +8,7 @@ import com.groupstp.workflowstp.web.util.WebUiHelper;
 import com.groupstp.workflowstp.web.util.WorkflowInstanceHelper;
 import com.groupstp.workflowstp.web.util.messagedialog.MessageDialog;
 import com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowChooserDialog;
+import com.haulmont.chile.core.model.impl.AbstractInstance;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
@@ -23,6 +24,7 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author adiatullin
@@ -50,6 +52,8 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     @Inject
     private CollectionDatasource<WorkflowInstanceTask, UUID> tasksDs;
     @Inject
+    private Table<WorkflowInstanceTask> tasksTable;
+    @Inject
     private Button recreateTaskBtn;
     @Inject
     private Button resetBtn;
@@ -62,6 +66,7 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
         initWorkflowLookup();
         initContextLookup();
         initCommentsTable();
+        initTasksTable();
         initReset();
 
         generalFieldGroup.setEditable(false);
@@ -89,6 +94,23 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     private void initCommentsTable() {
         FileDownloadHelper.initGeneratedColumn(commentsTable, "attachment");
         WebUiHelper.showLinkOnTable(commentsTable, "author");
+    }
+
+    //setup tasks table
+    private void initTasksTable() {
+        tasksTable.addGeneratedColumn("performers", task -> {
+            String value = null;
+            if (task.getPerformer() != null) {//backward compatibility
+                value = task.getPerformer().getInstanceName();
+            } else {
+                if (!CollectionUtils.isEmpty(task.getPerformers())) {
+                    value = task.getPerformers().stream()
+                            .map(AbstractInstance::getInstanceName)
+                            .collect(Collectors.joining(", "));
+                }
+            }
+            return new Table.PlainTextCell(StringUtils.isEmpty(value) ? StringUtils.EMPTY : value);
+        });
     }
 
     private void initReset() {
