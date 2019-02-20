@@ -859,7 +859,7 @@ public class WebUiHelper {
                     if (itemInstance == null) {
                         return false;
                     }
-                    WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);
+                    WorkflowExecutionContext ctx = workflowService.getExecutionContext(itemInstance);
                     if (!isDoubleWorkflowActionPerformable(ctx, key, stage)) {
                         return false;
                     }
