@@ -20,8 +20,6 @@
                 <property name="active"/>
             </property>
         </property>
-        <property name="performer"
-                  view="_minimal"/>
         <property name="performers"
                   view="_minimal"/>
         <property name="step"

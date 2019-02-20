@@ -36,14 +36,6 @@ public class WorkflowInstanceTask extends StandardEntity {
     @Column(name = "END_DATE")
     private Date endDate;
 
-    /**
-     * @deprecated please migrate your logic to performers field
-     */
-    @Deprecated
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PERFORMER_ID")
-    private User performer;
-
     @ManyToMany
     @JoinTable(name = "WFSTP_TASK_PERFORMERS_LINK",
             joinColumns = @JoinColumn(name = "TASK_ID"),
@@ -81,22 +73,6 @@ public class WorkflowInstanceTask extends StandardEntity {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
-    }
-
-    /**
-     * @deprecated please migrate your logic to performers field
-     */
-    @Deprecated
-    public User getPerformer() {
-        return performer;
-    }
-
-    /**
-     * @deprecated please migrate your logic to performers field
-     */
-    @Deprecated
-    public void setPerformer(User performer) {
-        this.performer = performer;
     }
 
     public Set<User> getPerformers() {

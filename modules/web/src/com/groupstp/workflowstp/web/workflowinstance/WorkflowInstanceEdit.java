@@ -100,14 +100,10 @@ public class WorkflowInstanceEdit extends AbstractEditor<WorkflowInstance> {
     private void initTasksTable() {
         tasksTable.addGeneratedColumn("performers", task -> {
             String value = null;
-            if (task.getPerformer() != null) {//backward compatibility
-                value = task.getPerformer().getInstanceName();
-            } else {
-                if (!CollectionUtils.isEmpty(task.getPerformers())) {
-                    value = task.getPerformers().stream()
-                            .map(AbstractInstance::getInstanceName)
-                            .collect(Collectors.joining(", "));
-                }
+            if (!CollectionUtils.isEmpty(task.getPerformers())) {
+                value = task.getPerformers().stream()
+                        .map(AbstractInstance::getInstanceName)
+                        .collect(Collectors.joining(", "));
             }
             return new Table.PlainTextCell(StringUtils.isEmpty(value) ? StringUtils.EMPTY : value);
         });

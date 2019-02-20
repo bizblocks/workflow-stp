@@ -141,7 +141,6 @@ create table WFSTP_WORKFLOW_INSTANCE_TASK (
     STEP_ID uuid not null,
     START_DATE timestamp,
     END_DATE timestamp,
-    PERFORMER_ID uuid,
     --
     primary key (ID)
 )^
