@@ -836,7 +836,7 @@ public class WebUiHelper {
      * @param stage    processing stage
      * @return answer which should be used in "isPermit" actions method
      */
-    public boolean isDoubleWorkflowActionPerformable(Object target,
+    public static boolean isDoubleWorkflowActionPerformable(Object target,
                                                      @Nullable WorkflowInstance instance,
                                                      @Nullable WorkflowInstanceTask task,
                                                      @Nullable Stage stage,
