@@ -72,8 +72,9 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                         return definition.getWorkflow();
                     }
                 } catch (Exception e) {
-                    if (e instanceof WorkflowException) {
-                        throw (WorkflowException) e;
+                    Throwable cause = e.getCause();
+                    if (cause instanceof WorkflowException) {
+                        throw (WorkflowException) cause;
                     }
                     log.error(String.format("Failed to check workflow definition '%s'", definition.getId()), e);
                 }
