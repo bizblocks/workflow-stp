@@ -34,6 +34,12 @@ public class Step extends StandardEntity {
     @JoinColumn(name = "STAGE_ID", nullable = false)
     private Stage stage;
 
+    @Column(name = "TIMEOUT_SEC")
+    private Integer timeoutSec;
+
+    @Column(name = "REPEAT_SEC")
+    private Integer repeatSec;
+
     @OrderBy("order")
     @Composition
     @OnDelete(DeletePolicy.CASCADE)
@@ -68,6 +74,22 @@ public class Step extends StandardEntity {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    public Integer getTimeoutSec() {
+        return timeoutSec;
+    }
+
+    public void setTimeoutSec(Integer timeoutSec) {
+        this.timeoutSec = timeoutSec;
+    }
+
+    public Integer getRepeatSec() {
+        return repeatSec;
+    }
+
+    public void setRepeatSec(Integer repeatSec) {
+        this.repeatSec = repeatSec;
     }
 
     public List<StepDirection> getDirections() {

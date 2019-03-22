@@ -186,4 +186,10 @@ public interface WorkflowWorker {
      * @param value    variable value
      */
     void setParameter(WorkflowInstance instance, @Nullable String key, @Nullable String value);
+
+    /**
+     * Perform workflow refreshing process.
+     * INTERNAL: Method should be called only from <p>scheduler</p>
+     */
+    void performWorkflowHeartbeat();
 }

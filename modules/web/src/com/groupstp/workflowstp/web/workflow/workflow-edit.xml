@@ -46,6 +46,7 @@
                         <actions>
                             <action id="add"/>
                             <action id="remove"/>
+                            <action id="settings"/>
                             <action id="up"/>
                             <action id="down"/>
                         </actions>
@@ -53,6 +54,11 @@
                             <column id="order"/>
                             <column id="stage.name"/>
                             <column id="start"/>
+                            <column id="stage.type"/>
+                            <column id="timeoutSec"
+                                    collapsed="true"/>
+                            <column id="repeatSec"
+                                    collapsed="true"/>
                         </columns>
                         <rows datasource="stepsDs"/>
                         <buttonsPanel id="stepsTableButtonsPanel" alwaysVisible="true">
@@ -60,6 +66,8 @@
                                     action="stepsTable.add"/>
                             <button id="stepsTableRemoveBtn"
                                     action="stepsTable.remove"/>
+                            <button id="stepsTableSettingsBtn"
+                                    action="stepsTable.settings"/>
                             <button action="stepsTable.up" icon="CARET_UP" caption=""/>
                             <button action="stepsTable.down" icon="CARET_DOWN" caption=""/>
                         </buttonsPanel>

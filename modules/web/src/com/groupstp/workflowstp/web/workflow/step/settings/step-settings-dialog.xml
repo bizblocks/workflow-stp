@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://stepSettingsDialog.caption"
+        class="com.groupstp.workflowstp.web.workflow.step.settings.StepSettingsDialog"
+        messagesPack="com.groupstp.workflowstp.web.workflow.step.settings">
+    <dsContext>
+        <datasource id="stepDs"
+                    class="com.groupstp.workflowstp.entity.Step"
+                    allowCommit="false"/>
+    </dsContext>
+    <dialogMode height="200"
+                resizable="false"
+                width="500"/>
+    <layout spacing="true" width="100%" expand="contentLabel">
+        <fieldGroup id="mainFieldGroup" width="100%" datasource="stepDs">
+            <column width="100%">
+                <field property="repeatSec" id="repeatSec">
+                    <validator class="com.haulmont.cuba.gui.components.validators.IntegerValidator"
+                               onlyPositive="true"/>
+                </field>
+                <field property="timeoutSec" id="timeoutSec">
+                    <validator class="com.haulmont.cuba.gui.components.validators.IntegerValidator"
+                               onlyPositive="true"/>
+                </field>
+            </column>
+        </fieldGroup>
+        <label id="contentLabel"/>
+        <hbox spacing="true" expand="fakeLabel" width="100%">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOk"/>
+            <label id="fakeLabel"/>
+        </hbox>
+    </layout>
+</window>

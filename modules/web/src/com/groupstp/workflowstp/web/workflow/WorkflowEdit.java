@@ -3,6 +3,8 @@ package com.groupstp.workflowstp.web.workflow;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.web.stage.StageBrowse;
 import com.groupstp.workflowstp.web.stepdirection.StepDirectionEdit;
+import com.groupstp.workflowstp.web.util.action.ItemMoveAction;
+import com.groupstp.workflowstp.web.workflow.step.settings.StepSettingsDialog;
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.entity.Entity;
@@ -11,10 +13,10 @@ import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.*;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
+import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.security.entity.EntityOp;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.IterableUtils;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -148,6 +150,30 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
             @Override
             public boolean isPermitted() {
                 return super.isPermitted() && editable;
+            }
+        });
+        stepsTable.addAction(new BaseAction("settings") {
+            @Override
+            public String getCaption() {
+                return getMessage("workflowEdit.settings");
+            }
+
+            @Override
+            public String getIcon() {
+                return CubaIcon.GEARS.source();
+            }
+
+            @Override
+            public void actionPerform(Component component) {
+                Step step = stepsTable.getSingleSelected();
+                if (step != null) {
+                    StepSettingsDialog.show(WorkflowEdit.this, getItem(), step);
+                }
+            }
+
+            @Override
+            public boolean isPermitted() {
+                return super.isPermitted() && editable && StepSettingsDialog.support(getItem(), stepsTable.getSingleSelected());
             }
         });
         stepsTable.addAction(new ItemMoveAction(stepsTable, true));
@@ -334,54 +360,5 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
                         .setMaxResults(1))
                 .setView(View.MINIMAL));
         return CollectionUtils.isEmpty(same);
-    }
-
-    //order moving action
-    private class ItemMoveAction extends ItemTrackingAction {
-        private final boolean up;
-        private final String orderProperty;
-
-        ItemMoveAction(Table table, boolean up) {
-            super(table, up ? "up" : "down");
-
-            this.up = up;
-            this.orderProperty = "order";
-
-            setCaption(getMessage(up ? "workflowEdit.up" : "workflowEdit.down"));
-        }
-
-        @Override
-        public void actionPerform(Component component) {
-            Entity entity = target.getSingleSelected();
-            assert entity != null;
-            Integer currentOrder = entity.getValue(orderProperty);
-            assert currentOrder != null;
-            Integer newOrder = up ? currentOrder - 1 : currentOrder + 1;
-
-            //noinspection unchecked
-            Collection<Entity> items = target.getDatasource().getItems();//already ordered
-
-            Entity changing = IterableUtils.get(items, currentOrder - 1);
-            Entity neighbor = IterableUtils.get(items, newOrder - 1);
-            changing.setValue(orderProperty, newOrder);
-            neighbor.setValue(orderProperty, currentOrder);
-
-            sortTable((Table) target, orderProperty);
-        }
-
-        @Override
-        public boolean isPermitted() {
-            if (super.isPermitted() && editable) {
-                //noinspection unchecked
-                Set<Entity> items = target.getSelected();
-                if (!CollectionUtils.isEmpty(items) && items.size() == 1) {
-                    Integer order = IterableUtils.get(items, 0).getValue(orderProperty);
-                    if (order != null) {
-                        return up ? order > 1 : order < target.getDatasource().size();
-                    }
-                }
-            }
-            return false;
-        }
     }
 }

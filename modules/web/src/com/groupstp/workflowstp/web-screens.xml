@@ -50,4 +50,6 @@
             template="com/groupstp/workflowstp/web/screenpalette/screen/screen-extension-template-edit.xml"/>
     <screen id="workflow-chooser-dialog"
             template="com/groupstp/workflowstp/web/workflowinstance/dialog/workflow-chooser-dialog.xml"/>
+    <screen id="step-settings-dialog"
+            template="com/groupstp/workflowstp/web/workflow/step/settings/step-settings-dialog.xml"/>
 </screen-config>

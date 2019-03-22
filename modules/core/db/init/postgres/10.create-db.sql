@@ -37,6 +37,8 @@ create table WFSTP_STEP (
     ORDER_ integer,
     START boolean,
     STAGE_ID uuid not null,
+    TIMEOUT_SEC integer,
+    REPEAT_SEC integer,
     WORKFLOW_ID uuid not null,
     --
     primary key (ID)
