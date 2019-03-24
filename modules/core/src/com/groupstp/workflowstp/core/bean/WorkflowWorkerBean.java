@@ -466,7 +466,14 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
             if (instance.getEndDate() != null) {
                 log.debug("Workflow instance {}({}) already finished", instance, instance.getId());
+                detach(instance);
                 return;
+            }
+            if (instance.getError() != null) {
+                log.debug("Workflow instance {}({}) marked as failed", instance, instance.getId());
+                detach(instance);
+
+                throw new WorkflowException(instance.getError());
             }
 
             entity = getWorkflowEntity(instance);
