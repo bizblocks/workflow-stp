@@ -54,9 +54,9 @@
             <property name="directions"
                       view="_local">
                 <property name="from"
-                          view="_minimal"/>
+                          view="_local"/>
                 <property name="to"
-                          view="_minimal"/>
+                          view="_local"/>
             </property>
         </property>
     </view>
