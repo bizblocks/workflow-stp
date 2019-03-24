@@ -44,6 +44,7 @@
                 <sourceCodeEditor datasource="screenTableColumnTemplateDs" property="generatorScript"
                                   id="generatorScript"
                                   mode="Groovy"
+                                  handleTabKey="true"
                                   width="100%"/>
                 <hbox width="100%" spacing="true">
                     <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editGeneratorScript"/>

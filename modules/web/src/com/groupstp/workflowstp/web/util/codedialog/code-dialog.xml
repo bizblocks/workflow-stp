@@ -8,6 +8,7 @@
                 width="100%"/>
     <layout expand="codeEditor" spacing="true">
         <sourceCodeEditor id="codeEditor"
+                          handleTabKey="true"
                           width="100%"/>
         <hbox spacing="true" expand="fakeLabel" width="100%">
             <button id="okBtn"

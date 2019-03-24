@@ -53,6 +53,7 @@
                         <sourceCodeEditor id="groovyClause"
                                           highlightActiveLine="false"
                                           mode="Groovy"
+                                          handleTabKey="true"
                                           width="100%"
                                           datasource="workflowDefinitionDs"
                                           property="conditionGroovyScript"

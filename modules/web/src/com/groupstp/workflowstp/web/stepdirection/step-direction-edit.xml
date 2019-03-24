@@ -55,6 +55,7 @@
                                           highlightActiveLine="false"
                                           mode="Groovy"
                                           width="100%"
+                                          handleTabKey="true"
                                           datasource="stepDirectionDs"
                                           property="conditionGroovyScript"
                                           printMargin="false"/>

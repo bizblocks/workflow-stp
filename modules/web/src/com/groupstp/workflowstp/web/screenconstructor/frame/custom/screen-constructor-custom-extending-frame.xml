@@ -11,6 +11,7 @@
                 <sourceCodeEditor mode="Groovy"
                                   caption="msg://com.groupstp.workflowstp.entity/ScreenConstructor.customBeforeScript"
                                   width="100%"
+                                  handleTabKey="true"
                                   datasource="screenConstructorDs"
                                   property="customBeforeScript"
                                   id="customBeforeScriptEditor"/>
@@ -24,6 +25,7 @@
                 <sourceCodeEditor mode="Groovy"
                                   caption="msg://com.groupstp.workflowstp.entity/ScreenConstructor.customAfterScript"
                                   width="100%"
+                                  handleTabKey="true"
                                   datasource="screenConstructorDs"
                                   property="customAfterScript"
                                   id="customAfterScriptEditor"/>

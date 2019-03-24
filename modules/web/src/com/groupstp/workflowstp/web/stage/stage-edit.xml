@@ -115,6 +115,7 @@
                                          caption="msg://stageEdit.screenScript">
                                         <sourceCodeEditor id="browseScreenGroovyScript" mode="Groovy" width="100%"
                                                           datasource="stageDs"
+                                                          handleTabKey="true"
                                                           property="browseScreenGroovyScript"/>
                                         <hbox margin="true,false,true,false">
                                             <button icon="EXPAND" caption="msg://stageEdit.fullScreen"
@@ -140,6 +141,7 @@
                                          caption="msg://stageEdit.screenScript">
                                         <sourceCodeEditor id="editorScreenGroovyScript" mode="Groovy" width="100%"
                                                           datasource="stageDs"
+                                                          handleTabKey="true"
                                                           property="editorScreenGroovyScript"/>
                                         <hbox margin="true,false,true,false">
                                             <button icon="EXPAND" caption="msg://stageEdit.fullScreen"
@@ -179,6 +181,7 @@
                   margin="true">
                 <label value="msg://com.groupstp.workflowstp.entity/Stage.executionGroovyScript"/>
                 <sourceCodeEditor id="executionCode" mode="Groovy" width="100%" datasource="stageDs"
+                                  handleTabKey="true"
                                   property="executionGroovyScript"/>
                 <hbox margin="true,false,true,false" align="BOTTOM_RIGHT">
                     <button icon="EXPAND" caption="msg://stageEdit.fullScreen" invoke="editExecutionGroovy"/>

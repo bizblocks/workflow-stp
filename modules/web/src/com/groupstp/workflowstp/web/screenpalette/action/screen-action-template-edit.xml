@@ -55,6 +55,7 @@
                   width="100%" height="100%">
                 <label value="msg://com.groupstp.workflowstp.entity/ScreenActionTemplate.script" stylename="h3"/>
                 <sourceCodeEditor width="100%" datasource="screenActionTemplateDs" property="script" id="scriptEditor"
+                                  handleTabKey="true"
                                   mode="Groovy" contextHelpText="msg://screenActionTemplateEdit.scriptHint"/>
                 <hbox width="100%" spacing="true">
                     <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editScript"/>
@@ -82,6 +83,7 @@
                 <sourceCodeEditor width="100%" datasource="screenActionTemplateDs" property="permitScript"
                                   caption="msg://com.groupstp.workflowstp.entity/ScreenActionTemplate.permitScript"
                                   contextHelpText="msg://screenActionTemplateEdit.permitScriptHint"
+                                  handleTabKey="true"
                                   mode="Groovy"
                                   id="permitScriptEditor"/>
                 <hbox width="100%" spacing="true" id="permitActionBox">
