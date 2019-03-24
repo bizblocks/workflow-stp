@@ -176,8 +176,18 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
                 return super.isPermitted() && editable && StepSettingsDialog.support(getItem(), stepsTable.getSingleSelected());
             }
         });
-        stepsTable.addAction(new ItemMoveAction(stepsTable, true));
-        stepsTable.addAction(new ItemMoveAction(stepsTable, false));
+        stepsTable.addAction(new ItemMoveAction(stepsTable, true) {
+            @Override
+            public boolean isPermitted() {
+                return super.isPermitted() && editable;
+            }
+        });
+        stepsTable.addAction(new ItemMoveAction(stepsTable, false){
+            @Override
+            public boolean isPermitted() {
+                return super.isPermitted() && editable;
+            }
+        });
 
         stepsTable.addGeneratedColumn("start", step -> {
             CheckBox checkBox = componentsFactory.createComponent(CheckBox.class);
@@ -230,8 +240,18 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
                 return super.isPermitted() && editable;
             }
         });
-        stepDirectionsTable.addAction(new ItemMoveAction(stepDirectionsTable, true));
-        stepDirectionsTable.addAction(new ItemMoveAction(stepDirectionsTable, false));
+        stepDirectionsTable.addAction(new ItemMoveAction(stepDirectionsTable, true){
+            @Override
+            public boolean isPermitted() {
+                return super.isPermitted() && editable;
+            }
+        });
+        stepDirectionsTable.addAction(new ItemMoveAction(stepDirectionsTable, false){
+            @Override
+            public boolean isPermitted() {
+                return super.isPermitted() && editable;
+            }
+        });
 
         directionsDs.addCollectionChangeListener(e -> {
             correctOrderIfNeed(stepDirectionsTable, "order");
