@@ -14,6 +14,6 @@
     <bean id="cuba_EntityImportExportService" class="com.groupstp.workflowstp.service.ExtEntityImportExportServiceBean"/>
 
     <task:scheduled-tasks scheduler="scheduler">
-        <task:scheduled ref="wfstp_WorkflowWorker" method="performWorkflowHeartbeat" fixed-rate="${wfstp.heartbeatMs}"/>
+        <task:scheduled ref="wfstp_WorkflowWorker" method="performWorkflowHeartbeat" fixed-delay="${wfstp.heartbeatMs}"/>
     </task:scheduled-tasks>
 </beans>
