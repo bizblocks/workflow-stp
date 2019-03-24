@@ -695,9 +695,9 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 }
             }
 
-            if (success) {
-                fireEvent(entity, previousStep);
+            fireEvent(entity, previousStep);
 
+            if (success) {
                 finishTask(task, null, (Set<User>) null);
             } else {
                 //re-execution will be performed in next workflow heartbeat to support timeout and repeat feature
@@ -708,6 +708,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
             finishTask(task, null, (Set<User>) null);
         } else if (StageType.USERS_INTERACTION.equals(stage.getType())) {
+            fireEvent(entity, previousStep);
             //re-execution will be performed in next workflow heartbeat to support timeout feature
             detach(instance);
         } else {

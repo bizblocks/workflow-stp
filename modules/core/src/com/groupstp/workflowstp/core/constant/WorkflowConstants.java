@@ -5,7 +5,7 @@ package com.groupstp.workflowstp.core.constant;
  *
  * @author adiatullin
  */
-public abstract class WorkflowConstants {
+public final class WorkflowConstants {
     public static final String TIMEOUT = "wf_timeout";
     public static final String REPEAT = "wf_repeat";
 
