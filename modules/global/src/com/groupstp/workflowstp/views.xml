@@ -54,9 +54,15 @@
             <property name="directions"
                       view="_local">
                 <property name="from"
-                          view="_local"/>
+                          view="_local">
+                    <property name="stage"
+                              view="_minimal"/>
+                </property>
                 <property name="to"
-                          view="_local"/>
+                          view="_local">
+                    <property name="stage"
+                              view="_minimal"/>
+                </property>
             </property>
         </property>
     </view>
