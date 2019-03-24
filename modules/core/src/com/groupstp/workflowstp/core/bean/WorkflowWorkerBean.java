@@ -681,7 +681,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                         binding.put("workflowInstanceTask", reloadNN(task, View.LOCAL));
 
                         //if script returned true - this mean step successfully finished and we can move to the next stage
-                        success = Boolean.TRUE.equals(scripting.evaluateGroovy(stage.getExecutionGroovyScript(), binding));
+                        Object result = scripting.evaluateGroovy(stage.getExecutionGroovyScript(), binding);
+                        if (result instanceof Boolean) {
+                            success = Boolean.TRUE.equals(result);
+                        }
                         if (!success) {
                             //otherwise write the time of the execution
                             context.putParam(WorkflowConstants.REPEAT, Long.toString(timeSource.currentTimeMillis()));
