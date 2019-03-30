@@ -3,7 +3,7 @@
         caption="msg://workflowStepChooserDialog.caption"
         class="com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowStepChooserDialog"
         messagesPack="com.groupstp.workflowstp.web.workflowinstance.dialog">
-    <dialogMode height="100px"
+    <dialogMode height="140px"
                 width="500"/>
     <layout expand="mainBox" spacing="true">
         <hbox id="mainBox" width="100%" spacing="true">
