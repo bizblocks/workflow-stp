@@ -269,6 +269,19 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     @Override
     public void recreateTasks(WorkflowInstance instance) throws WorkflowException {
+        Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
+
+        attach(instance);
+        try {
+            //cleanup system parameter
+            WorkflowExecutionContext ctx = getExecutionContext(instance);
+            ctx.putParam(WorkflowConstants.REPEAT, null);
+            ctx.putParam(WorkflowConstants.TIMEOUT, null);
+            setExecutionContext(ctx, instance);
+        } finally {
+            detach(instance);
+        }
+
         start(instance);
     }
 
@@ -299,6 +312,13 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 if (!wf.getSteps().contains(step)) {
                     throw new WorkflowException(getMessage("WorkflowWorkerBean.movementToUnknownStep"));
                 }
+
+                //cleanup system parameter
+                WorkflowExecutionContext ctx = getExecutionContext(instance);
+                ctx.putParam(WorkflowConstants.REPEAT, null);
+                ctx.putParam(WorkflowConstants.TIMEOUT, null);
+                setExecutionContext(ctx, instance);
+
                 tr.commit();
             } catch (Exception e) {
                 if (e instanceof WorkflowException) {
