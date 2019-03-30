@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://workflowStepChooserDialog.caption"
+        class="com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowStepChooserDialog"
+        messagesPack="com.groupstp.workflowstp.web.workflowinstance.dialog">
+    <dialogMode height="AUTO"
+                width="500"/>
+    <layout expand="mainBox" spacing="true">
+        <hbox id="mainBox" width="100%" expand="stepField" spacing="true">
+            <lookupField id="stepField" required="true"
+                         requiredMessage="msg://workflowStepChooserDialog.pleaseSelectNewStep"/>
+        </hbox>
+        <hbox spacing="true" expand="fakeLabel" width="100%">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOk"/>
+            <button id="cancelBtn"
+                    caption="mainMsg://actions.Cancel"
+                    icon="icons/cancel.png"
+                    invoke="onCancel"/>
+            <label id="fakeLabel"/>
+        </hbox>
+    </layout>
+</window>

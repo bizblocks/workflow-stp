@@ -8,6 +8,7 @@
         <separator/>
         <item screen="wfstp$WorkflowInstance.browse"/>
         <item screen="wfstp$WorkflowInstanceTask.browse"/>
+        <item screen="activities-screen"/>
         <separator/>
         <menu id="screen-palette">
             <item screen="wfstp$ScreenActionTemplate.browse"/>

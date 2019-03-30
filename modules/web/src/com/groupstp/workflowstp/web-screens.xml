@@ -52,4 +52,8 @@
             template="com/groupstp/workflowstp/web/workflowinstance/dialog/workflow-chooser-dialog.xml"/>
     <screen id="step-settings-dialog"
             template="com/groupstp/workflowstp/web/workflow/step/settings/step-settings-dialog.xml"/>
+    <screen id="activities-screen"
+            template="com/groupstp/workflowstp/web/activity/activity-screen.xml"/>
+    <screen id="workflow-step-chooser-dialog"
+            template="com/groupstp/workflowstp/web/workflowinstance/dialog/workflow-step-chooser-dialog.xml"/>
 </screen-config>

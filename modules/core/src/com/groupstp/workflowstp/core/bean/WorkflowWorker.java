@@ -54,12 +54,21 @@ public interface WorkflowWorker {
     void resetWorkflow(WorkflowInstance instance, Workflow wf) throws WorkflowException;
 
     /**
-     * Recreate tasks if workflow process stopped
+     * Recreate(re-execute) tasks if workflow process stopped or need to perform current processing task again
      *
-     * @param instance worflow instance task
+     * @param instance workflow instance task
      * @throws WorkflowException in case of any unexpected problems
      */
     void recreateTasks(WorkflowInstance instance) throws WorkflowException;
+
+    /**
+     * Move the specified workflow instance to the special step ignoring the determination of flow
+     *
+     * @param instance workflow instance where need to perform movement
+     * @param step     expecting step to move from workflow
+     * @throws WorkflowException  in case of any unexpected problems
+     */
+    void moveWorkflow(WorkflowInstance instance, Step step) throws WorkflowException;
 
     /**
      * Check is current workflow entity processing (processed) or not

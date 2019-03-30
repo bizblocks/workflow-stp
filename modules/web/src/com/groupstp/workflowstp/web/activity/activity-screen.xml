@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://activityScreen.caption"
+        class="com.groupstp.workflowstp.web.activity.ActivityScreen"
+        focusComponent="activitiesTable"
+        lookupComponent="activitiesTable"
+        messagesPack="com.groupstp.workflowstp.web.activity">
+    <dsContext>
+        <groupDatasource id="activitiesDs"
+                         class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+                         view="workflowInstanceTask-activity">
+            <query>
+                <![CDATA[select e from wfstp$WorkflowInstanceTask e
+                    where e.createTs = (select max(ee.createTs) FROM wfstp$WorkflowInstanceTask ee where ee.instance.id = e.instance.id)
+                order by e.createTs desc]]>
+            </query>
+        </groupDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                resizable="true"
+                width="800"/>
+    <layout expand="activitiesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="activitiesTable"
+                datasource="activitiesDs">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="activitiesTable"
+                    multiselect="true"
+                    textSelectionEnabled="true"
+                    width="100%">
+            <actions>
+                <action id="view"/>
+                <action id="openRelatedEntity"/>
+                <action id="move"/>
+                <action id="execute"/>
+                <action id="restart"/>
+                <action id="reset"/>
+            </actions>
+            <columns>
+                <column id="instance"/>
+                <column id="step.stage.type"/>
+                <column id="step"/>
+                <column id="startDate"/>
+                <column id="endDate"/>
+                <column id="instance.error"
+                        collapsed="true"/>
+                <column id="instance.workflow"
+                        collapsed="true"/>
+                <column id="instance.entityName"
+                        collapsed="true"/>
+            </columns>
+            <rows datasource="activitiesDs"/>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="viewBtn"
+                        action="activitiesTable.view"
+                        caption="msg://activityScreen.view"
+                        icon="EDIT"/>
+                <button id="openRelatedEntityBtn"
+                        action="activitiesTable.openRelatedEntity"
+                        caption="msg://activityScreen.openRelatedEntity"
+                        icon="CHAIN"/>
+                <button id="moveBtn"
+                        action="activitiesTable.move"
+                        caption="msg://activityScreen.move"
+                        icon="EXCHANGE"/>
+                <button id="executeBtn"
+                        action="activitiesTable.execute"
+                        caption="msg://activityScreen.execute"
+                        icon="FLASH"/>
+                <button id="restartBtn"
+                        action="activitiesTable.restart"
+                        caption="msg://activityScreen.restart"
+                        icon="REFRESH_ACTION"/>
+                <button id="resetBtn"
+                        action="activitiesTable.reset"
+                        caption="msg://activityScreen.reset"
+                        icon="CODE_FORK"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

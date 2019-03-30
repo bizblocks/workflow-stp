@@ -25,6 +25,21 @@
         <property name="step"
                   view="_minimal"/>
     </view>
+    <view class="com.groupstp.workflowstp.entity.WorkflowInstanceTask"
+          extends="_local"
+          name="workflowInstanceTask-activity">
+        <property name="instance"
+                  view="_minimal">
+            <property name="workflow" view="_minimal">
+                <property name="active"/>
+            </property>
+            <property name="endDate"/>
+            <property name="error"/>
+            <property name="errorInTask"/>
+        </property>
+        <property name="step"
+                  view="_minimal"/>
+    </view>
     <view class="com.groupstp.workflowstp.entity.WorkflowInstance"
           extends="_local"
           name="workflowInstance-process">

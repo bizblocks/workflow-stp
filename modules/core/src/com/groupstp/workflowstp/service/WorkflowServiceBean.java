@@ -48,6 +48,11 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
+    public void moveWorkflow(WorkflowInstance instance, Step step) throws WorkflowException {
+        worker.moveWorkflow(instance, step);
+    }
+
+    @Override
     public boolean isProcessing(WorkflowEntity entity) {
         return worker.isProcessing(entity);
     }

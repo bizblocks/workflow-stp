@@ -273,6 +273,67 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     @Override
+    public void moveWorkflow(WorkflowInstance instance, Step step) throws WorkflowException {
+        Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
+        Preconditions.checkNotNullArgument(step, getMessage("WorkflowWorkerBean.emptyStep"));
+
+        attach(instance);
+        try {
+            try (Transaction tr = persistence.getTransaction()) {
+                EntityManager em = persistence.getEntityManager();
+
+                instance = em.reloadNN(instance);
+                if (instance.getEndDate() != null && StringUtils.isEmpty(instance.getError())) {
+                    log.warn("Trying to move finished workflow instance {}({})", instance, instance.getId());
+                    return;
+                }
+                instance.setEndDate(null);
+                instance.setError(null);
+                instance.setErrorInTask(null);
+                instance = em.merge(instance);
+
+                Workflow wf = em.reloadNN(instance.getWorkflow());
+                if (!Boolean.TRUE.equals(wf.getActive())) {
+                    throw new WorkflowException(getMessage("WorkflowWorkerBean.workflowNotInActiveState"));
+                }
+                if (!wf.getSteps().contains(step)) {
+                    throw new WorkflowException(getMessage("WorkflowWorkerBean.movementToUnknownStep"));
+                }
+                tr.commit();
+            } catch (Exception e) {
+                if (e instanceof WorkflowException) {
+                    throw e;
+                }
+                log.error("Workflow instance movement failed", e);
+                throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.failedToMoveWorkflowInstance"),
+                        instance, instance.getId(), e.getMessage()));
+            }
+
+            CommitContext commitContext = new CommitContext();
+
+            WorkflowInstanceTask lastTask = getLastTask(instance);
+            if (lastTask != null) {
+                //anyway need to complete the current last task to move to another
+                lastTask.setEndDate(timeSource.currentTimestamp());
+                lastTask.setPerformers(null);
+                commitContext.addInstanceToCommit(lastTask);
+            }
+            WorkflowInstanceTask task = metadata.create(WorkflowInstanceTask.class);
+            task.setStartDate(timeSource.currentTimestamp());
+            task.setInstance(instance);
+            task.setStep(step);
+
+            commitContext.addInstanceToCommit(task);
+
+            dataManager.commit(commitContext);
+        } finally {
+            detach(instance);
+        }
+
+        start(instance);
+    }
+
+    @Override
     public boolean isProcessing(WorkflowEntity entity) {
         return getWorkflowInstance(entity) != null;
     }
@@ -641,19 +702,28 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         task.setInstance(instance);
         task.setStep(step);
 
-        String previousStep = entity.getStepName();
-        entity.setStatus(WorkflowEntityStatus.IN_PROGRESS);
-        entity.setStepName(step.getStage().getName());
+        dataManager.commit(task);
 
-        dataManager.commit(new CommitContext(task, entity));
-
-        executeTask(task, instance, entity, previousStep);
+        executeTask(task, instance, entity, entity.getStepName());
     }
 
     /**
-     * Run workflow task logic, if task step contains algoritm execution, execute it intermediately
+     * Run workflow task logic, if task step contains algorithm execution, execute it intermediately
      */
     protected void executeTask(WorkflowInstanceTask task, WorkflowInstance instance, WorkflowEntity entity, @Nullable String previousStep) throws WorkflowException {
+        boolean entityChanged = false;
+        if (!WorkflowEntityStatus.IN_PROGRESS.equals(entity.getStatus())) {
+            entity.setStatus(WorkflowEntityStatus.IN_PROGRESS);
+            entityChanged = true;
+        }
+        if (!Objects.equals(task.getStep().getStage().getName(), entity.getStepName())) {
+            entity.setStepName(task.getStep().getStage().getName());
+            entityChanged = true;
+        }
+        if (entityChanged) {
+            entity = dataManager.commit(entity);
+        }
+
         if (isTimeout(task)) {
             fireEvent(entity, previousStep);
 
