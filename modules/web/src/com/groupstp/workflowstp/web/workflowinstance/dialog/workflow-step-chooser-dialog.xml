@@ -3,11 +3,11 @@
         caption="msg://workflowStepChooserDialog.caption"
         class="com.groupstp.workflowstp.web.workflowinstance.dialog.WorkflowStepChooserDialog"
         messagesPack="com.groupstp.workflowstp.web.workflowinstance.dialog">
-    <dialogMode height="AUTO"
+    <dialogMode height="100px"
                 width="500"/>
     <layout expand="mainBox" spacing="true">
-        <hbox id="mainBox" width="100%" expand="stepField" spacing="true">
-            <lookupField id="stepField" required="true"
+        <hbox id="mainBox" width="100%" spacing="true">
+            <lookupField id="stepField" width="100%" required="true"
                          requiredMessage="msg://workflowStepChooserDialog.pleaseSelectNewStep"/>
         </hbox>
         <hbox spacing="true" expand="fakeLabel" width="100%">

@@ -315,7 +315,6 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             if (lastTask != null) {
                 //anyway need to complete the current last task to move to another
                 lastTask.setEndDate(timeSource.currentTimestamp());
-                lastTask.setPerformers(null);
                 commitContext.addInstanceToCommit(lastTask);
             }
             WorkflowInstanceTask task = metadata.create(WorkflowInstanceTask.class);
