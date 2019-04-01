@@ -33,6 +33,7 @@
                 <action id="create"/>
                 <action id="edit"/>
                 <action id="remove"/>
+                <action id="copy"/>
             </actions>
             <columns>
                 <group>
@@ -52,6 +53,8 @@
                         action="stagesTable.edit"/>
                 <button id="removeBtn"
                         action="stagesTable.remove"/>
+                <button id="copyBtn"
+                        action="stagesTable.copy"/>
                 <button id="exportBtn"
                         action="stagesTable.export" icon="icons/download.png"/>
                 <upload id="importBtn"

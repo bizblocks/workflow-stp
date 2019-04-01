@@ -56,4 +56,6 @@
             template="com/groupstp/workflowstp/web/activity/activity-screen.xml"/>
     <screen id="workflow-step-chooser-dialog"
             template="com/groupstp/workflowstp/web/workflowinstance/dialog/workflow-step-chooser-dialog.xml"/>
+    <screen id="stage-name-dialog"
+            template="com/groupstp/workflowstp/web/stage/dialog/stage-name-dialog.xml"/>
 </screen-config>

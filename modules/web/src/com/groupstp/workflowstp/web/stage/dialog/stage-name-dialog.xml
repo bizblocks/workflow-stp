@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://stageNameDialog.caption"
+        class="com.groupstp.workflowstp.web.stage.dialog.StageNameDialog"
+        messagesPack="com.groupstp.workflowstp.web.stage.dialog">
+    <dialogMode height="200"
+                resizable="false"
+                width="500"/>
+    <layout spacing="true" width="100%" expand="contentLabel">
+        <textField width="100%" id="stageNameField" required="true"
+                   requiredMessage="msg://stageNameDialog.nameHint"
+                   inputPrompt="msg://stageNameDialog.nameHint"/>
+        <label id="contentLabel"/>
+        <hbox spacing="true" expand="fakeLabel" width="100%">
+            <button id="okBtn"
+                    caption="mainMsg://actions.Ok"
+                    icon="icons/ok.png"
+                    invoke="onOk"/>
+            <button id="cancelBtn"
+                    caption="mainMsg://actions.Cancel"
+                    icon="icons/cancel.png"
+                    invoke="onCancel"/>
+            <label id="fakeLabel"/>
+        </hbox>
+    </layout>
+</window>

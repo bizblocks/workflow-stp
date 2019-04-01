@@ -2,6 +2,7 @@ package com.groupstp.workflowstp.web.stage;
 
 import com.groupstp.workflowstp.entity.Stage;
 import com.groupstp.workflowstp.service.ExtEntityImportExportService;
+import com.groupstp.workflowstp.web.stage.dialog.StageNameDialog;
 import com.haulmont.bali.util.ParamsMap;
 import com.haulmont.cuba.core.app.importexport.CollectionImportPolicy;
 import com.haulmont.cuba.core.app.importexport.EntityImportView;
@@ -9,15 +10,14 @@ import com.haulmont.cuba.core.app.importexport.ReferenceImportBehaviour;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowParam;
-import com.haulmont.cuba.gui.components.AbstractLookup;
-import com.haulmont.cuba.gui.components.Component;
-import com.haulmont.cuba.gui.components.FileUploadField;
-import com.haulmont.cuba.gui.components.GroupTable;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.BaseAction;
+import com.haulmont.cuba.gui.components.actions.ItemTrackingAction;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.export.ByteArrayDataProvider;
 import com.haulmont.cuba.gui.export.ExportDisplay;
 import com.haulmont.cuba.gui.export.ExportFormat;
+import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.upload.FileUploadingAPI;
 import com.haulmont.cuba.security.entity.EntityOp;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,6 +30,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -42,26 +43,30 @@ public class StageBrowse extends AbstractLookup {
     public static final String LOOKUP = "lookup";
 
     @Inject
-    private FileUploadingAPI uploadingAPI;
+    protected FileUploadingAPI uploadingAPI;
     @Inject
-    private ExtEntityImportExportService entityImportExportService;
+    protected ExtEntityImportExportService entityImportExportService;
     @Inject
-    private ViewRepository viewRepository;
+    protected ViewRepository viewRepository;
     @Inject
-    private ExportDisplay exportDisplay;
+    protected ExportDisplay exportDisplay;
     @Inject
-    private Security security;
+    protected Security security;
+    @Inject
+    protected MetadataTools metadataTools;
+    @Inject
+    protected DataManager dataManager;
 
     @Inject
-    private CollectionDatasource<Stage, UUID> stagesDs;
+    protected CollectionDatasource<Stage, UUID> stagesDs;
     @Inject
-    private GroupTable<Stage> stagesTable;
+    protected GroupTable<Stage> stagesTable;
     @Inject
-    private FileUploadField importBtn;
+    protected FileUploadField importBtn;
 
 
     @WindowParam(name = LOOKUP)
-    private Boolean lookup;
+    protected Boolean lookup;
 
 
     @Override
@@ -70,12 +75,45 @@ public class StageBrowse extends AbstractLookup {
 
         stagesDs.refresh(ParamsMap.of("entityName", params.get(ENTITY_NAME)));
 
+        initCopy();
         initImport();
         initExport();
     }
 
+    protected void initCopy() {
+        Action action = new ItemTrackingAction("copy") {
+            @Override
+            public void actionPerform(Component component) {
+                Stage stage = stagesTable.getSingleSelected();
+                if (stage != null) {
+                    StageNameDialog dialog = StageNameDialog.show(StageBrowse.this,
+                            getMessage("stageBrowse.copy") + " " + stage.getName(), stage.getEntityName());
+                    dialog.addCloseWithCommitListener(() -> {
+                        Stage copy = metadataTools.copy(dataManager.reload(stage, "stage-edit"));
+                        copy.setId(UuidProvider.createUuid());
+
+                        stagesDs.addItem(copy);
+                        stagesDs.commit();
+                    });
+                }
+            }
+
+            @Override
+            public boolean isPermitted() {
+                if (super.isPermitted()) {
+                    Set selected = stagesTable.getSelected();
+                    return selected != null && selected.size() == 1;
+                }
+                return false;
+            }
+        };
+        action.setCaption(messages.getMainMessage("systemInfoWindow.copy"));
+        action.setIcon(CubaIcon.COPY.source());
+        stagesTable.addAction(action);
+    }
+
     //workflow import behaviour
-    private void initImport() {
+    protected void initImport() {
         importBtn.addFileUploadErrorListener(e -> {
             showNotification(getMessage("stageEdit.importFailed"), NotificationType.ERROR);
             log.error("Failed to upload stage", e.getCause());
@@ -120,7 +158,7 @@ public class StageBrowse extends AbstractLookup {
     }
 
     //workflow export behaviour
-    private void initExport() {
+    protected void initExport() {
         stagesTable.addAction(new BaseAction("export") {
             @Override
             public String getCaption() {
@@ -161,7 +199,7 @@ public class StageBrowse extends AbstractLookup {
         stagesTable.expandAll();
     }
 
-    private EntityImportView getImportingView() {
+    protected EntityImportView getImportingView() {
         return new EntityImportView(Stage.class)
                 .addLocalProperties()
                 .addManyToManyProperty("actors", ReferenceImportBehaviour.ERROR_ON_MISSING, CollectionImportPolicy.KEEP_ABSENT_ITEMS)
@@ -170,7 +208,7 @@ public class StageBrowse extends AbstractLookup {
                 .addManyToManyProperty("viewersRoles", ReferenceImportBehaviour.ERROR_ON_MISSING, CollectionImportPolicy.KEEP_ABSENT_ITEMS);
     }
 
-    private View getExportingView() {
+    protected View getExportingView() {
         View view = viewRepository.getView(Stage.class, "stage-export");
         if (view == null) {
             throw new DevelopmentException("View 'stage-export' for wfstp$Stage not found");
