@@ -91,9 +91,11 @@ public class StageBrowse extends AbstractLookup {
                     dialog.addCloseWithCommitListener(() -> {
                         Stage copy = metadataTools.copy(dataManager.reload(stage, "stage-edit"));
                         copy.setId(UuidProvider.createUuid());
+                        copy.setName(dialog.getStageName());
 
                         stagesDs.addItem(copy);
                         stagesDs.commit();
+                        stagesDs.setItem(copy);
                     });
                 }
             }
