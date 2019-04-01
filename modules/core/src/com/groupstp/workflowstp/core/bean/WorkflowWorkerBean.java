@@ -774,7 +774,9 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                         if (result instanceof Boolean) {
                             success = Boolean.TRUE.equals(result);
                         }
-                        if (!success) {
+                        if (success) {
+                            context.putParam(WorkflowConstants.REPEAT, null);
+                        } else {
                             //otherwise write the time of the execution
                             context.putParam(WorkflowConstants.REPEAT, Long.toString(timeSource.currentTimeMillis()));
                         }
