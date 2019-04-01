@@ -95,7 +95,7 @@ public class StageBrowse extends AbstractLookup {
 
                         stagesDs.addItem(copy);
                         stagesDs.commit();
-                        stagesDs.setItem(copy);
+                        stagesTable.setSelected(copy);
                     });
                 }
             }
