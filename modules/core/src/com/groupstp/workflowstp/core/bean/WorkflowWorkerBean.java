@@ -748,6 +748,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
             Map<String, String> params = new HashMap<>();
             params.put(WorkflowConstants.TIMEOUT, task.getStep().getStage().getName());
+            params.put(WorkflowConstants.REPEAT, null);
             finishTask(task, params, (Set<User>) null);
 
             return;
