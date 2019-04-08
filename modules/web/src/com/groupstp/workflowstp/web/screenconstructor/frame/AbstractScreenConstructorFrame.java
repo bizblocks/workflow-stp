@@ -151,6 +151,20 @@ public abstract class AbstractScreenConstructorFrame extends AbstractFrame {
         }
     }
 
+    protected void testExternal(String script) {
+        if (!StringUtils.isEmpty(script)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put(WorkflowWebBean.STAGE, metadata.create(Stage.class));
+            params.put(WorkflowWebBean.CONTEXT, new HashMap<>());
+            params.put(WorkflowWebBean.WORKFLOW_INSTANCE, metadata.create(WorkflowInstance.class));
+            params.put(WorkflowWebBean.WORKFLOW_INSTANCE_TASK, metadata.create(WorkflowInstanceTask.class));
+            params.put(WorkflowWebBean.VIEW_ONLY, Boolean.FALSE);
+            params.put(WorkflowWebBean.ENTITY, metadata.create(entityMetaClass));
+
+            test(script, params);
+        }
+    }
+
     private void test(String script, Map<String, Object> params) {
         try {
             scripting.evaluateGroovy(script, params);
