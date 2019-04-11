@@ -306,15 +306,14 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Nullable
-    protected String constructScript(Frame screen, String constructorJson, @Nullable String genericConstructorJson) throws Exception {
-        if (!StringUtils.isEmpty(constructorJson)) {
+    protected String constructScript(Frame screen, @Nullable String constructorJson, @Nullable String genericConstructorJson) throws Exception {
+        if (!StringUtils.isEmpty(constructorJson) || !StringUtils.isEmpty(genericConstructorJson)) {
             ObjectMapper objectMapper = new ObjectMapper();
 
-            ScreenConstructor constructor = objectMapper.readValue(constructorJson, ScreenConstructor.class);
-
-            if (!StringUtils.isEmpty(genericConstructorJson)) {
-                populateConstructor(constructor, objectMapper.readValue(genericConstructorJson, ScreenConstructor.class));
-            }
+            ScreenConstructor constructor = populateConstructor(
+                    StringUtils.isEmpty(constructorJson) ? null : objectMapper.readValue(constructorJson, ScreenConstructor.class),
+                    StringUtils.isEmpty(genericConstructorJson) ? null : objectMapper.readValue(genericConstructorJson, ScreenConstructor.class)
+            );
 
             Set<String> imports = new HashSet<>();
             Set<String> initSection = new LinkedHashSet<>();
@@ -340,22 +339,28 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         return null;
     }
 
-    protected void populateConstructor(ScreenConstructor to, ScreenConstructor from) {
-        if (!CollectionUtils.isEmpty(from.getActions())) {
-            List<ScreenAction> genericActions = new ArrayList<>(from.getActions());
-            orderBy(genericActions, "order");
-
-            List<ScreenAction> actions = to.getActions();
-            if (!CollectionUtils.isEmpty(actions)) {
-                orderBy(actions, "order");
-                genericActions.addAll(actions);
-
-                for (int i = 0; i < genericActions.size(); i++) {
-                    genericActions.get(i).setOrder(i);
-                }
-            }
-            to.setActions(genericActions);
+    protected ScreenConstructor populateConstructor(@Nullable ScreenConstructor basic, @Nullable ScreenConstructor generic) {
+        if (basic == null) {
+            return generic;
         }
+        if (generic != null) {
+            if (!CollectionUtils.isEmpty(generic.getActions())) {
+                List<ScreenAction> genericActions = new ArrayList<>(generic.getActions());
+                orderBy(genericActions, "order");
+
+                List<ScreenAction> actions = basic.getActions();
+                if (!CollectionUtils.isEmpty(actions)) {
+                    orderBy(actions, "order");
+                    genericActions.addAll(actions);
+
+                    for (int i = 0; i < genericActions.size(); i++) {
+                        genericActions.get(i).setOrder(i);
+                    }
+                }
+                basic.setActions(genericActions);
+            }
+        }
+        return basic;
     }
 
     protected void setupStandardImports(Set<String> imports) {
