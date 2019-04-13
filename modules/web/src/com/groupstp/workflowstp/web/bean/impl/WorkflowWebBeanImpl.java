@@ -1,6 +1,7 @@
 package com.groupstp.workflowstp.web.bean.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.groupstp.workflowstp.annotation.WorkflowDetails;
 import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 import com.groupstp.workflowstp.entity.*;
@@ -86,10 +87,24 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     protected String getBrowseScreenId(MetaClass metaClass) {
+        Map details = (Map) metaClass.getAnnotations().get(WorkflowDetails.class.getName());
+        if (details != null) {
+            String browseId = (String) details.get("browseId");
+            if (!StringUtils.isBlank(browseId)) {
+                return browseId;
+            }
+        }
         return windowConfig.getBrowseScreenId(metaClass);
     }
 
     protected String getEditorScreenId(MetaClass metaClass) {
+        Map details = (Map) metaClass.getAnnotations().get(WorkflowDetails.class.getName());
+        if (details != null) {
+            String editorId = (String) details.get("editorId");
+            if (!StringUtils.isBlank(editorId)) {
+                return editorId;
+            }
+        }
         return windowConfig.getEditorScreenId(metaClass);
     }
 
