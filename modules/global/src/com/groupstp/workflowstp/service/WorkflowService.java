@@ -5,7 +5,6 @@ import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ public interface WorkflowService {
      *
      * @return workflow execution delegates services
      */
-    List<String> getWorkflowExecutionDelegates();
+    Map<String, String> getWorkflowExecutionDelegates();
 
     /**
      * Create and start workflow execution by provided entity and workflow object.

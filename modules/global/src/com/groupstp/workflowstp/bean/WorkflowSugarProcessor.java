@@ -50,7 +50,7 @@ public class WorkflowSugarProcessor {
     protected String appendImports(String script) {
         return "import com.haulmont.cuba.core.global.*;\n" +
                 "import java.util.*;\n" +
-                (isMiddleware ? "import com.groupstp.workflowstp.core.constant.*;\n" : "com.groupstp.workflowstp.web.util.*;\n") +
+                (isMiddleware ? "import com.groupstp.workflowstp.core.constant.*;\n" : "import com.groupstp.workflowstp.web.util.*;\n") +
                 script;
     }
 
@@ -64,7 +64,7 @@ public class WorkflowSugarProcessor {
             for (String substitute : found) {
                 String variable = substitute.substring(2);//${
                 variable = variable.substring(0, variable.length() - 1);//}
-                script = script.replaceAll(substitute, "context['" + variable + "']");
+                script = script.replace(substitute, "context['" + variable + "']");
             }
         }
         return script;

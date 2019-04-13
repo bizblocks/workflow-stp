@@ -179,7 +179,7 @@
 
             <vbox id="executionBox" spacing="true" width="100%" height="100%" expand="executionCode"
                   margin="true">
-                <fieldGroup id="executionFieldGroup" datasource="stageDs" width="100%">
+                <fieldGroup id="executionFieldGroup" datasource="stageDs" width="600px">
                     <column width="100%">
                         <field id="executionBeanName">
                             <lookupField id="executionBeanNameField"
@@ -193,7 +193,7 @@
                 <sourceCodeEditor id="executionCode" mode="Groovy" width="100%" datasource="stageDs"
                                   handleTabKey="true"
                                   property="executionGroovyScript"/>
-                <hbox margin="true,false,true,false" align="BOTTOM_RIGHT">
+                <hbox margin="true,false,true,false" align="BOTTOM_RIGHT" id="scriptBox">
                     <button icon="EXPAND" caption="msg://stageEdit.fullScreen" invoke="editExecutionGroovy"/>
                 </hbox>
             </vbox>

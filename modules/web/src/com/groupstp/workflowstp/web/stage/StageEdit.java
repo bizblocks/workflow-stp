@@ -79,6 +79,8 @@ public class StageEdit extends AbstractEditor<Stage> {
     @Inject
     protected SourceCodeEditor executionCode;
     @Inject
+    protected BoxLayout scriptBox;
+    @Inject
     protected TextArea browserScreenConstructor;
     @Inject
     protected TextArea editorScreenConstructor;
@@ -241,15 +243,18 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     protected void initExecutionScripts() {
-        executionBeanNameField.setOptionsList(workflowService.getWorkflowExecutionDelegates());
+        executionBeanNameField.setOptionsMap(workflowService.getWorkflowExecutionDelegates());
         ValueChangeListener listener = e -> {
             if (!StringUtils.isEmpty(executionCode.getValue())) {
                 executionBeanNameField.setValue(null);
             } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
                 executionCode.setValue(null);
             }
+            executionCode.setEditable(StringUtils.isEmpty(executionBeanNameField.getValue()));
             executionCode.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+            executionBeanNameField.setEditable(StringUtils.isEmpty(executionCode.getValue()));
             executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
+            scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
         };
         executionBeanNameField.addValueChangeListener(listener);
         executionCode.addValueChangeListener(listener);
