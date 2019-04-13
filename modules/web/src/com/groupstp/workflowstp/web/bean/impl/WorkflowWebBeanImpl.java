@@ -1,6 +1,7 @@
 package com.groupstp.workflowstp.web.bean.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.exception.WorkflowException;
@@ -56,6 +57,8 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     protected DataManager dataManager;
     @Inject
     protected Messages messages;
+    @Inject
+    protected WorkflowSugarProcessor sugar;
 
     @Inject
     protected WorkflowWebConfig webConfig;
@@ -164,7 +167,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                     binding.put(CONTEXT, null);
                     binding.put(WORKFLOW_INSTANCE, null);
                     binding.put(WORKFLOW_INSTANCE_TASK, null);
-                    scripting.evaluateGroovy(script, binding);
+                    scripting.evaluateGroovy(prepareScript(script), binding);
                 } else {
                     log.info(String.format("For stage %s(%s) browser screen extension not specified", stage.getName(), stage.getId()));
                 }
@@ -241,7 +244,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                     binding.put(WORKFLOW_INSTANCE_TASK, task);
                     binding.put(STAGE, stage);
                     binding.put(VIEW_ONLY, null);
-                    scripting.evaluateGroovy(script, binding);
+                    scripting.evaluateGroovy(prepareScript(script), binding);
 
                     service.setExecutionContext(ctx, workflowInstance);//save parameters since they can be changed
                 } else {
@@ -278,7 +281,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                     binding.put(WORKFLOW_INSTANCE, null);
                     binding.put(WORKFLOW_INSTANCE_TASK, null);
 
-                    scripting.evaluateGroovy(script, binding);
+                    scripting.evaluateGroovy(prepareScript(script), binding);
                 } else {
                     log.info(String.format("For screen extension template '%s' script not specified", templateKey));
                 }
@@ -306,15 +309,14 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     }
 
     @Nullable
-    protected String constructScript(Frame screen, String constructorJson, @Nullable String genericConstructorJson) throws Exception {
-        if (!StringUtils.isEmpty(constructorJson)) {
+    protected String constructScript(Frame screen, @Nullable String constructorJson, @Nullable String genericConstructorJson) throws Exception {
+        if (!StringUtils.isEmpty(constructorJson) || !StringUtils.isEmpty(genericConstructorJson)) {
             ObjectMapper objectMapper = new ObjectMapper();
 
-            ScreenConstructor constructor = objectMapper.readValue(constructorJson, ScreenConstructor.class);
-
-            if (!StringUtils.isEmpty(genericConstructorJson)) {
-                populateConstructor(constructor, objectMapper.readValue(genericConstructorJson, ScreenConstructor.class));
-            }
+            ScreenConstructor constructor = populateConstructor(
+                    StringUtils.isEmpty(constructorJson) ? null : objectMapper.readValue(constructorJson, ScreenConstructor.class),
+                    StringUtils.isEmpty(genericConstructorJson) ? null : objectMapper.readValue(genericConstructorJson, ScreenConstructor.class)
+            );
 
             Set<String> imports = new HashSet<>();
             Set<String> initSection = new LinkedHashSet<>();
@@ -340,22 +342,28 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         return null;
     }
 
-    protected void populateConstructor(ScreenConstructor to, ScreenConstructor from) {
-        if (!CollectionUtils.isEmpty(from.getActions())) {
-            List<ScreenAction> genericActions = new ArrayList<>(from.getActions());
-            orderBy(genericActions, "order");
-
-            List<ScreenAction> actions = to.getActions();
-            if (!CollectionUtils.isEmpty(actions)) {
-                orderBy(actions, "order");
-                genericActions.addAll(actions);
-
-                for (int i = 0; i < genericActions.size(); i++) {
-                    genericActions.get(i).setOrder(i);
-                }
-            }
-            to.setActions(genericActions);
+    protected ScreenConstructor populateConstructor(@Nullable ScreenConstructor basic, @Nullable ScreenConstructor generic) {
+        if (basic == null) {
+            return generic;
         }
+        if (generic != null) {
+            if (!CollectionUtils.isEmpty(generic.getActions())) {
+                List<ScreenAction> genericActions = new ArrayList<>(generic.getActions());
+                orderBy(genericActions, "order");
+
+                List<ScreenAction> actions = basic.getActions();
+                if (!CollectionUtils.isEmpty(actions)) {
+                    orderBy(actions, "order");
+                    genericActions.addAll(actions);
+
+                    for (int i = 0; i < genericActions.size(); i++) {
+                        genericActions.get(i).setOrder(i);
+                    }
+                }
+                basic.setActions(genericActions);
+            }
+        }
+        return basic;
     }
 
     protected void setupStandardImports(Set<String> imports) {
@@ -714,6 +722,10 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
 
     protected String getMessage(String messageKey) {
         return messages.getMessage(getClass(), messageKey);
+    }
+
+    protected String prepareScript(String script) {
+        return sugar.prepareScript(script);
     }
 
     /**

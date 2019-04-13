@@ -26,6 +26,13 @@ public interface WorkflowService {
     Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException;
 
     /**
+     * Retrieve all exist in system workflow execution delegates services
+     *
+     * @return workflow execution delegates services
+     */
+    Map<String, String> getWorkflowExecutionDelegates();
+
+    /**
      * Create and start workflow execution by provided entity and workflow object.
      * Workflow must be in active status and it's entityName must be equivalent entity class.
      *

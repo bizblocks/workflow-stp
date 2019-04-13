@@ -1,12 +1,15 @@
 package com.groupstp.workflowstp.core.bean;
 
+import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.core.config.WorkflowConfig;
 import com.groupstp.workflowstp.core.constant.WorkflowConstants;
 import com.groupstp.workflowstp.core.util.JsonUtil;
+import com.groupstp.workflowstp.data.impl.BaseWorkflowExecutionData;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.event.WorkflowEvent;
 import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
+import com.groupstp.workflowstp.service.WorkflowExecutionDelegate;
 import com.haulmont.bali.util.Preconditions;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
@@ -54,14 +57,16 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected Events events;
     @Inject
     protected UserSessionSource userSessionSource;
+    @Inject
+    protected WorkflowSugarProcessor sugar;
 
     @Inject
     protected WorkflowConfig config;
 
     /**
-     * Current processing workflow instances
+     * Current processing workflow instances by processing thread
      */
-    protected final Map<UUID, WorkflowInstance> processingInstances = new HashMap<>();
+    protected final Map<UUID, Thread> processingInstances = new HashMap<>();
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
 
@@ -157,6 +162,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Override
     public void restartWorkflow(WorkflowInstance instance) throws WorkflowException {
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
+
+        forceAttach(instance);
         try {
             instance = reloadNN(instance, View.LOCAL);
             if (instance.getEndDate() == null) {
@@ -199,6 +206,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             log.error("Workflow instance restarting failed", e);
             throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.failedToRestartWorkflowInstance"),
                     instance, instance.getId(), e.getMessage()));
+        } finally {
+            detach(instance);
         }
 
         start(instance);
@@ -213,6 +222,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         //noinspection ConstantConditions
         Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWorkerBean.emptyEntity"));
 
+        forceAttach(instance);
         try (Transaction tr = persistence.getTransaction()) {
             EntityManager em = persistence.getEntityManager();
 
@@ -262,6 +272,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             log.error("Workflow instance reset failed", e);
             throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.failedToResetWorkflowInstance"),
                     instance, instance.getId(), e.getMessage()));
+        } finally {
+            detach(instance);
         }
 
         start(instance);
@@ -271,7 +283,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     public void recreateTasks(WorkflowInstance instance) throws WorkflowException {
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
 
-        attach(instance);
+        forceAttach(instance);
         try {
             //cleanup system parameter
             WorkflowExecutionContext ctx = getExecutionContext(instance);
@@ -290,7 +302,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
         Preconditions.checkNotNullArgument(step, getMessage("WorkflowWorkerBean.emptyStep"));
 
-        attach(instance);
+        forceAttach(instance);
         try {
             try (Transaction tr = persistence.getTransaction()) {
                 EntityManager em = persistence.getEntityManager();
@@ -520,9 +532,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
      * @throws WorkflowException in case of any unexpected problems
      */
     protected void start(WorkflowInstance instance) throws WorkflowException {
-        if (!isAttached(instance)) {//not took to process
-            iterate(instance);//TODO maybe it is better call in scheduler to release calling thread?
-        }
+        iterate(instance);//TODO maybe it is better call in scheduler to release calling thread?
     }
 
     /**
@@ -534,7 +544,9 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected void iterate(WorkflowInstance instance) throws WorkflowException {
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
 
-        attach(instance);
+        if (!attach(instance)) {
+            return;
+        }
 
         WorkflowInstance originalInstance = instance;
         WorkflowEntity entity = null;
@@ -650,7 +662,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected boolean checkDirectionByGroovy(StepDirection direction, WorkflowInstance instance,
                                              WorkflowEntity entity, WorkflowExecutionContext context) throws WorkflowException {
         try {
-            final String script = direction.getConditionGroovyScript();
+            final String script = prepareScript(direction.getConditionGroovyScript());
             final Map<String, Object> binding = new HashMap<>();
             binding.put("entity", entity);
             binding.put("context", context.getParams());
@@ -667,7 +679,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     protected boolean checkDefinitionByGroovy(WorkflowDefinition definition, WorkflowEntity entity) {
-        final String script = definition.getConditionGroovyScript();
+        final String script = prepareScript(definition.getConditionGroovyScript());
         final Map<String, Object> binding = new HashMap<>();
         binding.put("entity", entity);
 
@@ -759,21 +771,32 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             stage = reloadNN(stage, "stage-process");
 
             boolean success = true;
-            if (!StringUtils.isEmpty(stage.getExecutionGroovyScript())) {
+            if (!StringUtils.isEmpty(stage.getExecutionGroovyScript()) || !StringUtils.isEmpty(stage.getExecutionBeanName())) {
                 try {
                     WorkflowExecutionContext context = getExecutionContext(instance);
 
                     if (isExecutable(context, task)) {
-                        final Map<String, Object> binding = new HashMap<>();
-                        binding.put("entity", reloadNN(entity, View.LOCAL));
-                        binding.put("context", context.getParams());
-                        binding.put("workflowInstance", reloadNN(instance, View.LOCAL));
-                        binding.put("workflowInstanceTask", reloadNN(task, View.LOCAL));
+                        if (!StringUtils.isEmpty(stage.getExecutionBeanName())) {
+                            WorkflowExecutionDelegate delegate = AppBeans.get(stage.getExecutionBeanName());
+                            BaseWorkflowExecutionData data = new BaseWorkflowExecutionData(
+                                    reloadNN(instance, View.LOCAL),
+                                    reloadNN(task, View.LOCAL),
+                                    reloadNN(entity, View.LOCAL),
+                                    context);
 
-                        //if script returned true - this mean step successfully finished and we can move to the next stage
-                        Object result = scripting.evaluateGroovy(stage.getExecutionGroovyScript(), binding);
-                        if (result instanceof Boolean) {
-                            success = Boolean.TRUE.equals(result);
+                            success = delegate.execute(data);
+                        } else {
+                            final Map<String, Object> binding = new HashMap<>();
+                            binding.put("entity", reloadNN(entity, View.LOCAL));
+                            binding.put("context", context.getParams());
+                            binding.put("workflowInstance", reloadNN(instance, View.LOCAL));
+                            binding.put("workflowInstanceTask", reloadNN(task, View.LOCAL));
+
+                            //if script returned true - this mean step successfully finished and we can move to the next stage
+                            Object result = scripting.evaluateGroovy(prepareScript(stage.getExecutionGroovyScript()), binding);
+                            if (result instanceof Boolean) {
+                                success = Boolean.TRUE.equals(result);
+                            }
                         }
                         if (success) {
                             context.putParam(WorkflowConstants.REPEAT, null);
@@ -791,6 +814,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                             instance, instance.getId(), stage.getName(), task.getId()), e);
 
                     markAsFailed(instance, entity, task, e);
+
+                    if (e instanceof WorkflowException) {
+                        throw (WorkflowException) e;
+                    }
 
                     throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.errorInTask"),
                             stage.getName(), e.getMessage()), e);
@@ -1018,10 +1045,18 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Authenticated
     @Override
     public void performWorkflowHeartbeat() {
-        ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-        writeLock.lock();
-        try {
-            List<WorkflowInstance> notFinished = getNotFinishedWorkflowInstances(processingInstances.keySet());
+        if (Boolean.TRUE.equals(config.getHeartbeatEnable())) {
+            Set<UUID> processing;
+
+            ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+            readLock.lock();
+            try {
+                processing = processingInstances.keySet();
+            } finally {
+                readLock.unlock();
+            }
+
+            List<WorkflowInstance> notFinished = getNotFinishedWorkflowInstances(processing);
             for (WorkflowInstance instance : notFinished) {
                 try {
                     iterate(instance);
@@ -1029,8 +1064,6 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     log.warn("Failed to restart workflow instance from heartbeat");
                 }
             }
-        } finally {
-            writeLock.unlock();
         }
     }
 
@@ -1157,11 +1190,32 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         return true;
     }
 
-    protected void attach(WorkflowInstance instance) {
+    protected boolean attach(WorkflowInstance instance) {
         ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
         writeLock.lock();
         try {
-            processingInstances.put(instance.getId(), instance);
+            Thread processingThread = processingInstances.get(instance.getId());
+            if (Objects.equals(processingThread, Thread.currentThread())) {
+                return true;
+            }
+
+            if (processingThread == null || !processingThread.isAlive()) {
+                processingInstances.put(instance.getId(), Thread.currentThread());
+                return true;
+            }
+
+            return false;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    protected void forceAttach(WorkflowInstance instance) {
+        ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+        writeLock.lock();
+        try {
+            processingInstances.put(instance.getId(), Thread.currentThread());
+            //TODO in perfect world need to intermediately stop execution of another thread
         } finally {
             writeLock.unlock();
         }
@@ -1177,16 +1231,6 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         }
     }
 
-    protected boolean isAttached(WorkflowInstance instance) {
-        ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-        readLock.lock();
-        try {
-            return processingInstances.containsKey(instance.getId());
-        } finally {
-            readLock.unlock();
-        }
-    }
-
     /**
      * Reloading entity with provided view
      */
@@ -1196,6 +1240,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             throw new RuntimeException(String.format("Failed to reload entity by view %s", view));
         }
         return entity;
+    }
+
+    protected String prepareScript(String script) {
+        return sugar.prepareScript(script);
     }
 
     /**

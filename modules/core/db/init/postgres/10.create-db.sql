@@ -13,6 +13,7 @@ create table WFSTP_STAGE (
     ENTITY_NAME varchar(255) not null,
     TYPE integer not null,
     EXECUTION_GROOVY_SCRIPT text,
+    EXECUTION_BEAN_NAME varchar(255),
     BROWSE_SCREEN_GROOVY_SCRIPT text,
     BROWSER_SCREEN_CONSTRUCTOR text,
     EDITOR_SCREEN_GROOVY_SCRIPT text,

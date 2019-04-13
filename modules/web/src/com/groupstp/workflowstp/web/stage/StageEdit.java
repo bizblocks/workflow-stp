@@ -1,6 +1,7 @@
 package com.groupstp.workflowstp.web.stage;
 
 import com.groupstp.workflowstp.entity.StageType;
+import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.util.EqualsUtils;
 import com.groupstp.workflowstp.web.bean.WorkflowWebBean;
 import com.groupstp.workflowstp.web.screenconstructor.ScreenConstructorEditor;
@@ -30,65 +31,71 @@ import java.util.*;
  * @author adiatullin
  */
 public class StageEdit extends AbstractEditor<Stage> {
-    private static final Logger log = LoggerFactory.getLogger(StageEdit.class);
+    protected static final Logger log = LoggerFactory.getLogger(StageEdit.class);
 
     @Inject
-    private MessageTools messageTools;
+    protected MessageTools messageTools;
     @Inject
-    private DataManager dataManager;
+    protected DataManager dataManager;
     @Inject
-    private WorkflowWebBean workflowWebBean;
+    protected WorkflowWebBean workflowWebBean;
     @Inject
-    private Metadata metadata;
+    protected WorkflowService workflowService;
     @Inject
-    private ComponentsFactory componentsFactory;
+    protected Metadata metadata;
+    @Inject
+    protected ComponentsFactory componentsFactory;
 
     @Inject
-    private Datasource<Stage> stageDs;
+    protected Datasource<Stage> stageDs;
     @Inject
-    private FieldGroup generalFieldGroup;
+    protected FieldGroup generalFieldGroup;
     @Inject
-    private LookupField entityNameField;
+    protected LookupField entityNameField;
     @Inject
-    private LookupField typeField;
+    protected LookupField typeField;
     @Inject
-    private Component userInteractionBox;
+    protected Component userInteractionBox;
     @Inject
-    private Component executionBox;
+    protected Component executionBox;
     @Inject
-    private LookupField actorTypeAction;
+    protected LookupField actorTypeAction;
     @Inject
-    private TokenList actorRolesList;
+    protected TokenList actorRolesList;
     @Inject
-    private TokenList actorUsersList;
+    protected TokenList actorUsersList;
     @Inject
-    private LookupField viewerTypeAction;
+    protected LookupField viewerTypeAction;
     @Inject
-    private TokenList viewerRolesList;
+    protected TokenList viewerRolesList;
     @Inject
-    private TokenList viewerUsersList;
+    protected TokenList viewerUsersList;
     @Inject
-    private SourceCodeEditor browseScreenGroovyScript;
+    protected SourceCodeEditor browseScreenGroovyScript;
     @Inject
-    private SourceCodeEditor editorScreenGroovyScript;
+    protected SourceCodeEditor editorScreenGroovyScript;
     @Inject
-    private SourceCodeEditor executionCode;
+    protected LookupField executionBeanNameField;
     @Inject
-    private TextArea browserScreenConstructor;
+    protected SourceCodeEditor executionCode;
     @Inject
-    private TextArea editorScreenConstructor;
+    protected BoxLayout scriptBox;
     @Inject
-    private BoxLayout mainBox;
+    protected TextArea browserScreenConstructor;
     @Inject
-    private Table<KeyValueEntity> directionVariablesTable;
+    protected TextArea editorScreenConstructor;
     @Inject
-    private ValueCollectionDatasourceImpl directionVariablesDs;
+    protected BoxLayout mainBox;
     @Inject
-    private TabSheet browseScreenTabSheet;
+    protected Table<KeyValueEntity> directionVariablesTable;
     @Inject
-    private TabSheet editorScreenTabSheet;
+    protected ValueCollectionDatasourceImpl directionVariablesDs;
+    @Inject
+    protected TabSheet browseScreenTabSheet;
+    @Inject
+    protected TabSheet editorScreenTabSheet;
 
-    private boolean ignoreDirectionVariablesChanges = false;
+    protected boolean ignoreDirectionVariablesChanges = false;
 
 
     @Override
@@ -101,6 +108,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         initViewerSelectionBehaviour();
         initDirectionVariables();
         initGenericConstruct();
+        initExecutionScripts();
 
         browseScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getBrowseScreenGroovyHint());
         editorScreenGroovyScript.setContextHelpIconClickHandler(contextHelpIconClickEvent -> getEditorScreenGroovyHint());
@@ -108,7 +116,7 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     //Setup behaviour when selected one type some view must be hidden or showed
-    private void initTypeSelectionBehaviour() {
+    protected void initTypeSelectionBehaviour() {
         ((LookupField) generalFieldGroup.getFieldNN("type").getComponentNN()).addValueChangeListener(e -> {
             boolean userInteraction = EqualsUtils.equalAny(e.getValue(), StageType.USERS_INTERACTION, StageType.ARCHIVE);
             boolean execution = StageType.ALGORITHM_EXECUTION.equals(e.getValue());
@@ -126,7 +134,6 @@ public class StageEdit extends AbstractEditor<Stage> {
 
             userInteractionBox.setVisible(userInteraction);
             executionBox.setVisible(execution);
-            executionCode.setRequired(execution);
         });
         mainBox.resetExpanded();
         //hide all
@@ -135,7 +142,7 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     //Setup entity name selection. Then name selected it's can't be changed
-    private void initEntityNameBehaviour() {
+    protected void initEntityNameBehaviour() {
         Map<String, Object> options = new TreeMap<>();
         for (MetaClass metaClass : workflowWebBean.getWorkflowEntities()) {
             options.put(messageTools.getEntityCaption(metaClass) + " (" + metaClass.getName() + ")", metaClass.getName());
@@ -149,7 +156,7 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     //Behaviour for selecting users or roles
-    private void initActorsSelectionBehaviour() {
+    protected void initActorsSelectionBehaviour() {
         Map<String, Object> options = new LinkedHashMap<>();
         options.put(getMessage("stageEdit.selectUsers"), ActorsType.USER);
         options.put(getMessage("stageEdit.selectRole"), ActorsType.ROLE);
@@ -163,7 +170,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         actorTypeAction.setValue(ActorsType.USER);
     }
 
-    private void initViewerSelectionBehaviour() {
+    protected void initViewerSelectionBehaviour() {
         Map<String, Object> options = new LinkedHashMap<>();
         options.put(getMessage("stageEdit.selectUsers"), ActorsType.USER);
         options.put(getMessage("stageEdit.selectRole"), ActorsType.ROLE);
@@ -177,7 +184,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         viewerTypeAction.setValue(ActorsType.USER);
     }
 
-    private void initDirectionVariables() {
+    protected void initDirectionVariables() {
         directionVariablesTable.addAction(new AddAction(directionVariablesTable) {
             @Override
             public void actionPerform(Component component) {
@@ -210,7 +217,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         directionVariablesDs.addCollectionChangeListener(e -> onDirectionVariablesChanged());
     }
 
-    private void initGenericConstruct() {
+    protected void initGenericConstruct() {
         directionVariablesTable.addAction(new AbstractAction("genericConstruct") {
             @Override
             public String getCaption() {
@@ -235,21 +242,39 @@ public class StageEdit extends AbstractEditor<Stage> {
         });
     }
 
-    private void getBrowseScreenGroovyHint() {
+    protected void initExecutionScripts() {
+        executionBeanNameField.setOptionsMap(workflowService.getWorkflowExecutionDelegates());
+        ValueChangeListener listener = e -> {
+            if (!StringUtils.isEmpty(executionCode.getValue())) {
+                executionBeanNameField.setValue(null);
+            } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
+                executionCode.setValue(null);
+            }
+            executionCode.setEditable(StringUtils.isEmpty(executionBeanNameField.getValue()));
+            executionCode.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+            executionBeanNameField.setEditable(StringUtils.isEmpty(executionCode.getValue()));
+            executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
+            scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+        };
+        executionBeanNameField.addValueChangeListener(listener);
+        executionCode.addValueChangeListener(listener);
+    }
+
+    protected void getBrowseScreenGroovyHint() {
         showMessageDialog(getMessage("stageEdit.browseScreenGroovyScript"), getMessage("stageEdit.browseScreenGroovyScriptHelp"),
                 MessageType.CONFIRMATION_HTML
                         .modal(false)
                         .width("600px"));
     }
 
-    private void getEditorScreenGroovyHint() {
+    protected void getEditorScreenGroovyHint() {
         showMessageDialog(getMessage("stageEdit.editScreenGroovyScript"), getMessage("stageEdit.editorScreenGroovyScriptHelp"),
                 MessageType.CONFIRMATION_HTML
                         .modal(false)
                         .width("600px"));
     }
 
-    private void getExecutionGroovyHint() {
+    protected void getExecutionGroovyHint() {
         showMessageDialog(getMessage("stageEdit.executionGroovyScript"), getMessage("stageEdit.executionGroovyScriptHelp"),
                 MessageType.CONFIRMATION_HTML
                         .modal(false)
@@ -275,7 +300,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         initShowDirectGroovyExtensionScript();
     }
 
-    private void initConstructors() {
+    protected void initConstructors() {
         stageDs.addItemPropertyChangeListener(e -> {
             if ("browserScreenConstructor".equals(e.getProperty())) {
                 browserScreenConstructor.setValue(pettyPrint(e.getItem().getBrowserScreenConstructor()));
@@ -287,7 +312,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         editorScreenConstructor.setValue(pettyPrint(getItem().getEditorScreenConstructor()));
     }
 
-    private void setupDirectionVariables() {
+    protected void setupDirectionVariables() {
         ignoreDirectionVariablesChanges = true;
         try {
             directionVariablesDs.clear();
@@ -307,7 +332,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         }
     }
 
-    private void onDirectionVariablesChanged() {
+    protected void onDirectionVariablesChanged() {
         if (ignoreDirectionVariablesChanges)
             return;
         String value = null;
@@ -329,7 +354,7 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     @Nullable
-    private String pettyPrint(@Nullable String json) {
+    protected String pettyPrint(@Nullable String json) {
         if (!StringUtils.isEmpty(json)) {
             try {
                 JSONObject jsObject = new JSONObject(json);
@@ -341,7 +366,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         return null;
     }
 
-    private void initShowDirectGroovyExtensionScript() {
+    protected void initShowDirectGroovyExtensionScript() {
         if (!showDirectGroovyScriptsEditor()) {
             browseScreenTabSheet.removeTab("browserScreenScriptTab");
             editorScreenTabSheet.removeTab("editorScreenScriptTab");
@@ -398,7 +423,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         getItem().setEditorScreenConstructor(null);
     }
 
-    private MetaClass getMetaClassNN() {
+    protected MetaClass getMetaClassNN() {
         return metadata.getClassNN(getItem().getEntityName());
     }
 
@@ -409,7 +434,13 @@ public class StageEdit extends AbstractEditor<Stage> {
 
             if (!isUnique(item)) {
                 generalFieldGroup.getFieldNN("name").getComponentNN().requestFocus();
-                showNotification(getMessage("stageEdit.sameStepAlreadyExist"));
+                showNotification(getMessage("stageEdit.sameStepAlreadyExist"), NotificationType.TRAY);
+                return false;
+            }
+
+            if (!isExecutionCodeSpecified(item)) {
+                executionBeanNameField.requestFocus();
+                showNotification(getMessage("stageEdit.setExecutionLogic"), NotificationType.TRAY);
                 return false;
             }
 
@@ -441,6 +472,7 @@ public class StageEdit extends AbstractEditor<Stage> {
                     item.setActors(null);
                 }
                 item.setExecutionGroovyScript(null);
+                item.setExecutionBeanName(null);
 
                 //cleanup viewers
                 if (ActorsType.USER.equals(viewerTypeAction.getValue())) {//selected users only
@@ -455,7 +487,7 @@ public class StageEdit extends AbstractEditor<Stage> {
         return false;
     }
 
-    private boolean isUnique(Stage item) {
+    protected boolean isUnique(Stage item) {
         List same = dataManager.loadList(LoadContext.create(Stage.class)
                 .setQuery(new LoadContext.Query("select e from wfstp$Stage e where " +
                         "e.name = :name and e.entityName = :entityName and e.id <> :id")
@@ -467,15 +499,23 @@ public class StageEdit extends AbstractEditor<Stage> {
         return CollectionUtils.isEmpty(same);
     }
 
-    private boolean isUsersSelected(Stage item) {
+    protected boolean isExecutionCodeSpecified(Stage item) {
+        if (StageType.ALGORITHM_EXECUTION.equals(item.getType())) {
+            return !StringUtils.isEmpty(item.getExecutionBeanName()) ||
+                    !StringUtils.isEmpty(item.getExecutionGroovyScript());
+        }
+        return true;
+    }
+
+    protected boolean isUsersSelected(Stage item) {
         return !CollectionUtils.isEmpty(item.getActors());
     }
 
-    private boolean isRolesSelected(Stage item) {
+    protected boolean isRolesSelected(Stage item) {
         return !CollectionUtils.isEmpty(item.getActorsRoles());
     }
 
-    private enum ActorsType {
+    protected enum ActorsType {
         USER, ROLE
     }
 }

@@ -64,6 +64,9 @@ public class Stage extends StandardEntity {
     @Column(name = "EXECUTION_GROOVY_SCRIPT")
     private String executionGroovyScript;
 
+    @Column(name = "EXECUTION_BEAN_NAME")
+    private String executionBeanName;
+
     @Deprecated
     @Lob
     @Column(name = "BROWSE_SCREEN_GROOVY_SCRIPT")
@@ -160,6 +163,14 @@ public class Stage extends StandardEntity {
 
     public void setExecutionGroovyScript(String executionGroovyScript) {
         this.executionGroovyScript = executionGroovyScript;
+    }
+
+    public String getExecutionBeanName() {
+        return executionBeanName;
+    }
+
+    public void setExecutionBeanName(String executionBeanName) {
+        this.executionBeanName = executionBeanName;
     }
 
     @Deprecated
