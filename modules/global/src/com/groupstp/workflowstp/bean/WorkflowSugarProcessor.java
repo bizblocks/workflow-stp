@@ -1,8 +1,13 @@
 package com.groupstp.workflowstp.bean;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -14,7 +19,19 @@ import java.util.regex.Pattern;
 public class WorkflowSugarProcessor {
     public static final String NAME = "wfstp_WorkflowSugarProcessor";
 
-    private Pattern pattern = Pattern.compile("\\$\\{[^}]+\\}");
+    protected Pattern pattern;
+    protected boolean isMiddleware;
+
+    @PostConstruct
+    public void init() {
+        pattern = Pattern.compile("\\$\\{[^}]+\\}");
+        try {
+            Class.forName("com.groupstp.workflowstp.core.constant.WorkflowConstants");
+            isMiddleware = true;
+        } catch (Exception ignore) {
+            isMiddleware = false;
+        }
+    }
 
     /**
      * Make preparation of specified script
@@ -32,12 +49,12 @@ public class WorkflowSugarProcessor {
 
     protected String appendImports(String script) {
         return "import com.haulmont.cuba.core.global.*;\n" +
-                "import com.groupstp.workflowstp.core.constant.*;\n" +
+                "import java.util.*;\n" +
+                (isMiddleware ? "import com.groupstp.workflowstp.core.constant.*;\n" : "com.groupstp.workflowstp.web.util.*;\n") +
                 script;
     }
 
     protected String substituteParameters(String script) {
-        /**
         Matcher matcher = pattern.matcher(script);
         Set<String> found = new HashSet<>();
         while (matcher.find()) {
@@ -45,13 +62,11 @@ public class WorkflowSugarProcessor {
         }
         if (!CollectionUtils.isEmpty(found)) {
             for (String substitute : found) {
-                String value = "context['" + substitute.substring(2).su
-                if (value == null) {
-                    value = StringUtils.EMPTY;
-                }
-                script = script.replaceAll(substitute, value);
+                String variable = substitute.substring(2);//${
+                variable = variable.substring(0, variable.length() - 1);//}
+                script = script.replaceAll(substitute, "context['" + variable + "']");
             }
-        }*/
+        }
         return script;
     }
 }

@@ -815,6 +815,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
                     markAsFailed(instance, entity, task, e);
 
+                    if (e instanceof WorkflowException) {
+                        throw (WorkflowException) e;
+                    }
+
                     throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.errorInTask"),
                             stage.getName(), e.getMessage()), e);
                 }

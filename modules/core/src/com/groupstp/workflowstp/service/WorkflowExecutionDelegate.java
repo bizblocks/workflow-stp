@@ -21,6 +21,7 @@ public interface WorkflowExecutionDelegate {
      *
      * @param data all execution data
      * @return flag what mean this logic finished and process can move to the next step or not
+     * @throws Exception in case of any problem. Delegate can throw WorkflowException if need to track it externally
      */
-    boolean execute(WorkflowExecutionData data);
+    boolean execute(WorkflowExecutionData data) throws Exception;
 }
