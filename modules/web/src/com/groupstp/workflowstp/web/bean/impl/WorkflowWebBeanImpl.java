@@ -1,6 +1,7 @@
 package com.groupstp.workflowstp.web.bean.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.exception.WorkflowException;
@@ -56,6 +57,8 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     protected DataManager dataManager;
     @Inject
     protected Messages messages;
+    @Inject
+    protected WorkflowSugarProcessor sugar;
 
     @Inject
     protected WorkflowWebConfig webConfig;
@@ -164,7 +167,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                     binding.put(CONTEXT, null);
                     binding.put(WORKFLOW_INSTANCE, null);
                     binding.put(WORKFLOW_INSTANCE_TASK, null);
-                    scripting.evaluateGroovy(script, binding);
+                    scripting.evaluateGroovy(prepareScript(script), binding);
                 } else {
                     log.info(String.format("For stage %s(%s) browser screen extension not specified", stage.getName(), stage.getId()));
                 }
@@ -241,7 +244,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                     binding.put(WORKFLOW_INSTANCE_TASK, task);
                     binding.put(STAGE, stage);
                     binding.put(VIEW_ONLY, null);
-                    scripting.evaluateGroovy(script, binding);
+                    scripting.evaluateGroovy(prepareScript(script), binding);
 
                     service.setExecutionContext(ctx, workflowInstance);//save parameters since they can be changed
                 } else {
@@ -278,7 +281,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
                     binding.put(WORKFLOW_INSTANCE, null);
                     binding.put(WORKFLOW_INSTANCE_TASK, null);
 
-                    scripting.evaluateGroovy(script, binding);
+                    scripting.evaluateGroovy(prepareScript(script), binding);
                 } else {
                     log.info(String.format("For screen extension template '%s' script not specified", templateKey));
                 }
@@ -719,6 +722,10 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
 
     protected String getMessage(String messageKey) {
         return messages.getMessage(getClass(), messageKey);
+    }
+
+    protected String prepareScript(String script) {
+        return sugar.prepareScript(script);
     }
 
     /**
