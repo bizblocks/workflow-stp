@@ -5,6 +5,7 @@ import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,6 +25,13 @@ public interface WorkflowService {
      * @throws WorkflowException in case of any unexpected problems or if active workflow not found
      */
     Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException;
+
+    /**
+     * Retrieve all exist in system workflow execution delegates services
+     *
+     * @return workflow execution delegates services
+     */
+    List<String> getWorkflowExecutionDelegates();
 
     /**
      * Create and start workflow execution by provided entity and workflow object.

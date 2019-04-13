@@ -1,12 +1,15 @@
 package com.groupstp.workflowstp.core.bean;
 
+import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.core.config.WorkflowConfig;
 import com.groupstp.workflowstp.core.constant.WorkflowConstants;
 import com.groupstp.workflowstp.core.util.JsonUtil;
+import com.groupstp.workflowstp.data.impl.BaseWorkflowExecutionData;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.event.WorkflowEvent;
 import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
+import com.groupstp.workflowstp.service.WorkflowExecutionDelegate;
 import com.haulmont.bali.util.Preconditions;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
@@ -54,6 +57,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected Events events;
     @Inject
     protected UserSessionSource userSessionSource;
+    @Inject
+    protected WorkflowSugarProcessor sugar;
 
     @Inject
     protected WorkflowConfig config;
@@ -657,7 +662,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected boolean checkDirectionByGroovy(StepDirection direction, WorkflowInstance instance,
                                              WorkflowEntity entity, WorkflowExecutionContext context) throws WorkflowException {
         try {
-            final String script = direction.getConditionGroovyScript();
+            final String script = prepareScript(direction.getConditionGroovyScript());
             final Map<String, Object> binding = new HashMap<>();
             binding.put("entity", entity);
             binding.put("context", context.getParams());
@@ -674,7 +679,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     protected boolean checkDefinitionByGroovy(WorkflowDefinition definition, WorkflowEntity entity) {
-        final String script = definition.getConditionGroovyScript();
+        final String script = prepareScript(definition.getConditionGroovyScript());
         final Map<String, Object> binding = new HashMap<>();
         binding.put("entity", entity);
 
@@ -766,21 +771,32 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             stage = reloadNN(stage, "stage-process");
 
             boolean success = true;
-            if (!StringUtils.isEmpty(stage.getExecutionGroovyScript())) {
+            if (!StringUtils.isEmpty(stage.getExecutionGroovyScript()) || !StringUtils.isEmpty(stage.getExecutionBeanName())) {
                 try {
                     WorkflowExecutionContext context = getExecutionContext(instance);
 
                     if (isExecutable(context, task)) {
-                        final Map<String, Object> binding = new HashMap<>();
-                        binding.put("entity", reloadNN(entity, View.LOCAL));
-                        binding.put("context", context.getParams());
-                        binding.put("workflowInstance", reloadNN(instance, View.LOCAL));
-                        binding.put("workflowInstanceTask", reloadNN(task, View.LOCAL));
+                        if (!StringUtils.isEmpty(stage.getExecutionBeanName())) {
+                            WorkflowExecutionDelegate delegate = AppBeans.get(stage.getExecutionBeanName());
+                            BaseWorkflowExecutionData data = new BaseWorkflowExecutionData(
+                                    reloadNN(instance, View.LOCAL),
+                                    reloadNN(task, View.LOCAL),
+                                    reloadNN(entity, View.LOCAL),
+                                    context);
 
-                        //if script returned true - this mean step successfully finished and we can move to the next stage
-                        Object result = scripting.evaluateGroovy(stage.getExecutionGroovyScript(), binding);
-                        if (result instanceof Boolean) {
-                            success = Boolean.TRUE.equals(result);
+                            success = delegate.execute(data);
+                        } else {
+                            final Map<String, Object> binding = new HashMap<>();
+                            binding.put("entity", reloadNN(entity, View.LOCAL));
+                            binding.put("context", context.getParams());
+                            binding.put("workflowInstance", reloadNN(instance, View.LOCAL));
+                            binding.put("workflowInstanceTask", reloadNN(task, View.LOCAL));
+
+                            //if script returned true - this mean step successfully finished and we can move to the next stage
+                            Object result = scripting.evaluateGroovy(prepareScript(stage.getExecutionGroovyScript()), binding);
+                            if (result instanceof Boolean) {
+                                success = Boolean.TRUE.equals(result);
+                            }
                         }
                         if (success) {
                             context.putParam(WorkflowConstants.REPEAT, null);
@@ -1195,7 +1211,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         writeLock.lock();
         try {
             processingInstances.put(instance.getId(), Thread.currentThread());
-            //TODO need to stop execution of another thread
+            //TODO in perfect world need to intermediately stop execution of another thread
         } finally {
             writeLock.unlock();
         }
@@ -1220,6 +1236,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             throw new RuntimeException(String.format("Failed to reload entity by view %s", view));
         }
         return entity;
+    }
+
+    protected String prepareScript(String script) {
+        return sugar.prepareScript(script);
     }
 
     /**

@@ -20,4 +20,6 @@ public interface WorkflowConfig extends Config {
     @Property("workflow.heartbeatEnable")
     @DefaultBoolean(true)
     Boolean getHeartbeatEnable();
+
+    void setHeartbeatEnable(Boolean value);
 }

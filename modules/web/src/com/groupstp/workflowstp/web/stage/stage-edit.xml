@@ -179,6 +179,16 @@
 
             <vbox id="executionBox" spacing="true" width="100%" height="100%" expand="executionCode"
                   margin="true">
+                <fieldGroup id="executionFieldGroup" datasource="stageDs" width="100%">
+                    <column width="100%">
+                        <field id="executionBeanName">
+                            <lookupField id="executionBeanNameField"
+                                         datasource="stageDs"
+                                         property="executionBeanName"
+                                         width="100%"/>
+                        </field>
+                    </column>
+                </fieldGroup>
                 <label value="msg://com.groupstp.workflowstp.entity/Stage.executionGroovyScript"/>
                 <sourceCodeEditor id="executionCode" mode="Groovy" width="100%" datasource="stageDs"
                                   handleTabKey="true"

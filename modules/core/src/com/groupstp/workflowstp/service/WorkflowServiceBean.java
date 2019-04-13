@@ -4,10 +4,14 @@ import com.groupstp.workflowstp.core.bean.WorkflowWorker;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.dto.WorkflowExecutionContext;
+import com.haulmont.cuba.core.global.AppBeans;
+import org.apache.commons.collections4.ComparatorUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +29,21 @@ public class WorkflowServiceBean implements WorkflowService {
     @Override
     public Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException {
         return worker.determinateWorkflow(entity);
+    }
+
+    @Override
+    public List<String> getWorkflowExecutionDelegates() {
+        ArrayList<String> result = new ArrayList<>();
+
+        Map<String, WorkflowExecutionDelegate> items = AppBeans.getAll(WorkflowExecutionDelegate.class);
+        if (items != null && items.size() > 0) {
+            result.ensureCapacity(items.size());
+            for (WorkflowExecutionDelegate item : items.values()) {
+                result.add(item.getName());
+            }
+            result.sort(ComparatorUtils.naturalComparator());
+        }
+        return result;
     }
 
     @Override
