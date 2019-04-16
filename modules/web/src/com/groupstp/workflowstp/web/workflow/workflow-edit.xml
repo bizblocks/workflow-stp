@@ -38,10 +38,10 @@
                 </fieldGroup>
             </groupBox>
 
-            <split width="100%" id="stepsSplit" orientation="horizontal" settingsEnabled="false">
+            <split width="100%" id="stepsSplit" orientation="horizontal">
                 <vbox width="100%" height="100%" expand="stepsTable" spacing="true" margin="true">
                     <label value="msg://workflowEdit.steps"/>
-                    <table id="stepsTable" width="100%" sortable="false" settingsEnabled="false"
+                    <table id="stepsTable" width="100%" sortable="false"
                            textSelectionEnabled="true">
                         <actions>
                             <action id="add"/>
@@ -76,7 +76,7 @@
 
                 <vbox width="100%" height="100%" expand="stepDirectionsTable" spacing="true" margin="true">
                     <label value="msg://workflowEdit.directions"/>
-                    <table id="stepDirectionsTable" width="100%" sortable="false" settingsEnabled="false"
+                    <table id="stepDirectionsTable" width="100%" sortable="false"
                            textSelectionEnabled="true">
                         <actions>
                             <action id="create"/>

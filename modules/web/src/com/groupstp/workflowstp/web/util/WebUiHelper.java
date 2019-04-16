@@ -244,6 +244,7 @@ public class WebUiHelper {
                 ColumnGenerator custom = generators.get(property);
                 if (custom != null && custom.getReadGenerator() != null) {
                     table.addGeneratedColumn(property, custom.getReadGenerator());
+                    table.addColumn(table.getColumn(property));//to support table sort
                 } else {
                     MetaProperty metaProperty = metaClass.getPropertyNN(property);
                     MetaPropertyPath path = metaClass.getPropertyPath(property);
