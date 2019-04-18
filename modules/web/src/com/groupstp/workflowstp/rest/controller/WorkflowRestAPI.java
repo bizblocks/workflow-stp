@@ -57,7 +57,7 @@ public interface WorkflowRestAPI {
      * @return is provided user can perform action to the specified entities or not
      */
     @GetMapping(value = "/performable")
-    ResponseDTO<Boolean> isPerformable(@RequestParam(name = "ids") String[] entityIds,
+    ResponseDTO<Boolean> isPerformable(@RequestParam(name = "id") String[] entityIds,
                                        @RequestParam(name = "workflowId") String workflowId,
                                        @RequestParam(name = "stepId") String stepId,
                                        @RequestParam(name = "actionId") String actionId);
@@ -72,7 +72,7 @@ public interface WorkflowRestAPI {
      * @return result of the performing
      */
     @PostMapping(value = "/perform")
-    ResponseDTO<String> perform(@RequestParam(name = "ids") String[] entityIds,
+    ResponseDTO<String> perform(@RequestParam(name = "id") String[] entityIds,
                                 @RequestParam(name = "workflowId") String workflowId,
                                 @RequestParam(name = "stepId") String stepId,
                                 @RequestParam(name = "actionId") String actionId);

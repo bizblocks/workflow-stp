@@ -255,7 +255,9 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
     @Override
     public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowId, String stepId, String actionId) {
-        Workflow wf = findWorkflowStep(workflowId, stepId);
+        Step step = findWorkflowStep(workflowId, stepId);
+
+
     }
 
     @Override
@@ -286,12 +288,47 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 .orElse(null);
         if (entity == null) {
             throw new RestAPIException(getMessage("captions.error.general"),
-                    format("WorkflowRestController.entityNotFound", entityName, idText), HttpStatus.UNPROCESSABLE_ENTITY);
+                    format("WorkflowRestController.entityNotFound", entityName, idText), HttpStatus.NOT_FOUND);
         }
         return entity;
     }
 
-    protected Step findWorkflowStep(String workflowId, )
+    protected Step findWorkflowStep(String workflowIdText, String stepIdText) {
+        UUID workflowId;
+        try {
+            workflowId = UuidProvider.fromString(workflowIdText);
+        } catch (Exception e) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    format("WorkflowRestController.failedToParseId", workflowIdText),
+                    HttpStatus.BAD_REQUEST);
+        }
+        UUID stepId;
+        try {
+            stepId = UuidProvider.fromString(stepIdText);
+        } catch (Exception e) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    format("WorkflowRestController.failedToParseId", stepIdText),
+                    HttpStatus.BAD_REQUEST);
+        }
+        Step step = dataManager.load(Step.class)
+                .query("select e from wfstp$Step e where e.id = :stepId and e.workflow.id = :workflowId")
+                .parameter("stepId", stepId)
+                .parameter("workflowId", workflowId)
+                .view("some_view")//TODO determinate view
+                .optional()
+                .orElse(null);
+        if (step == null) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.stepNotFound"),
+                    HttpStatus.NOT_FOUND);
+        }
+        if (!Boolean.TRUE.equals(step.getWorkflow().getActive())) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.workflowDeactivated"),
+                    HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        return step;
+    }
 
     protected Object parseId(MetaClass metaClass, String idText, Class idClass) {
         Object id = null;
