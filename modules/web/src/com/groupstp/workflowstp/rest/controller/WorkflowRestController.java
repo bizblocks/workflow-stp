@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.rest.dto.*;
-import com.groupstp.workflowstp.rest.dto.generic.MessageDTO;
 import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.util.EqualsUtils;
 import com.groupstp.workflowstp.web.bean.WorkflowWebBean;
@@ -255,12 +254,12 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowId, String stageId, String actionId) {
-        return null;
+    public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowId, String stepId, String actionId) {
+        Workflow wf = findWorkflowStep(workflowId, stepId);
     }
 
     @Override
-    public ResponseDTO<String> perform(String[] entityIds, String workflowId, String stageId, String actionId) {
+    public ResponseDTO<String> perform(String[] entityIds, String workflowId, String stepId, String actionId) {
         return null;
     }
 
@@ -291,6 +290,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
         }
         return entity;
     }
+
+    protected Step findWorkflowStep(String workflowId, )
 
     protected Object parseId(MetaClass metaClass, String idText, Class idClass) {
         Object id = null;
