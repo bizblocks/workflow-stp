@@ -29,6 +29,10 @@ public class StepDTO implements Serializable {
     private Permission permission;
     @JsonProperty("actions")
     private List<ActionDTO> actions;
+    @JsonProperty("browser_columns")
+    private List<BrowserColumnDTO> browserColumns;
+    @JsonProperty("editor_fields")
+    private List<EditorFieldDTO> editorFields;
     @JsonProperty("order")
     private Integer order;
 
@@ -71,6 +75,22 @@ public class StepDTO implements Serializable {
 
     public void setActions(List<ActionDTO> actions) {
         this.actions = actions;
+    }
+
+    public List<BrowserColumnDTO> getBrowserColumns() {
+        return browserColumns;
+    }
+
+    public void setBrowserColumns(List<BrowserColumnDTO> browserColumns) {
+        this.browserColumns = browserColumns;
+    }
+
+    public List<EditorFieldDTO> getEditorFields() {
+        return editorFields;
+    }
+
+    public void setEditorFields(List<EditorFieldDTO> editorFields) {
+        this.editorFields = editorFields;
     }
 
     public Integer getOrder() {

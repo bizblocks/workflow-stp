@@ -9,18 +9,18 @@ import java.io.Serializable;
  *
  * @author adiatullin
  */
-public class ResultDTO implements Serializable {
+public class ResponseDTO<T extends Serializable> implements Serializable {
     private static final long serialVersionUID = -4735565725004463374L;
 
     @JsonProperty("result")
-    private String result;
+    private T result;
 
 
-    public String getResult() {
+    public T getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(T result) {
         this.result = result;
     }
 }
