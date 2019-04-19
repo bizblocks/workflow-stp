@@ -318,7 +318,12 @@ public class WorkflowRestController implements WorkflowRestAPI {
                         binding.put(STAGE_PARAMETER, step.getStage());
                         binding.put(VIEW_ONLY_PARAMETER, viewOnly);
 
-                        scripting.evaluateGroovy(prepareScript(script), binding);
+                        Object value = scripting.evaluateGroovy(prepareScript(script), binding);
+                        if (value instanceof Boolean) {
+                            result.setResult((Boolean) value);
+                        } else {
+                            result.setResult(Boolean.TRUE);
+                        }
                     } catch (Exception e) {
                         log.error(String.format("Failed to check is action '%s|%s' performable", step.getStage().getName(), action.getId()), e);
 
@@ -336,8 +341,80 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<String> perform(String[] entityIds, String workflowId, String stepId, String actionId) {
-        return null;
+    public ResponseDTO<String> perform(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
+        Step step = findWorkflowStep(workflowIdText, stepIdText);
+        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
+        Boolean viewOnly = isViewOnly(step);
+
+        List<WorkflowEntity> entities = new ArrayList<>();
+
+        String entityName = step.getWorkflow().getEntityName();
+        String stepName = step.getStage().getName();
+        for (String entityId : entityIds) {
+            WorkflowEntity entity = findEntity(entityId, entityName, View.LOCAL);
+            if (!entities.contains(entity)) {
+                if (!stepName.equalsIgnoreCase(entity.getStepName())) {
+                    throw new RestAPIException(getMessage("captions.error.general"),
+                            format("WorkflowRestController.entityClassNotFound", entityName), HttpStatus.BAD_REQUEST);
+                }
+                entities.add(entity);
+            }
+        }
+
+        ResponseDTO<Boolean> result = new ResponseDTO<>();
+
+        ScreenAction action = actionPair.getFirst();
+        ScreenActionTemplate actionTemplate = actionPair.getSecond();
+
+        if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
+            Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
+            ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
+            if (count != null && type != null) {
+                int currentCount = entities.size();
+                switch (type) {
+                    case LESS: {
+                        result.setResult(currentCount < count);
+                        break;
+                    }
+                    case MORE: {
+                        result.setResult(currentCount > count);
+                        break;
+                    }
+                    case EQUALS: {
+                        result.setResult(currentCount == count);
+                        break;
+                    }
+                }
+            }
+            if (result.getResult() == null) {
+                String script = getValue(action, actionTemplate, "externalPermitScript", null);
+                if (!StringUtils.isEmpty(script)) {
+                    try {
+                        Map<String, Object> binding = new HashMap<>();
+                        binding.put(ENTITIES_PARAMETER, entities);
+                        binding.put(STAGE_PARAMETER, step.getStage());
+                        binding.put(VIEW_ONLY_PARAMETER, viewOnly);
+
+                        Object value = scripting.evaluateGroovy(prepareScript(script), binding);
+                        if (value instanceof Boolean) {
+                            result.setResult((Boolean) value);
+                        } else {
+                            result.setResult(Boolean.TRUE);
+                        }
+                    } catch (Exception e) {
+                        log.error(String.format("Failed to check is action '%s|%s' performable", step.getStage().getName(), action.getId()), e);
+
+                        throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
+                }
+            }
+        }
+
+        if (result.getResult() == null) {
+            result.setResult(Boolean.TRUE);
+        }
+
+        return result;
     }
 
     protected WorkflowEntity findEntity(String idText, String entityName) {
