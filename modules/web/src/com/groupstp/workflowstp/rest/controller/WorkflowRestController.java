@@ -1,6 +1,7 @@
 package com.groupstp.workflowstp.rest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.rest.dto.*;
@@ -26,7 +27,6 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Workflow REST controller
@@ -36,6 +36,10 @@ import java.util.stream.Collectors;
 @RestController("wfstp_WorkflowRestController")
 public class WorkflowRestController implements WorkflowRestAPI {
     private static final Logger log = LoggerFactory.getLogger(WorkflowRestController.class);
+
+    protected static final String ENTITIES_PARAMETER = "entities";
+    protected static final String STAGE_PARAMETER = "stage";
+    protected static final String VIEW_ONLY_PARAMETER = "viewOnly";
 
     @Inject
     protected DataManager dataManager;
@@ -51,6 +55,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected Messages messages;
     @Inject
     protected Scripting scripting;
+    @Inject
+    protected WorkflowSugarProcessor sugar;
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -261,6 +267,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
         Step step = findWorkflowStep(workflowIdText, stepIdText);
         Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
+        Boolean viewOnly = isViewOnly(step);
 
         List<WorkflowEntity> entities = new ArrayList<>();
 
@@ -307,17 +314,15 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 if (!StringUtils.isEmpty(script)) {
                     try {
                         Map<String, Object> binding = new HashMap<>();
-                        binding.put(SCREEN, screen);
-                        binding.put(STAGE, null);
-                        binding.put(VIEW_ONLY, null);
-                        binding.put(ENTITY, null);
-                        binding.put(CONTEXT, null);
-                        binding.put(WORKFLOW_INSTANCE, null);
-                        binding.put(WORKFLOW_INSTANCE_TASK, null);
+                        binding.put(ENTITIES_PARAMETER, entities);
+                        binding.put(STAGE_PARAMETER, step.getStage());
+                        binding.put(VIEW_ONLY_PARAMETER, viewOnly);
 
                         scripting.evaluateGroovy(prepareScript(script), binding);
                     } catch (Exception e) {
+                        log.error(String.format("Failed to check is action '%s|%s' performable", step.getStage().getName(), action.getId()), e);
 
+                        throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
                     }
                 }
             }
@@ -450,6 +455,20 @@ public class WorkflowRestController implements WorkflowRestAPI {
         }
     }
 
+    protected Boolean isViewOnly(Step step) {
+        Boolean viewOnly;
+        User currentUser = userSessionSource.getUserSession().getCurrentOrSubstitutedUser();
+        if (workflowWebBean.isActor(currentUser, step.getStage())) {
+            viewOnly = Boolean.FALSE;
+        } else if (workflowWebBean.isViewer(currentUser, step.getStage())) {
+            viewOnly = Boolean.TRUE;
+        } else {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.accessDenied"), HttpStatus.NOT_ACCEPTABLE);
+        }
+        return viewOnly;
+    }
+
     protected Object parseId(MetaClass metaClass, String idText, Class idClass) {
         Object id = null;
         try {
@@ -547,6 +566,10 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 }
             });
         }
+    }
+
+    protected String prepareScript(String script) {
+        return sugar.prepareScript(script);
     }
 
     protected String getMessage(String mesageKey) {
