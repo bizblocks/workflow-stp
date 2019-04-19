@@ -7,6 +7,7 @@ import com.groupstp.workflowstp.rest.dto.*;
 import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.util.EqualsUtils;
 import com.groupstp.workflowstp.web.bean.WorkflowWebBean;
+import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
 import com.haulmont.cuba.core.entity.Entity;
@@ -25,6 +26,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Workflow REST controller
@@ -47,6 +49,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected Metadata metadata;
     @Inject
     protected Messages messages;
+    @Inject
+    protected Scripting scripting;
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -254,10 +258,76 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowId, String stepId, String actionId) {
-        Step step = findWorkflowStep(workflowId, stepId);
+    public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
+        Step step = findWorkflowStep(workflowIdText, stepIdText);
+        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
 
+        List<WorkflowEntity> entities = new ArrayList<>();
 
+        String entityName = step.getWorkflow().getEntityName();
+        String stepName = step.getStage().getName();
+        for (String entityId : entityIds) {
+            WorkflowEntity entity = findEntity(entityId, entityName, View.LOCAL);
+            if (!entities.contains(entity)) {
+                if (!stepName.equalsIgnoreCase(entity.getStepName())) {
+                    throw new RestAPIException(getMessage("captions.error.general"),
+                            format("WorkflowRestController.entityClassNotFound", entityName), HttpStatus.BAD_REQUEST);
+                }
+                entities.add(entity);
+            }
+        }
+
+        ResponseDTO<Boolean> result = new ResponseDTO<>();
+
+        ScreenAction action = actionPair.getFirst();
+        ScreenActionTemplate actionTemplate = actionPair.getSecond();
+
+        if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
+            Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
+            ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
+            if (count != null && type != null) {
+                int currentCount = entities.size();
+                switch (type) {
+                    case LESS: {
+                        result.setResult(currentCount < count);
+                        break;
+                    }
+                    case MORE: {
+                        result.setResult(currentCount > count);
+                        break;
+                    }
+                    case EQUALS: {
+                        result.setResult(currentCount == count);
+                        break;
+                    }
+                }
+            }
+            if (result.getResult() == null) {
+                String script = getValue(action, actionTemplate, "externalPermitScript", null);
+                if (!StringUtils.isEmpty(script)) {
+                    try {
+                        Map<String, Object> binding = new HashMap<>();
+                        binding.put(SCREEN, screen);
+                        binding.put(STAGE, null);
+                        binding.put(VIEW_ONLY, null);
+                        binding.put(ENTITY, null);
+                        binding.put(CONTEXT, null);
+                        binding.put(WORKFLOW_INSTANCE, null);
+                        binding.put(WORKFLOW_INSTANCE_TASK, null);
+
+                        scripting.evaluateGroovy(prepareScript(script), binding);
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+        }
+
+        if (result.getResult() == null) {
+            result.setResult(Boolean.TRUE);
+        }
+
+        return result;
     }
 
     @Override
@@ -266,6 +336,10 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     protected WorkflowEntity findEntity(String idText, String entityName) {
+        return findEntity(idText, entityName, View.MINIMAL);
+    }
+
+    protected WorkflowEntity findEntity(String idText, String entityName, String view) {
         MetaClass metaClass = metadata.getClass(entityName);
         if (metaClass == null) {
             throw new RestAPIException(getMessage("captions.error.general"),
@@ -283,7 +357,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
         //noinspection unchecked
         WorkflowEntity entity = (WorkflowEntity) dataManager.load(metaClass.getJavaClass())
                 .id(id)
-                .view(View.MINIMAL)
+                .view(view)
                 .optional()
                 .orElse(null);
         if (entity == null) {
@@ -328,6 +402,52 @@ public class WorkflowRestController implements WorkflowRestAPI {
                     HttpStatus.UNPROCESSABLE_ENTITY);
         }
         return step;
+    }
+
+    protected Pair<ScreenAction, ScreenActionTemplate> getAction(Step step, String actionIdText) {
+        UUID actionId;
+        try {
+            actionId = UuidProvider.fromString(actionIdText);
+        } catch (Exception e) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    format("WorkflowRestController.failedToParseId", actionIdText),
+                    HttpStatus.BAD_REQUEST);
+        }
+        try {
+            ScreenConstructor screenConstructor = getScreenConstructor(step.getStage());
+
+            ScreenAction action = null;
+            ScreenActionTemplate template = null;
+
+            if (!CollectionUtils.isEmpty(screenConstructor.getActions())) {
+                action = screenConstructor.getActions().stream()
+                        .filter(e -> actionId.equals(e.getId()))
+                        .findFirst()
+                        .orElse(null);
+            }
+            if (action == null) {
+                throw new RestAPIException(getMessage("captions.error.general"),
+                        format("WorkflowRestController.actionWithIdNotFound", actionIdText),
+                        HttpStatus.BAD_REQUEST);
+            }
+            if (action.getTemplate() != null) {
+                template = dataManager.load(ScreenActionTemplate.class)
+                        .id(action.getTemplate())
+                        .view(View.LOCAL)
+                        .optional()
+                        .orElse(null);
+            }
+
+            return new Pair<>(action, template);
+        } catch (Exception e) {
+            if (e instanceof RestAPIException) {
+                throw (RestAPIException) e;
+            }
+            log.error("Failed to retrieve action", e);
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    format("WorkflowRestController.failedToRetrieveAction", actionIdText),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     protected Object parseId(MetaClass metaClass, String idText, Class idClass) {
