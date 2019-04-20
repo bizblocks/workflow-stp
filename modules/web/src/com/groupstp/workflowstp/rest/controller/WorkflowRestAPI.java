@@ -43,12 +43,12 @@ public interface WorkflowRestAPI {
      */
     @GetMapping(value = "/processing")
     ResponseDTO<String> isProcessing(@RequestParam(name = "entityId") String entityId,
-                                      @RequestParam(name = "entityName") String entityName);
+                                     @RequestParam(name = "entityName") String entityName);
 
     /**
      * Check can current user perform workflow action of the specified entities
      *
-     * @param entityId  performing entities ids
+     * @param entityId   performing entities ids
      * @param workflowId current processing workflow id
      * @param stepId     processing step id
      * @param actionId   performing action id
@@ -63,15 +63,17 @@ public interface WorkflowRestAPI {
     /**
      * Perform provided action with current user for specified entities
      *
-     * @param entityId  performing entities ids
+     * @param entityId   performing entities ids
      * @param workflowId current processing workflow id
      * @param stepId     processing step id
      * @param actionId   performing action id
+     * @param payload    special payload message which can contains business logic data
      * @return result of the performing
      */
     @PostMapping(value = "/perform")
     ResponseDTO<String> perform(@RequestParam(name = "entityId") String[] entityId,
                                 @RequestParam(name = "workflowId") String workflowId,
                                 @RequestParam(name = "stepId") String stepId,
-                                @RequestParam(name = "actionId") String actionId);
+                                @RequestParam(name = "actionId") String actionId,
+                                @RequestBody String payload);
 }

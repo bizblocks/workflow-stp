@@ -3,6 +3,7 @@ package com.groupstp.workflowstp.rest.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.entity.*;
+import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.rest.config.WorkflowRestConfig;
 import com.groupstp.workflowstp.rest.dto.*;
 import com.groupstp.workflowstp.service.WorkflowService;
@@ -43,6 +44,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected static final String ENTITIES_PARAMETER = "entities";
     protected static final String STAGE_PARAMETER = "stage";
     protected static final String VIEW_ONLY_PARAMETER = "viewOnly";
+    protected static final String PAYLOAD_PARAMETER = "payload";
 
     @Inject
     protected DataManager dataManager;
@@ -384,7 +386,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<String> perform(String[] entityId, String workflowId, String stepId, String actionId) {
+    public ResponseDTO<String> perform(String[] entityId, String workflowId, String stepId, String actionId, String payload) {
         checkEnabled();
 
         Step step = findWorkflowStep(workflowId, stepId);
@@ -432,12 +434,18 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 binding.put(ENTITIES_PARAMETER, entities);
                 binding.put(STAGE_PARAMETER, step.getStage());
                 binding.put(VIEW_ONLY_PARAMETER, viewOnly);
+                binding.put(PAYLOAD_PARAMETER, StringUtils.isBlank(payload) ? null : payload);
 
                 scripting.evaluateGroovy(prepareScript(script), binding);
 
                 result.setResult("Success");
             } catch (Exception e) {
                 log.error(String.format("Failed evaluate action '%s|%s'", step.getStage().getName(), action.getCaption()), e);
+
+                Throwable cause = e.getCause();
+                if (cause instanceof WorkflowException) {
+                    throw new RestAPIException(getMessage("captions.error.general"), cause.getMessage(), HttpStatus.BAD_REQUEST);
+                }
 
                 throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
