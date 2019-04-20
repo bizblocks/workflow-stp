@@ -162,7 +162,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                     }
                 }
 
-                if (Boolean.TRUE.equals(getValue(action, template, "availableInExternalSystem", Boolean.TRUE))) {
+                if (Boolean.TRUE.equals(getValue(action, template, "availableInExternalSystem", Boolean.FALSE))) {
                     ActionDTO dto = new ActionDTO();
                     dto.setId(action.getId().toString());
                     dto.setCaption(getValue(action, template, "caption", null));
