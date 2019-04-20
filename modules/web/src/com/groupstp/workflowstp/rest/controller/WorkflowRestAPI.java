@@ -48,14 +48,14 @@ public interface WorkflowRestAPI {
     /**
      * Check can current user perform workflow action of the specified entities
      *
-     * @param entityIds  performing entities ids
+     * @param entityId  performing entities ids
      * @param workflowId current processing workflow id
      * @param stepId     processing step id
      * @param actionId   performing action id
      * @return is provided user can perform action to the specified entities or not
      */
     @GetMapping(value = "/performable")
-    ResponseDTO<Boolean> isPerformable(@RequestParam(name = "entityId") String[] entityIds,
+    ResponseDTO<Boolean> isPerformable(@RequestParam(name = "entityId") String[] entityId,
                                        @RequestParam(name = "workflowId") String workflowId,
                                        @RequestParam(name = "stepId") String stepId,
                                        @RequestParam(name = "actionId") String actionId);
@@ -63,14 +63,14 @@ public interface WorkflowRestAPI {
     /**
      * Perform provided action with current user for specified entities
      *
-     * @param entityIds  performing entities ids
+     * @param entityId  performing entities ids
      * @param workflowId current processing workflow id
      * @param stepId     processing step id
      * @param actionId   performing action id
      * @return result of the performing
      */
     @PostMapping(value = "/perform")
-    ResponseDTO<String> perform(@RequestParam(name = "entityId") String[] entityIds,
+    ResponseDTO<String> perform(@RequestParam(name = "entityId") String[] entityId,
                                 @RequestParam(name = "workflowId") String workflowId,
                                 @RequestParam(name = "stepId") String stepId,
                                 @RequestParam(name = "actionId") String actionId);

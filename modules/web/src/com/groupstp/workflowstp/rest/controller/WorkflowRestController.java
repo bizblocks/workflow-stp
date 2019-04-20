@@ -284,19 +284,19 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
+    public ResponseDTO<Boolean> isPerformable(String[] entityId, String workflowId, String stepId, String actionId) {
         checkEnabled();
 
-        Step step = findWorkflowStep(workflowIdText, stepIdText);
-        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
+        Step step = findWorkflowStep(workflowId, stepId);
+        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionId);
         boolean viewOnly = isViewOnly(step);
 
         List<WorkflowEntity> entities = new ArrayList<>();
 
         String entityName = step.getWorkflow().getEntityName();
         String stepName = step.getStage().getName();
-        for (String entityId : entityIds) {
-            WorkflowEntity entity = findEntity(entityId, entityName);
+        for (String id : entityId) {
+            WorkflowEntity entity = findEntity(id, entityName);
             if (!entities.contains(entity)) {
                 if (!stepName.equalsIgnoreCase(entity.getStepName())) {
                     throw new RestAPIException(getMessage("captions.error.general"),
@@ -376,19 +376,19 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<String> perform(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
+    public ResponseDTO<String> perform(String[] entityId, String workflowId, String stepId, String actionId) {
         checkEnabled();
 
-        Step step = findWorkflowStep(workflowIdText, stepIdText);
-        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
+        Step step = findWorkflowStep(workflowId, stepId);
+        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionId);
         boolean viewOnly = isViewOnly(step);
 
         List<WorkflowEntity> entities = new ArrayList<>();
 
         String entityName = step.getWorkflow().getEntityName();
         String stepName = step.getStage().getName();
-        for (String entityId : entityIds) {
-            WorkflowEntity entity = findEntity(entityId, entityName);
+        for (String id : entityId) {
+            WorkflowEntity entity = findEntity(id, entityName);
             if (!entities.contains(entity)) {
                 if (!stepName.equalsIgnoreCase(entity.getStepName())) {
                     throw new RestAPIException(getMessage("captions.error.general"),
@@ -475,7 +475,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected Step findWorkflowStep(String workflowIdText, String stepIdText) {
         UUID workflowId;
         try {
-            workflowId = UuidProvider.fromString(workflowIdText);
+            workflowId = UUID.fromString(workflowIdText);
         } catch (Exception e) {
             throw new RestAPIException(getMessage("captions.error.general"),
                     format("WorkflowRestController.failedToParseId", workflowIdText),
@@ -483,7 +483,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
         }
         UUID stepId;
         try {
-            stepId = UuidProvider.fromString(stepIdText);
+            stepId = UUID.fromString(stepIdText);
         } catch (Exception e) {
             throw new RestAPIException(getMessage("captions.error.general"),
                     format("WorkflowRestController.failedToParseId", stepIdText),
@@ -512,7 +512,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected Pair<ScreenAction, ScreenActionTemplate> getAction(Step step, String actionIdText) {
         UUID actionId;
         try {
-            actionId = UuidProvider.fromString(actionIdText);
+            actionId = UUID.fromString(actionIdText);
         } catch (Exception e) {
             throw new RestAPIException(getMessage("captions.error.general"),
                     format("WorkflowRestController.failedToParseId", actionIdText),
@@ -573,7 +573,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
         Object id = null;
         try {
             if (UUID.class.isAssignableFrom(idClass)) {
-                id = UuidProvider.fromString(idText);
+                id = UUID.fromString(idText);
             } else if (Integer.class.isAssignableFrom(idClass)) {
                 id = Integer.valueOf(idText);
             } else if (Long.class.isAssignableFrom(idClass)) {
