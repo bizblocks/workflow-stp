@@ -30,46 +30,53 @@ import java.util.TreeMap;
 public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplate> {
 
     @Inject
-    private Metadata metadata;
+    protected Metadata metadata;
     @Inject
-    private MessageTools messageTools;
+    protected MessageTools messageTools;
     @Inject
-    private ExtendedEntities extendedEntities;
+    protected ExtendedEntities extendedEntities;
     @Inject
-    private ComponentsFactory componentsFactory;
+    protected ComponentsFactory componentsFactory;
     @Inject
-    private Scripting scripting;
+    protected Scripting scripting;
 
     @Inject
-    private Datasource<ScreenActionTemplate> screenActionTemplateDs;
+    protected Datasource<ScreenActionTemplate> screenActionTemplateDs;
     @Inject
-    private LookupField iconField;
+    protected LookupField iconField;
     @Inject
-    private LookupField styleField;
+    protected LookupField styleField;
     @Inject
-    private Button sampleBtn;
+    protected Button sampleBtn;
     @Inject
-    private Label sampleBtnLabel;
+    protected Label sampleBtnLabel;
     @Inject
-    private LookupField entityNameField;
+    protected LookupField entityNameField;
     @Inject
-    private CheckBox permitRequiredChBx;
+    protected CheckBox permitRequiredChBx;
     @Inject
-    private LookupField permitItemsTypeField;
+    protected CheckBox buttonActionChb;
     @Inject
-    private CheckBox buttonActionChb;
+    protected BoxLayout permitBoxDetails;
     @Inject
-    private TextField permitItemsCountField;
+    protected TabSheet permitScriptTabSheet;
     @Inject
-    private SourceCodeEditor permitScriptEditor;
+    protected SourceCodeEditor permitScriptEditor;
     @Inject
-    private BoxLayout permitBox;
+    protected SourceCodeEditor externalPermitScriptEditor;
     @Inject
-    private Label permitExpandLabel;
+    protected BoxLayout permitBox;
     @Inject
-    private BoxLayout permitActionBox;
+    protected Label permitExpandLabel;
     @Inject
-    private SourceCodeEditor scriptEditor;
+    protected BoxLayout permitActionBox;
+    @Inject
+    private TabSheet scriptTabSheet;
+    @Inject
+    protected SourceCodeEditor scriptEditor;
+    @Inject
+    protected SourceCodeEditor externalScriptEditor;
+
 
     @Override
     public void init(Map<String, Object> params) {
@@ -86,10 +93,13 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
             if (EqualsUtils.equalAny(e.getProperty(), "style", "icon", "caption", "buttonAction")) {
                 repaintSampleBtn();
             }
+            if ("availableInExternalSystem".equals(e.getProperty())) {
+                checkExternalScripts();
+            }
         });
     }
 
-    private void initIconField() {
+    protected void initIconField() {
         Map<String, Object> options = new TreeMap<>();
         for (CubaIcon icon : CubaIcon.values()) {
             options.put(icon.name(), icon.source());
@@ -98,7 +108,7 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         iconField.setOptionIconProvider(item -> (String) item);
     }
 
-    private void initStyleField() {
+    protected void initStyleField() {
         Map<String, Object> options = new TreeMap<>();
         options.put(ValoTheme.BUTTON_DANGER, ValoTheme.BUTTON_DANGER);
         options.put(ValoTheme.BUTTON_FRIENDLY, ValoTheme.BUTTON_FRIENDLY);
@@ -117,7 +127,7 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         styleField.setOptionsMap(options);
     }
 
-    private void initEntityNameField() {
+    protected void initEntityNameField() {
         Map<String, Object> options = new TreeMap<>();
         for (MetaClass metaClass : metadata.getSession().getClasses()) {
             if (WorkflowEntity.class.isAssignableFrom(metaClass.getJavaClass())) {
@@ -129,26 +139,27 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         entityNameField.setOptionsMap(options);
     }
 
-    private void initPermitRequired() {
+    protected void initPermitRequired() {
         permitRequiredChBx.addValueChangeListener(e -> {
             permitBox.resetExpanded();
 
-            permitItemsCountField.setVisible(permitRequiredChBx.isChecked());
-            permitItemsTypeField.setVisible(permitRequiredChBx.isChecked());
-            permitScriptEditor.setVisible(permitRequiredChBx.isChecked());
+            permitBoxDetails.setVisible(permitRequiredChBx.isChecked());
+            permitScriptTabSheet.setVisible(permitRequiredChBx.isChecked());
             permitActionBox.setVisible(permitRequiredChBx.isChecked());
             permitExpandLabel.setVisible(!permitRequiredChBx.isChecked());
 
-            permitBox.expand(permitRequiredChBx.isChecked() ? permitScriptEditor : permitExpandLabel);
+            permitBox.expand(permitRequiredChBx.isChecked() ? permitScriptTabSheet : permitExpandLabel);
         });
     }
 
-    private void initScripts() {
+    protected void initScripts() {
         scriptEditor.setContextHelpIconClickHandler(e -> getScriptHint());
+        externalScriptEditor.setContextHelpIconClickHandler(e -> getExternalScriptHint());
         permitScriptEditor.setContextHelpIconClickHandler(e -> getPermitScriptHint());
+        externalPermitScriptEditor.setContextHelpIconClickHandler(e -> getExternalPermitScriptHint());
     }
 
-    private void initButtonActionBehaviour() {
+    protected void initButtonActionBehaviour() {
         buttonActionChb.addValueChangeListener(e -> {
             styleField.setEnabled(buttonActionChb.isChecked());
             if (!buttonActionChb.isChecked()) {
@@ -170,9 +181,10 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         super.postInit();
 
         repaintSampleBtn();
+        checkExternalScripts();
     }
 
-    private void repaintSampleBtn() {
+    protected void repaintSampleBtn() {
         if (Boolean.TRUE.equals(getItem().getButtonAction())) {
             sampleBtn.setVisible(true);
             sampleBtnLabel.setVisible(true);
@@ -185,9 +197,21 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         }
     }
 
+    protected void checkExternalScripts() {
+        boolean externalAvailable = Boolean.TRUE.equals(getItem().getAvailableInExternalSystem());
+
+        scriptTabSheet.getTab("externalScriptTab").setVisible(externalAvailable);
+        permitScriptTabSheet.getTab("externalPermitScriptTab").setVisible(externalAvailable);
+    }
+
     public void editScript() {
         CodeDialog dialog = CodeDialog.show(this, getItem().getScript(), "groovy");
         dialog.addCloseWithCommitListener(() -> getItem().setScript(dialog.getCode()));
+    }
+
+    public void editExternalScript() {
+        CodeDialog dialog = CodeDialog.show(this, getItem().getExternalScript(), "groovy");
+        dialog.addCloseWithCommitListener(() -> getItem().setExternalScript(dialog.getCode()));
     }
 
     public void editPermitScript() {
@@ -195,15 +219,28 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         dialog.addCloseWithCommitListener(() -> getItem().setPermitScript(dialog.getCode()));
     }
 
+    public void editExternalPermitScript() {
+        CodeDialog dialog = CodeDialog.show(this, getItem().getExternalPermitScript(), "groovy");
+        dialog.addCloseWithCommitListener(() -> getItem().setExternalPermitScript(dialog.getCode()));
+    }
+
     public void testScript() {
         test(getItem().getScript());
+    }
+
+    public void testExternalScript() {
+        testExternal(getItem().getExternalScript());
     }
 
     public void testPermitScript() {
         test(getItem().getPermitScript());
     }
 
-    private void test(String script) {
+    public void testExternalPermitScript() {
+        testExternal(getItem().getExternalPermitScript());
+    }
+
+    protected void test(String script) {
         if (!StringUtils.isEmpty(script)) {
             try {
                 Map<String, Object> params = new HashMap<>();
@@ -229,15 +266,51 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         }
     }
 
-    private void getScriptHint() {
+    protected void testExternal(String script) {
+        if (!StringUtils.isEmpty(script)) {
+            try {
+                Map<String, Object> params = new HashMap<>();
+                params.put(WorkflowWebBean.STAGE, metadata.create(Stage.class));
+                params.put(WorkflowWebBean.CONTEXT, new HashMap<>());
+                params.put(WorkflowWebBean.WORKFLOW_INSTANCE, metadata.create(WorkflowInstance.class));
+                params.put(WorkflowWebBean.WORKFLOW_INSTANCE_TASK, metadata.create(WorkflowInstanceTask.class));
+                params.put(WorkflowWebBean.VIEW_ONLY, Boolean.FALSE);
+                params.put(WorkflowWebBean.ENTITY, metadata.create(User.class));
+
+                scripting.evaluateGroovy(script, params);
+            } catch (CompilationFailedException e) {
+                showMessageDialog(getMessage("action.script.error"),
+                        String.format(messages.getMainMessage("action.script.compilationError"), e.toString()), MessageType.WARNING_HTML);
+                return;
+            } catch (Exception ignore) {
+            }
+            showNotification(messages.getMainMessage("action.script.success"));
+        }
+    }
+
+    protected void getScriptHint() {
         showMessageDialog(getMessage("screenActionTemplateEdit.groovyScript"), getMessage("screenActionTemplateEdit.scriptHint"),
                 MessageType.CONFIRMATION_HTML
                         .modal(false)
                         .width("600px"));
     }
 
-    private void getPermitScriptHint() {
+    protected void getExternalScriptHint() {
+        showMessageDialog(getMessage("screenActionTemplateEdit.groovyScript"), getMessage("screenActionTemplateEdit.externalScriptHint"),
+                MessageType.CONFIRMATION_HTML
+                        .modal(false)
+                        .width("600px"));
+    }
+
+    protected void getPermitScriptHint() {
         showMessageDialog(getMessage("screenActionTemplateEdit.groovyScript"), getMessage("screenActionTemplateEdit.permitScriptHint"),
+                MessageType.CONFIRMATION_HTML
+                        .modal(false)
+                        .width("600px"));
+    }
+
+    protected void getExternalPermitScriptHint() {
+        showMessageDialog(getMessage("screenActionTemplateEdit.groovyScript"), getMessage("screenActionTemplateEdit.externalPermitScriptHint"),
                 MessageType.CONFIRMATION_HTML
                         .modal(false)
                         .width("600px"));
@@ -248,6 +321,16 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         if (super.preCommit()) {
             ScreenActionTemplate item = getItem();
 
+            if (Boolean.TRUE.equals(item.getAvailableInExternalSystem())) {
+                if (StringUtils.isEmpty(item.getExternalScript())) {
+                    scriptTabSheet.setSelectedTab("externalScriptTab");
+
+                    showNotification(getMessage("screenActionTemplateEdit.pleaseSetupExternalScript"), NotificationType.WARNING);
+                    return false;
+                }
+            }
+
+            cleanupScriptsIfNeed(item);
             cleanupPermitSettingsIfNeed(item);
 
             return true;
@@ -255,10 +338,18 @@ public class ScreenActionTemplateEdit extends AbstractEditor<ScreenActionTemplat
         return false;
     }
 
-    private void cleanupPermitSettingsIfNeed(ScreenActionTemplate item) {
+    protected void cleanupScriptsIfNeed(ScreenActionTemplate item) {
+        if (!Boolean.TRUE.equals(item.getAvailableInExternalSystem())) {
+            item.setExternalScript(null);
+            item.setExternalPermitScript(null);
+        }
+    }
+
+    protected void cleanupPermitSettingsIfNeed(ScreenActionTemplate item) {
         if (!Boolean.TRUE.equals(item.getPermitRequired())) {
             item.setPermitItemsCount(null);
             item.setPermitScript(null);
+            item.setExternalPermitScript(null);
         }
     }
 }

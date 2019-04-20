@@ -28,6 +28,10 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
     private static final long serialVersionUID = -4907974240053342336L;
 
     @MetaProperty
+    @JsonProperty("id")
+    protected UUID id;
+
+    @MetaProperty
     @JsonProperty("template")
     private UUID template;
 
@@ -67,6 +71,14 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
     private String script;
 
     @MetaProperty
+    @JsonProperty("availableInExternalSystem")
+    private Boolean availableInExternalSystem;
+
+    @MetaProperty
+    @JsonProperty("externalScript")
+    private String externalScript;
+
+    @MetaProperty
     @JsonProperty("permitRequired")
     private Boolean permitRequired;
 
@@ -82,6 +94,23 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
     @JsonProperty("permitScript")
     private String permitScript;
 
+    @MetaProperty
+    @JsonProperty("externalPermitScript")
+    private String externalPermitScript;
+
+
+    @Override
+    public UUID getId() {
+        if (id == null) {
+            id = super.getId();
+        }
+        return id;
+    }
+
+    @Override
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
     public UUID getTemplate() {
         return template;
@@ -155,6 +184,22 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
         this.script = script;
     }
 
+    public Boolean getAvailableInExternalSystem() {
+        return availableInExternalSystem;
+    }
+
+    public void setAvailableInExternalSystem(Boolean availableInExternalSystem) {
+        this.availableInExternalSystem = availableInExternalSystem;
+    }
+
+    public String getExternalScript() {
+        return externalScript;
+    }
+
+    public void setExternalScript(String externalScript) {
+        this.externalScript = externalScript;
+    }
+
     public Boolean getPermitRequired() {
         return permitRequired;
     }
@@ -185,5 +230,13 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
 
     public void setPermitScript(String permitScript) {
         this.permitScript = permitScript;
+    }
+
+    public String getExternalPermitScript() {
+        return externalPermitScript;
+    }
+
+    public void setExternalPermitScript(String externalPermitScript) {
+        this.externalPermitScript = externalPermitScript;
     }
 }

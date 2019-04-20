@@ -33,58 +33,70 @@ import java.util.*;
  */
 public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFrame {
 
-    private static final List<String> TEMPLATE_PROPERTIES = Arrays.asList("alwaysEnabled", "caption", "icon", "style", "shortcut", "buttonAction",
-            "script", "permitRequired", "permitItemsCount", "permitItemsType", "permitScript");
+    protected static final List<String> TEMPLATE_PROPERTIES = Arrays.asList("alwaysEnabled", "caption", "icon", "style", "shortcut", "buttonAction",
+            "script", "availableInExternalSystem", "externalScript", "permitRequired", "permitItemsCount", "permitItemsType", "permitScript", "externalPermitScript");
 
     @Inject
-    private DataManager dataManager;
+    protected DataManager dataManager;
     @Inject
-    private MetadataTools metadataTools;
+    protected MetadataTools metadataTools;
     @Inject
-    private ComponentsFactory componentsFactory;
+    protected ComponentsFactory componentsFactory;
 
     @Inject
-    private CollectionDatasource<ScreenActionTemplate, UUID> actionTemplatesDs;
+    protected CollectionDatasource<ScreenActionTemplate, UUID> actionTemplatesDs;
     @Inject
-    private DatasourceImplementation<ScreenAction> actionDs;
+    protected DatasourceImplementation<ScreenAction> actionDs;
     @Inject
-    private Table<ScreenAction> actionsTable;
+    protected Table<ScreenAction> actionsTable;
     @Inject
-    private CollectionPropertyDatasourceImpl<ScreenAction, UUID> actionsDs;
+    protected CollectionPropertyDatasourceImpl<ScreenAction, UUID> actionsDs;
     @Inject
-    private Table<ScreenAction> genericActionsTable;
+    protected Table<ScreenAction> genericActionsTable;
     @Inject
-    private CollectionDatasourceImpl<ScreenAction, UUID> genericActionsDs;
+    protected CollectionDatasourceImpl<ScreenAction, UUID> genericActionsDs;
     @Inject
-    private FieldGroup actionsFieldGroup;
+    protected FieldGroup actionsFieldGroup;
     @Inject
-    private TextArea actionScriptEditor;
+    protected TabSheet scriptTabSheet;
     @Inject
-    private FlowBoxLayout actionScriptEditorBox;
+    protected TextArea actionScriptEditor;
     @Inject
-    private FlowBoxLayout permitScriptEditorBox;
+    protected TextArea actionExternalScriptEditor;
     @Inject
-    private CheckBox permitRequiredChBx;
+    protected FlowBoxLayout actionScriptEditorBox;
     @Inject
-    private TextArea permitScriptEditor;
+    protected FlowBoxLayout actionExternalScriptEditorBox;
     @Inject
-    private BoxLayout permitRequiredBox;
+    protected FlowBoxLayout permitScriptEditorBox;
     @Inject
-    private BoxLayout actionEditBox;
+    protected FlowBoxLayout externalPermitScriptEditorBox;
     @Inject
-    private BoxLayout tableBox;
+    protected CheckBox permitRequiredChBx;
     @Inject
-    private LookupField iconField;
+    protected TabSheet permitScriptTabSheet;
     @Inject
-    private LookupField styleField;
+    protected TextArea permitScriptEditor;
     @Inject
-    private LookupField templateField;
+    protected TextArea externalPermitScriptEditor;
     @Inject
-    private TextField permitItemsCountField;
+    protected BoxLayout permitRequiredBox;
     @Inject
-    private LookupField permitItemsTypeField;
+    protected BoxLayout actionEditBox;
+    @Inject
+    protected BoxLayout tableBox;
+    @Inject
+    protected LookupField iconField;
+    @Inject
+    protected LookupField styleField;
+    @Inject
+    protected LookupField templateField;
+    @Inject
+    protected TextField permitItemsCountField;
+    @Inject
+    protected LookupField permitItemsTypeField;
 
-    private ScreenAction editingItem;
+    protected ScreenAction editingItem;
 
     @Override
     public void prepare() {
@@ -111,6 +123,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         initTemplateField();
         initIconField();
         initStyleField();
+        initExternalScripts();
         initPermitFields();
 
         disableEdit();
@@ -122,7 +135,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void initTemplates() {
+    protected void initTemplates() {
         List<ScreenActionTemplate> templates = dataManager.load(ScreenActionTemplate.class)
                 .query("select e from wfstp$ScreenActionTemplate e where e.entityName is null or e.entityName = :entityName")
                 .parameter("entityName", entityMetaClass.getName())
@@ -135,7 +148,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void initTableColumns() {
+    protected void initTableColumns() {
         Table.ColumnGenerator<ScreenAction> generator;
 
         generator = entity -> {
@@ -163,8 +176,8 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
             label.setIcon(StringUtils.isEmpty(value) ? StringUtils.EMPTY : value);
             return label;
         };
-        actionsTable.addGeneratedColumn("icon",generator);
-        genericActionsTable.addGeneratedColumn("icon",generator);
+        actionsTable.addGeneratedColumn("icon", generator);
+        genericActionsTable.addGeneratedColumn("icon", generator);
 
         generator = entity -> {
             String value = StringUtils.EMPTY;
@@ -176,9 +189,23 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         };
         actionsTable.addGeneratedColumn("template", generator);
         genericActionsTable.addGeneratedColumn("template", generator);
+
+        generator = entity -> {
+            Boolean value = entity.getAvailableInExternalSystem();
+            if (value == null) {
+                ScreenActionTemplate template = getTemplate(entity);
+                if (template != null) {
+                    value = Boolean.TRUE.equals(template.getAvailableInExternalSystem());
+                }
+            }
+            return new Table.PlainTextCell(Boolean.TRUE.equals(value) ?
+                    messages.getMainMessage("trueString") : messages.getMainMessage("falseString"));
+        };
+        actionsTable.addGeneratedColumn("availableInExternalSystem", generator);
+        genericActionsTable.addGeneratedColumn("availableInExternalSystem", generator);
     }
 
-    private void initTableActions() {
+    protected void initTableActions() {
         actionsTable.addAction(new CreateAction(actionsTable) {
             @Override
             public void actionPerform(Component component) {
@@ -228,7 +255,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         actionsTable.addAction(new ItemMoveAction(actionsTable, false));
     }
 
-    private void initGenericTableActions() {
+    protected void initGenericTableActions() {
         if (genericScreenConstructor != null && !CollectionUtils.isEmpty(genericScreenConstructor.getActions())) {
             for (ScreenAction action : genericScreenConstructor.getActions()) {
                 genericActionsDs.includeItem(action);
@@ -236,16 +263,14 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void initTableBehaviour() {
+    protected void initTableBehaviour() {
         actionsDs.addItemChangeListener(e -> selected(actionsDs, actionsTable, e));
-        genericActionsDs.addItemChangeListener(e-> selected(genericActionsDs, genericActionsTable, e));
+        genericActionsDs.addItemChangeListener(e -> selected(genericActionsDs, genericActionsTable, e));
 
-        actionsDs.addCollectionChangeListener(e -> {
-            correctOrderIfNeed(actionsTable, "order");
-        });
+        actionsDs.addCollectionChangeListener(e -> correctOrderIfNeed(actionsTable, "order"));
     }
 
-    private void selected(DatasourceImplementation ds, Table<ScreenAction> table, Datasource.ItemChangeEvent<ScreenAction> e) {
+    protected void selected(DatasourceImplementation ds, Table<ScreenAction> table, Datasource.ItemChangeEvent<ScreenAction> e) {
         boolean modified = ds.isModified();
 
         cleanupIfSame(getTemplate(e.getPrevItem()), e.getPrevItem());
@@ -265,9 +290,11 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         actionDs.setModified(false);
 
         ds.setModified(modified);
+
+        checkExternalTabs();
     }
 
-    private void initTemplateField() {
+    protected void initTemplateField() {
         final boolean[] setup = new boolean[]{true};
         templateField.addValueChangeListener(e -> {
             if (setup[0]) {
@@ -290,11 +317,11 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     }
 
     @Nullable
-    private ScreenActionTemplate getTemplate(@Nullable ScreenAction action) {
+    protected ScreenActionTemplate getTemplate(@Nullable ScreenAction action) {
         return action == null || action.getTemplate() == null ? null : actionTemplatesDs.getItem(action.getTemplate());
     }
 
-    private void setupIfEmpty(@Nullable ScreenActionTemplate template, @Nullable ScreenAction action) {
+    protected void setupIfEmpty(@Nullable ScreenActionTemplate template, @Nullable ScreenAction action) {
         if (template != null && action != null) {
             for (String property : TEMPLATE_PROPERTIES) {
                 Object value = action.getValue(property);
@@ -305,7 +332,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void cleanupIfSame(@Nullable ScreenActionTemplate template, @Nullable ScreenAction action) {
+    protected void cleanupIfSame(@Nullable ScreenActionTemplate template, @Nullable ScreenAction action) {
         if (template != null && action != null) {
             for (String property : TEMPLATE_PROPERTIES) {
                 if (Objects.equals(template.getValue(property), action.getValue(property))) {
@@ -315,7 +342,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void initIconField() {
+    protected void initIconField() {
         Map<String, Object> options = new TreeMap<>();
         for (CubaIcon icon : CubaIcon.values()) {
             options.put(icon.name(), icon.source());
@@ -324,7 +351,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         iconField.setOptionIconProvider(item -> (String) item);
     }
 
-    private void initStyleField() {
+    protected void initStyleField() {
         Map<String, Object> options = new TreeMap<>();
         options.put(ValoTheme.BUTTON_DANGER, ValoTheme.BUTTON_DANGER);
         options.put(ValoTheme.BUTTON_FRIENDLY, ValoTheme.BUTTON_FRIENDLY);
@@ -343,10 +370,18 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         styleField.setOptionsMap(options);
     }
 
-    private void initPermitFields() {
+    protected void initExternalScripts() {
+        actionDs.addItemPropertyChangeListener(e -> {
+            checkExternalTabs();
+        });
+        checkExternalTabs();
+    }
+
+    protected void initPermitFields() {
         permitRequiredChBx.addValueChangeListener(e -> {
             permitRequiredBox.setVisible(permitRequiredChBx.isChecked());
             permitScriptEditorBox.setVisible(permitRequiredChBx.isEditable());
+            externalPermitScriptEditorBox.setVisible(permitRequiredChBx.isEditable());
         });
         permitRequiredBox.setVisible(false);
     }
@@ -355,8 +390,16 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         editGroovyInDialog(actionDs.getItem(), "script");
     }
 
+    public void editExternalScript() {
+        editGroovyInDialog(actionDs.getItem(), "externalScript");
+    }
+
     public void testScript() {
         test(actionDs.getItem().getScript());
+    }
+
+    public void testExternalScript() {
+        testExternal(actionDs.getItem().getExternalScript());
     }
 
     public void scriptHint() {
@@ -369,12 +412,25 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
+    public void externalScriptHint() {
+        createDialog(getMessage("screenConstructorActionsFrame.browse.scriptHintTitle"),
+                getMessage("screenConstructorActionsFrame.browse.externalScriptHint"));
+    }
+
     public void editPermitScript() {
         editGroovyInDialog(actionDs.getItem(), "permitScript");
     }
 
+    public void editExternalPermitScript() {
+        editGroovyInDialog(actionDs.getItem(), "externalPermitScript");
+    }
+
     public void testPermitScript() {
         test(actionDs.getItem().getPermitScript());
+    }
+
+    public void testExternalPermitScript() {
+        testExternal(actionDs.getItem().getExternalPermitScript());
     }
 
     public void permitScriptHint() {
@@ -387,31 +443,59 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void enableEdit() {
+    public void externalPermitScriptHint() {
+        createDialog(getMessage("screenConstructorActionsFrame.browse.scriptHintTitle"),
+                getMessage("screenConstructorActionsFrame.edit.permitExternalScriptHintContent"));
+    }
+
+    protected void enableEdit() {
         changeState(true);
     }
 
-    private void disableEdit() {
+    protected void disableEdit() {
         changeState(false);
     }
 
-    private void changeState(boolean editing) {
+    protected void changeState(boolean editing) {
         actionEditBox.setVisible(editing);
         actionsFieldGroup.setEditable(editing);
         actionScriptEditor.setEditable(editing);
         actionScriptEditorBox.setVisible(editing);
+        actionExternalScriptEditor.setEditable(editing);
+        actionExternalScriptEditorBox.setVisible(editing);
         permitRequiredChBx.setEditable(editing);
         permitItemsCountField.setEditable(editing);
         permitItemsTypeField.setEditable(editing);
         permitScriptEditor.setEditable(editing);
         permitScriptEditorBox.setVisible(editing && permitRequiredChBx.isChecked());
+        externalPermitScriptEditor.setEditable(editing);
+        externalPermitScriptEditorBox.setVisible(editing && permitRequiredChBx.isChecked());
         permitRequiredBox.setVisible(permitRequiredChBx.isChecked());
         tableBox.setEnabled(!editing);
+
+        checkExternalTabs();
+    }
+
+    protected void checkExternalTabs() {
+        boolean externalEnabled = Boolean.TRUE.equals(actionDs.getItem() == null ? null : actionDs.getItem().getAvailableInExternalSystem());
+        scriptTabSheet.getTab("externalScriptTab").setVisible(externalEnabled);
+        permitScriptTabSheet.getTab("externalPermitScriptTab").setVisible(externalEnabled);
     }
 
     public void onOk() {
         if (validateAll()) {
             ScreenAction action = actionDs.getItem();
+
+            if (Boolean.TRUE.equals(action.getAvailableInExternalSystem())) {
+                if (StringUtils.isEmpty(action.getExternalScript())) {
+                    scriptTabSheet.setSelectedTab("externalScriptTab");
+                    showNotification(getMessage("screenConstructorActionsFrame.edit.pleaseSetupExternalScript"), NotificationType.WARNING);
+                    return;
+                }
+            } else {
+                action.setExternalScript(null);
+                action.setExternalPermitScript(null);
+            }
 
             if (editingItem != null) {
                 metadataTools.copy(action, editingItem);
@@ -445,7 +529,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
         }
     }
 
-    private void onCloseInternal() {
+    protected void onCloseInternal() {
         editingItem = null;
 
         ScreenAction select = null;

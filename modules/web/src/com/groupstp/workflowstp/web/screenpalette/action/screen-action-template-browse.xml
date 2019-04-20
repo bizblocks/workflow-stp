@@ -16,48 +16,55 @@
     </dsContext>
     <dialogMode height="600"
                 width="800"/>
-    <layout expand="screenActionTemplatesTable"
+    <layout expand="mainBox"
             spacing="true">
         <filter id="filter"
                 applyTo="screenActionTemplatesTable"
                 datasource="screenActionTemplatesDs">
             <properties include=".*"/>
         </filter>
-        <groupTable id="screenActionTemplatesTable"
-                    width="100%"
-                    multiselect="true">
-            <actions>
-                <action id="create"/>
-                <action id="edit"/>
-                <action id="remove"/>
-            </actions>
-            <columns>
-                <column id="name"/>
-                <column id="caption"/>
-                <column id="icon"/>
-                <column id="style"/>
-                <column id="shortcut"/>
-                <column id="entityName"/>
-                <column id="alwaysEnabled"/>
-                <column id="permitRequired"/>
-                <column id="buttonAction"/>
-            </columns>
-            <rows datasource="screenActionTemplatesDs"/>
-            <rowsCount/>
-            <buttonsPanel id="buttonsPanel"
-                          alwaysVisible="true">
-                <button id="createBtn"
-                        action="screenActionTemplatesTable.create"/>
-                <button id="editBtn"
-                        action="screenActionTemplatesTable.edit"/>
-                <button id="removeBtn"
-                        action="screenActionTemplatesTable.remove"/>
-                <popupButton id="exportBtn"
-                             caption="msg://screenActionTemplateBrowse.export"
-                             icon="icons/download.png"/>
-                <upload id="importBtn"
-                        uploadButtonIcon="UPLOAD"/>
-            </buttonsPanel>
-        </groupTable>
+        <vbox id="mainBox" width="100%">
+            <groupTable id="screenActionTemplatesTable"
+                        width="100%"
+                        height="100%"
+                        multiselect="true">
+                <actions>
+                    <action id="create"/>
+                    <action id="edit"/>
+                    <action id="remove"/>
+                </actions>
+                <columns>
+                    <column id="name"/>
+                    <column id="caption"/>
+                    <column id="icon"/>
+                    <column id="style"/>
+                    <column id="shortcut"/>
+                    <column id="entityName"/>
+                    <column id="alwaysEnabled"/>
+                    <column id="permitRequired"/>
+                    <column id="buttonAction"/>
+                    <column id="availableInExternalSystem"/>
+                </columns>
+                <rows datasource="screenActionTemplatesDs"/>
+                <rowsCount/>
+                <buttonsPanel id="buttonsPanel"
+                              alwaysVisible="true">
+                    <button id="createBtn"
+                            action="screenActionTemplatesTable.create"/>
+                    <button id="editBtn"
+                            action="screenActionTemplatesTable.edit"/>
+                    <button id="removeBtn"
+                            action="screenActionTemplatesTable.remove"/>
+                    <popupButton id="exportBtn"
+                                 caption="msg://screenActionTemplateBrowse.export"
+                                 icon="icons/download.png"/>
+                    <upload id="importBtn"
+                            fileStoragePutMode="MANUAL"
+                            uploadButtonCaption=""
+                            dropZone="mainBox"
+                            uploadButtonIcon="UPLOAD"/>
+                </buttonsPanel>
+            </groupTable>
+        </vbox>
     </layout>
 </window>

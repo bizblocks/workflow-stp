@@ -29,6 +29,7 @@
                         <column id="caption"/>
                         <column id="icon"/>
                         <column id="template"/>
+                        <column id="availableInExternalSystem"/>
                     </columns>
                     <rowsCount/>
                     <rows datasource="actionsDs"/>
@@ -47,6 +48,7 @@
                         <column id="caption"/>
                         <column id="icon"/>
                         <column id="template"/>
+                        <column id="availableInExternalSystem"/>
                     </columns>
                     <rows datasource="genericActionsDs"/>
                 </table>
@@ -68,18 +70,48 @@
                                 </field>
                                 <field property="shortcut"/>
                                 <field property="alwaysEnabled"/>
+                                <field property="availableInExternalSystem"/>
                                 <field property="buttonAction"/>
                             </column>
                         </fieldGroup>
-                        <textArea id="actionScriptEditor" datasource="actionDs" property="script"
-                                  caption="msg://com.groupstp.workflowstp.entity/ScreenAction.script"
-                                  width="100%"
-                                  height="250px"/>
-                        <flowBox width="100%" spacing="true" id="actionScriptEditorBox">
-                            <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editScript"/>
-                            <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testScript"/>
-                            <button icon="QUESTION_CIRCLE" id="scriptHint" invoke="scriptHint"/>
-                        </flowBox>
+                        <tabSheet id="scriptTabSheet" width="100%" height="420px">
+                            <tab id="scriptTab"
+                                 caption="msg://com.groupstp.workflowstp.entity/ScreenAction.script"
+                                 spacing="true">
+                                <vbox width="100%" height="100%" expand="actionScriptEditor"
+                                      margin="true,false,false,false"
+                                      spacing="true">
+                                    <textArea id="actionScriptEditor" datasource="actionDs"
+                                              property="script" width="100%"/>
+                                    <flowBox width="100%" spacing="true" id="actionScriptEditorBox">
+                                        <button icon="EXPAND" caption="mainMsg://action.fullScreen"
+                                                invoke="editScript"/>
+                                        <button icon="PLAY" caption="mainMsg://action.testScript"
+                                                invoke="testScript"/>
+                                        <button icon="QUESTION_CIRCLE" id="scriptHint"
+                                                invoke="scriptHint"/>
+                                    </flowBox>
+                                </vbox>
+                            </tab>
+                            <tab id="externalScriptTab"
+                                 caption="msg://com.groupstp.workflowstp.entity/ScreenAction.externalScript"
+                                 spacing="true">
+                                <vbox width="100%" height="100%" expand="actionExternalScriptEditor"
+                                      margin="true,false,false,false"
+                                      spacing="true">
+                                    <textArea id="actionExternalScriptEditor" datasource="actionDs"
+                                              property="externalScript" width="100%"/>
+                                    <flowBox width="100%" spacing="true" id="actionExternalScriptEditorBox">
+                                        <button icon="EXPAND" caption="mainMsg://action.fullScreen"
+                                                invoke="editExternalScript"/>
+                                        <button icon="PLAY" caption="mainMsg://action.testScript"
+                                                invoke="testExternalScript"/>
+                                        <button icon="QUESTION_CIRCLE" id="externalScriptHint"
+                                                invoke="externalScriptHint"/>
+                                    </flowBox>
+                                </vbox>
+                            </tab>
+                        </tabSheet>
                         <checkBox id="permitRequiredChBx"
                                   datasource="actionDs" property="permitRequired"
                                   caption="msg://com.groupstp.workflowstp.entity/ScreenAction.permitRequired"/>
@@ -93,15 +125,44 @@
                                     <validator class="com.haulmont.cuba.gui.components.validators.IntegerValidator"/>
                                 </textField>
                             </hbox>
-
-                            <textArea width="100%" height="150px" datasource="actionDs" property="permitScript"
-                                      caption="msg://com.groupstp.workflowstp.entity/ScreenAction.permitScript"
-                                      id="permitScriptEditor"/>
-                            <flowBox width="100%" spacing="true" id="permitScriptEditorBox">
-                                <button icon="EXPAND" caption="mainMsg://action.fullScreen" invoke="editPermitScript"/>
-                                <button icon="PLAY" caption="mainMsg://action.testScript" invoke="testPermitScript"/>
-                                <button icon="QUESTION_CIRCLE" id="permitScriptHint" invoke="permitScriptHint"/>
-                            </flowBox>
+                            <tabSheet id="permitScriptTabSheet" width="100%" height="200px">
+                                <tab id="permitScriptTab"
+                                     caption="msg://com.groupstp.workflowstp.entity/ScreenAction.permitScript">
+                                    <vbox width="100%" height="100%" spacing="true" expand="permitScriptEditor"
+                                          margin="true,false,false,false">
+                                        <textArea width="100%"
+                                                  datasource="actionDs"
+                                                  property="permitScript"
+                                                  id="permitScriptEditor"/>
+                                        <flowBox width="100%" spacing="true" id="permitScriptEditorBox">
+                                            <button icon="EXPAND" caption="mainMsg://action.fullScreen"
+                                                    invoke="editPermitScript"/>
+                                            <button icon="PLAY" caption="mainMsg://action.testScript"
+                                                    invoke="testPermitScript"/>
+                                            <button icon="QUESTION_CIRCLE" id="permitScriptHint"
+                                                    invoke="permitScriptHint"/>
+                                        </flowBox>
+                                    </vbox>
+                                </tab>
+                                <tab id="externalPermitScriptTab"
+                                     caption="msg://com.groupstp.workflowstp.entity/ScreenAction.externalPermitScript">
+                                    <vbox width="100%" height="100%" spacing="true" expand="externalPermitScriptEditor"
+                                          margin="true,false,false,false">
+                                        <textArea width="100%"
+                                                  datasource="actionDs"
+                                                  property="externalPermitScript"
+                                                  id="externalPermitScriptEditor"/>
+                                        <flowBox width="100%" spacing="true" id="externalPermitScriptEditorBox">
+                                            <button icon="EXPAND" caption="mainMsg://action.fullScreen"
+                                                    invoke="editExternalPermitScript"/>
+                                            <button icon="PLAY" caption="mainMsg://action.testScript"
+                                                    invoke="testExternalPermitScript"/>
+                                            <button icon="QUESTION_CIRCLE" id="externalPermitScriptHint"
+                                                    invoke="externalPermitScriptHint"/>
+                                        </flowBox>
+                                    </vbox>
+                                </tab>
+                            </tabSheet>
                         </vbox>
                     </vbox>
                 </scrollBox>

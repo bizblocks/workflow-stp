@@ -27,6 +27,10 @@ public class ScreenTableColumn extends BaseUuidEntity implements Serializable {
     private static final long serialVersionUID = 794861808913239255L;
 
     @MetaProperty
+    @JsonProperty("id")
+    protected UUID id;
+
+    @MetaProperty
     @JsonProperty("template")
     private UUID template;
 
@@ -52,6 +56,19 @@ public class ScreenTableColumn extends BaseUuidEntity implements Serializable {
     @JsonProperty("editable")
     private Boolean editable;
 
+
+    @Override
+    public UUID getId() {
+        if (id == null) {
+            id = super.getId();
+        }
+        return id;
+    }
+
+    @Override
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
     public UUID getTemplate() {
         return template;

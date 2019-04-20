@@ -10,6 +10,7 @@ import com.haulmont.cuba.core.entity.BaseUuidEntity;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.UUID;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
@@ -25,6 +26,10 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 public class ScreenField extends BaseUuidEntity implements Serializable {
     private static final long serialVersionUID = -3256039669663389827L;
 
+    @MetaProperty
+    @JsonProperty("id")
+    protected UUID id;
+
     @NotNull
     @MetaProperty
     @JsonProperty("name")
@@ -35,6 +40,19 @@ public class ScreenField extends BaseUuidEntity implements Serializable {
     @JsonProperty("fieldId")
     private String fieldId;
 
+
+    @Override
+    public UUID getId() {
+        if (id == null) {
+            id = super.getId();
+        }
+        return id;
+    }
+
+    @Override
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

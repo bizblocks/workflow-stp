@@ -52,6 +52,13 @@ public class ScreenActionTemplate extends StandardEntity {
     @Column(name = "SCRIPT", nullable = false)
     private String script;
 
+    @Column(name = "AVAILABLE_IN_EXTERNAL_SYSTEM")
+    private Boolean availableInExternalSystem = false;
+
+    @Lob
+    @Column(name = "EXTERNAL_SCRIPT")
+    private String externalScript;
+
     @Column(name = "PERMIT_REQUIRED")
     private Boolean permitRequired = false;
 
@@ -64,6 +71,11 @@ public class ScreenActionTemplate extends StandardEntity {
     @Lob
     @Column(name = "PERMIT_SCRIPT")
     private String permitScript;
+
+    @Lob
+    @Column(name = "EXTERNAL_PERMIT_SCRIPT")
+    private String externalPermitScript;
+
 
     public String getName() {
         return name;
@@ -137,6 +149,22 @@ public class ScreenActionTemplate extends StandardEntity {
         this.script = script;
     }
 
+    public Boolean getAvailableInExternalSystem() {
+        return availableInExternalSystem;
+    }
+
+    public void setAvailableInExternalSystem(Boolean availableInExternalSystem) {
+        this.availableInExternalSystem = availableInExternalSystem;
+    }
+
+    public String getExternalScript() {
+        return externalScript;
+    }
+
+    public void setExternalScript(String externalScript) {
+        this.externalScript = externalScript;
+    }
+
     public Boolean getPermitRequired() {
         return permitRequired;
     }
@@ -167,5 +195,13 @@ public class ScreenActionTemplate extends StandardEntity {
 
     public void setPermitScript(String permitScript) {
         this.permitScript = permitScript;
+    }
+
+    public String getExternalPermitScript() {
+        return externalPermitScript;
+    }
+
+    public void setExternalPermitScript(String externalPermitScript) {
+        this.externalPermitScript = externalPermitScript;
     }
 }

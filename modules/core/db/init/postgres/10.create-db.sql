@@ -182,10 +182,13 @@ create table WFSTP_SCREEN_ACTION_TEMPLATE (
     SHORTCUT varchar(255),
     BUTTON_ACTION boolean,
     SCRIPT text not null,
+    AVAILABLE_IN_EXTERNAL_SYSTEM boolean,
+    EXTERNAL_SCRIPT text,
     PERMIT_REQUIRED boolean,
     PERMIT_ITEMS_COUNT integer,
     PERMIT_ITEMS_TYPE integer,
     PERMIT_SCRIPT text,
+    EXTERNAL_PERMIT_SCRIPT text,
     --
     primary key (ID)
 )^
