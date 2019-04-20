@@ -303,7 +303,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 if (!entities.contains(entity)) {
                     if (!stepName.equalsIgnoreCase(entity.getStepName())) {
                         throw new RestAPIException(getMessage("captions.error.general"),
-                                format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
+                                format("WorkflowRestController.entityInAnotherStep", entity.getId(), stepName, entity.getStepName()),
                                 HttpStatus.BAD_REQUEST);
                     }
                     entities.add(entity);
@@ -402,7 +402,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 if (!entities.contains(entity)) {
                     if (!stepName.equalsIgnoreCase(entity.getStepName())) {
                         throw new RestAPIException(getMessage("captions.error.general"),
-                                format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
+                                format("WorkflowRestController.entityInAnotherStep", entity.getId(), stepName, entity.getStepName()),
                                 HttpStatus.BAD_REQUEST);
                     }
                     entities.add(entity);
