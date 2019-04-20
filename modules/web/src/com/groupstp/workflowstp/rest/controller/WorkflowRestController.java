@@ -3,7 +3,6 @@ package com.groupstp.workflowstp.rest.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.entity.*;
-import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.rest.config.WorkflowRestConfig;
 import com.groupstp.workflowstp.rest.dto.*;
 import com.groupstp.workflowstp.service.WorkflowService;
@@ -443,8 +442,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 log.error(String.format("Failed evaluate action '%s|%s'", step.getStage().getName(), action.getCaption()), e);
 
                 Throwable cause = e.getCause();
-                if (cause instanceof WorkflowException) {
-                    throw new RestAPIException(getMessage("captions.error.general"), cause.getMessage(), HttpStatus.BAD_REQUEST);
+                if (cause instanceof RestAPIException) {
+                    throw (RestAPIException) cause;
                 }
 
                 throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
