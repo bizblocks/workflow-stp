@@ -691,7 +691,12 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected String convertIcon(String icon) {
         if (!StringUtils.isBlank(icon)) {
             try {
-                return CubaIcon.valueOf(icon).name();
+                String lowerCaseIcon = icon.toLowerCase();
+                for (CubaIcon at : CubaIcon.values()) {
+                    if (lowerCaseIcon.endsWith(at.name().toLowerCase())) {
+                        return at.name();
+                    }
+                }
             } catch (Exception e) {
                 log.warn("Failed to retrieve icon", e.getMessage());
             }
