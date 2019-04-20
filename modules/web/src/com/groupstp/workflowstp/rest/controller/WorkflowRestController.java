@@ -439,8 +439,6 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
                 result.setResult("Success");
             } catch (Exception e) {
-                log.error(String.format("Failed evaluate action '%s|%s'", step.getStage().getName(), action.getCaption()), e);
-
                 if (e instanceof RestAPIException) {
                     throw (RestAPIException) e;
                 }
@@ -448,6 +446,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 if (cause instanceof RestAPIException) {
                     throw (RestAPIException) cause;
                 }
+
+                log.error(String.format("Failed evaluate action '%s|%s'", step.getStage().getName(), action.getCaption()), e);
 
                 throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
