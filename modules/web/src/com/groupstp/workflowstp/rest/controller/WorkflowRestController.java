@@ -13,6 +13,7 @@ import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.restapi.exception.RestAPIException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -165,8 +166,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
                     ActionDTO dto = new ActionDTO();
                     dto.setId(action.getId().toString());
                     dto.setCaption(getValue(action, template, "caption", null));
-                    dto.setIcon(getValue(action, template, "icon", null));
-                    dto.setStyle(getValue(action, template, "style", null));
+                    dto.setIcon(convertIcon(getValue(action, template, "icon", null)));
+                    dto.setStyle(convertStyle(getValue(action, template, "style", null)));
                     dto.setAlwaysEnabled(getValue(action, template, "alwaysEnabled", Boolean.FALSE));
                     dto.setOrder(i++);
 
@@ -686,4 +687,27 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected String format(String messageKey, Object... args) {
         return String.format(getMessage(messageKey), args);
     }
+
+    protected String convertIcon(String icon) {
+        if (!StringUtils.isBlank(icon)) {
+            try {
+                return CubaIcon.valueOf(icon).name();
+            } catch (Exception e) {
+                log.warn("Failed to retrieve icon", e.getMessage());
+            }
+        }
+        return icon;
+    }
+
+    protected String convertStyle(String style) {
+        if (!StringUtils.isBlank(style)) {
+            try {
+                //make conversion if need
+            } catch (Exception e) {
+                log.warn("Failed to retrieve style", e.getMessage());
+            }
+        }
+        return style;
+    }
+
 }
