@@ -43,6 +43,9 @@ public class ScreenField extends BaseUuidEntity implements Serializable {
 
     @Override
     public UUID getId() {
+        if (id == null) {
+            id = super.getId();
+        }
         return id;
     }
 
