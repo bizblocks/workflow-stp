@@ -244,6 +244,10 @@ public class WebUiHelper {
                 ColumnGenerator custom = generators.get(property);
                 if (custom != null && custom.getReadGenerator() != null) {
                     table.addGeneratedColumn(property, custom.getReadGenerator());
+                    try {
+                        table.addColumn(table.getColumn(property));//to support table sort
+                    } catch (UnsupportedOperationException ignore) {
+                    }
                 } else {
                     MetaProperty metaProperty = metaClass.getPropertyNN(property);
                     MetaPropertyPath path = metaClass.getPropertyPath(property);
@@ -333,7 +337,10 @@ public class WebUiHelper {
                 column.setCaption(messageTools.getPropertyCaption(metaProperty));
             }
 
-            table.addColumn(column);
+            try {
+                table.addColumn(column);
+            } catch (UnsupportedOperationException ignore) {
+            }
         }
         //listening items removing
         ds.addCollectionChangeListener(e -> {
