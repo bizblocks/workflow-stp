@@ -3,7 +3,6 @@ package com.groupstp.workflowstp.rest.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.entity.*;
-import com.groupstp.workflowstp.exception.WorkflowException;
 import com.groupstp.workflowstp.rest.dto.*;
 import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.util.EqualsUtils;
@@ -17,6 +16,7 @@ import com.haulmont.cuba.security.entity.User;
 import com.haulmont.restapi.exception.RestAPIException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ComparatorUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Workflow REST controller
+ * Workflow communication REST controller
  *
  * @author adiatullin
  */
@@ -37,16 +37,13 @@ import java.util.*;
 public class WorkflowRestController implements WorkflowRestAPI {
     private static final Logger log = LoggerFactory.getLogger(WorkflowRestController.class);
 
+    //parameters for Groovy script execution
     protected static final String ENTITIES_PARAMETER = "entities";
     protected static final String STAGE_PARAMETER = "stage";
     protected static final String VIEW_ONLY_PARAMETER = "viewOnly";
 
     @Inject
     protected DataManager dataManager;
-    @Inject
-    protected WorkflowWebBean workflowWebBean;
-    @Inject
-    protected WorkflowService workflowService;
     @Inject
     protected UserSessionSource userSessionSource;
     @Inject
@@ -55,6 +52,12 @@ public class WorkflowRestController implements WorkflowRestAPI {
     protected Messages messages;
     @Inject
     protected Scripting scripting;
+    @Inject
+    protected ViewRepository viewRepository;
+    @Inject
+    protected WorkflowWebBean workflowWebBean;
+    @Inject
+    protected WorkflowService workflowService;
     @Inject
     protected WorkflowSugarProcessor sugar;
 
@@ -104,6 +107,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                                 steps.add(stepDto);
                             }
                         }
+
                         if (!CollectionUtils.isEmpty(steps)) {
                             WorkflowDTO workflowDto = new WorkflowDTO();
                             workflowDto.setId(wf.getId().toString());
@@ -124,7 +128,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
             if (e instanceof RestAPIException) {
                 throw (RestAPIException) e;
             }
-            log.error("Failed to prepare workflows", e);
+            log.error("Failed to prepare workflows items", e);
 
             throw new RestAPIException(getMessage("captions.error.general"),
                     getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -163,6 +167,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                     dtos.add(dto);
                 }
             }
+
             if (!CollectionUtils.isEmpty(dtos)) {
                 stepDto.setActions(dtos);
             }
@@ -196,9 +201,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
                 dtos.add(dto);
             }
-            if (!CollectionUtils.isEmpty(dtos)) {
-                stepDto.setBrowserColumns(dtos);
-            }
+
+            stepDto.setBrowserColumns(dtos);
         }
     }
 
@@ -214,14 +218,13 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
                 dtos.add(dto);
             }
-            if (!CollectionUtils.isEmpty(dtos)) {
-                stepDto.setEditorFields(dtos);
-            }
+
+            stepDto.setEditorFields(dtos);
         }
     }
 
     @Override
-    public void start(String entityId, String entityName) {
+    public ResponseDTO<String> start(String entityId, String entityName) {
         WorkflowEntity entity = findEntity(entityId, entityName);
 
         if (isProcessing(entity)) {
@@ -233,8 +236,12 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
             log.debug("Start entity {}:{} workflow {}", entity, entityId, wf.getInstanceName());
 
-            workflowService.startWorkflow(entity, wf);
-        } catch (WorkflowException e) {
+            String id = workflowService.startWorkflow(entity, wf).toString();
+
+            ResponseDTO<String> result = new ResponseDTO<>();
+            result.setResult(id);
+            return result;
+        } catch (Exception e) {
             log.error(String.format("Failed to start workflow process for entity %s:%s", entity, entityId), e);
 
             throw new RestAPIException(getMessage("captions.error.general"),
@@ -267,18 +274,19 @@ public class WorkflowRestController implements WorkflowRestAPI {
     public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
         Step step = findWorkflowStep(workflowIdText, stepIdText);
         Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
-        Boolean viewOnly = isViewOnly(step);
+        boolean viewOnly = isViewOnly(step);
 
         List<WorkflowEntity> entities = new ArrayList<>();
 
         String entityName = step.getWorkflow().getEntityName();
         String stepName = step.getStage().getName();
         for (String entityId : entityIds) {
-            WorkflowEntity entity = findEntity(entityId, entityName, View.LOCAL);
+            WorkflowEntity entity = findEntity(entityId, entityName);
             if (!entities.contains(entity)) {
                 if (!stepName.equalsIgnoreCase(entity.getStepName())) {
                     throw new RestAPIException(getMessage("captions.error.general"),
-                            format("WorkflowRestController.entityClassNotFound", entityName), HttpStatus.BAD_REQUEST);
+                            format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
+                            HttpStatus.BAD_REQUEST);
                 }
                 entities.add(entity);
             }
@@ -289,50 +297,62 @@ public class WorkflowRestController implements WorkflowRestAPI {
         ScreenAction action = actionPair.getFirst();
         ScreenActionTemplate actionTemplate = actionPair.getSecond();
 
-        if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
-            Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
-            ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
-            if (count != null && type != null) {
-                int currentCount = entities.size();
-                switch (type) {
-                    case LESS: {
-                        result.setResult(currentCount < count);
-                        break;
-                    }
-                    case MORE: {
-                        result.setResult(currentCount > count);
-                        break;
-                    }
-                    case EQUALS: {
-                        result.setResult(currentCount == count);
-                        break;
+        if (viewOnly && !Boolean.TRUE.equals(getValue(action, actionTemplate, "alwaysEnabled", null))) {
+            result.setResult(Boolean.FALSE);
+        }
+        if (result.getResult() == null) {
+            if (!Boolean.TRUE.equals(getValue(action, actionTemplate, "availableInExternalSystem", null))) {
+                result.setResult(Boolean.FALSE);
+            }
+        }
+        if (result.getResult() == null) {
+            if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
+                Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
+                ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
+                if (count != null && type != null) {
+                    int currentCount = entities.size();
+                    switch (type) {
+                        case LESS: {
+                            result.setResult(currentCount < count);
+                            break;
+                        }
+                        case MORE: {
+                            result.setResult(currentCount > count);
+                            break;
+                        }
+                        case EQUALS: {
+                            result.setResult(currentCount == count);
+                            break;
+                        }
                     }
                 }
-            }
-            if (result.getResult() == null) {
-                String script = getValue(action, actionTemplate, "externalPermitScript", null);
-                if (!StringUtils.isEmpty(script)) {
-                    try {
-                        Map<String, Object> binding = new HashMap<>();
-                        binding.put(ENTITIES_PARAMETER, entities);
-                        binding.put(STAGE_PARAMETER, step.getStage());
-                        binding.put(VIEW_ONLY_PARAMETER, viewOnly);
+                if (result.getResult() == null) {
+                    String script = getValue(action, actionTemplate, "externalPermitScript", null);
+                    if (!StringUtils.isBlank(script)) {
+                        try {
+                            Map<String, Object> binding = new HashMap<>();
+                            binding.put(ENTITIES_PARAMETER, entities);
+                            binding.put(STAGE_PARAMETER, step.getStage());
+                            binding.put(VIEW_ONLY_PARAMETER, viewOnly);
 
-                        Object value = scripting.evaluateGroovy(prepareScript(script), binding);
-                        if (value instanceof Boolean) {
-                            result.setResult((Boolean) value);
-                        } else {
-                            result.setResult(Boolean.TRUE);
+                            Object value = scripting.evaluateGroovy(prepareScript(script), binding);
+                            if (value instanceof Boolean) {
+                                result.setResult((Boolean) value);
+                            } else if (value instanceof String) {
+                                result.setResult(BooleanUtils.toBoolean((String) value));
+                            } else {
+                                //nothing return mean yes
+                                result.setResult(Boolean.TRUE);
+                            }
+                        } catch (Exception e) {
+                            log.error(String.format("Failed to check is action '%s|%s' performable or not", step.getStage().getName(), action.getCaption()), e);
+
+                            throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
                         }
-                    } catch (Exception e) {
-                        log.error(String.format("Failed to check is action '%s|%s' performable", step.getStage().getName(), action.getId()), e);
-
-                        throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
                     }
                 }
             }
         }
-
         if (result.getResult() == null) {
             result.setResult(Boolean.TRUE);
         }
@@ -344,84 +364,61 @@ public class WorkflowRestController implements WorkflowRestAPI {
     public ResponseDTO<String> perform(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
         Step step = findWorkflowStep(workflowIdText, stepIdText);
         Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
-        Boolean viewOnly = isViewOnly(step);
+        boolean viewOnly = isViewOnly(step);
 
         List<WorkflowEntity> entities = new ArrayList<>();
 
         String entityName = step.getWorkflow().getEntityName();
         String stepName = step.getStage().getName();
         for (String entityId : entityIds) {
-            WorkflowEntity entity = findEntity(entityId, entityName, View.LOCAL);
+            WorkflowEntity entity = findEntity(entityId, entityName);
             if (!entities.contains(entity)) {
                 if (!stepName.equalsIgnoreCase(entity.getStepName())) {
                     throw new RestAPIException(getMessage("captions.error.general"),
-                            format("WorkflowRestController.entityClassNotFound", entityName), HttpStatus.BAD_REQUEST);
+                            format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
+                            HttpStatus.BAD_REQUEST);
                 }
                 entities.add(entity);
             }
         }
 
-        ResponseDTO<Boolean> result = new ResponseDTO<>();
+        ResponseDTO<String> result = new ResponseDTO<>();
 
         ScreenAction action = actionPair.getFirst();
         ScreenActionTemplate actionTemplate = actionPair.getSecond();
 
-        if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
-            Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
-            ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
-            if (count != null && type != null) {
-                int currentCount = entities.size();
-                switch (type) {
-                    case LESS: {
-                        result.setResult(currentCount < count);
-                        break;
-                    }
-                    case MORE: {
-                        result.setResult(currentCount > count);
-                        break;
-                    }
-                    case EQUALS: {
-                        result.setResult(currentCount == count);
-                        break;
-                    }
-                }
-            }
-            if (result.getResult() == null) {
-                String script = getValue(action, actionTemplate, "externalPermitScript", null);
-                if (!StringUtils.isEmpty(script)) {
-                    try {
-                        Map<String, Object> binding = new HashMap<>();
-                        binding.put(ENTITIES_PARAMETER, entities);
-                        binding.put(STAGE_PARAMETER, step.getStage());
-                        binding.put(VIEW_ONLY_PARAMETER, viewOnly);
-
-                        Object value = scripting.evaluateGroovy(prepareScript(script), binding);
-                        if (value instanceof Boolean) {
-                            result.setResult((Boolean) value);
-                        } else {
-                            result.setResult(Boolean.TRUE);
-                        }
-                    } catch (Exception e) {
-                        log.error(String.format("Failed to check is action '%s|%s' performable", step.getStage().getName(), action.getId()), e);
-
-                        throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
-                }
-            }
+        if (viewOnly && !Boolean.TRUE.equals(getValue(action, actionTemplate, "alwaysEnabled", null))) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.accessDenied"), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        if (result.getResult() == null) {
-            result.setResult(Boolean.TRUE);
+        String script = getValue(action, actionTemplate, "externalScript", null);
+        if (!StringUtils.isBlank(script)) {
+            try {
+                Map<String, Object> binding = new HashMap<>();
+                binding.put(ENTITIES_PARAMETER, entities);
+                binding.put(STAGE_PARAMETER, step.getStage());
+                binding.put(VIEW_ONLY_PARAMETER, viewOnly);
+
+                scripting.evaluateGroovy(prepareScript(script), binding);
+
+                result.setResult("Success");
+            } catch (Exception e) {
+                log.error(String.format("Failed evaluate action '%s|%s'", step.getStage().getName(), action.getCaption()), e);
+
+                throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            log.error(String.format("For action %s external script not specified", action.getCaption()));
+
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return result;
     }
 
     protected WorkflowEntity findEntity(String idText, String entityName) {
-        return findEntity(idText, entityName, View.MINIMAL);
-    }
-
-    protected WorkflowEntity findEntity(String idText, String entityName, String view) {
         MetaClass metaClass = metadata.getClass(entityName);
         if (metaClass == null) {
             throw new RestAPIException(getMessage("captions.error.general"),
@@ -435,6 +432,15 @@ public class WorkflowRestController implements WorkflowRestAPI {
         }
 
         Object id = parseId(metaClass, idText, idProperty.getJavaType());
+
+        //noinspection unchecked
+        View view = new View(new View.ViewParams()
+                .entityClass(metaClass.getJavaClass())
+                .src(viewRepository.getView(metaClass, View.LOCAL))
+                .name("_wf"));
+        view.addProperty("stepName");
+        view.addProperty("workflow", viewRepository.getView(Workflow.class, View.MINIMAL));
+        view.addProperty("status");
 
         //noinspection unchecked
         WorkflowEntity entity = (WorkflowEntity) dataManager.load(metaClass.getJavaClass())
@@ -470,7 +476,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 .query("select e from wfstp$Step e where e.id = :stepId and e.workflow.id = :workflowId")
                 .parameter("stepId", stepId)
                 .parameter("workflowId", workflowId)
-                .view("some_view")//TODO determinate view
+                .view("step-rest")
                 .optional()
                 .orElse(null);
         if (step == null) {
@@ -532,13 +538,13 @@ public class WorkflowRestController implements WorkflowRestAPI {
         }
     }
 
-    protected Boolean isViewOnly(Step step) {
-        Boolean viewOnly;
-        User currentUser = userSessionSource.getUserSession().getCurrentOrSubstitutedUser();
-        if (workflowWebBean.isActor(currentUser, step.getStage())) {
-            viewOnly = Boolean.FALSE;
-        } else if (workflowWebBean.isViewer(currentUser, step.getStage())) {
-            viewOnly = Boolean.TRUE;
+    protected boolean isViewOnly(Step step) {
+        boolean viewOnly;
+        User user = userSessionSource.getUserSession().getCurrentOrSubstitutedUser();
+        if (workflowWebBean.isActor(user, step.getStage())) {
+            viewOnly = false;
+        } else if (workflowWebBean.isViewer(user, step.getStage())) {
+            viewOnly = true;
         } else {
             throw new RestAPIException(getMessage("captions.error.general"),
                     getMessage("WorkflowRestController.accessDenied"), HttpStatus.NOT_ACCEPTABLE);
@@ -573,8 +579,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
     protected List<Workflow> getWorkflowsEntities() {
         return dataManager.load(Workflow.class)
-                .query("select e from wfstp$Workflow e where e.active = true order by e.order")
-                .view("some_view")//TODO determinate view
+                .query("select e from wfstp$Workflow e where e.active = true order by e.order asc")
+                .view("workflow-rest")
                 .list();
     }
 

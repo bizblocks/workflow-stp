@@ -99,6 +99,33 @@
                   view="stage-process"/>
     </view>
     <!--workflow core processing views end-->
+    <!--workflow rest views-->
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_minimal"
+          name="workflow-rest">
+        <property name="active"/>
+        <property name="steps"
+                  view="step-rest"/>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Step"
+          extends="_minimal"
+          name="step-rest">
+        <property name="stage"
+                  view="stage-rest"/>
+        <property name="workflow"
+                  view="_minimal">
+            <property name="active"/>
+        </property>
+    </view>
+    <view class="com.groupstp.workflowstp.entity.Stage"
+          extends="_local"
+          name="stage-rest">
+        <property name="viewers" view="_minimal"/>
+        <property name="viewersRoles" view="_minimal"/>
+        <property name="actors" view="_minimal"/>
+        <property name="actorsRoles" view="_minimal"/>
+    </view>
+    <!--workflow rest views end-->
     <!--workflow web processing views-->
     <view class="com.groupstp.workflowstp.entity.Stage"
           extends="_minimal"

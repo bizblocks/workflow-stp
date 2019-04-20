@@ -31,10 +31,11 @@ public interface WorkflowRestAPI {
      *
      * @param entityId   processing entity id
      * @param entityName processing entity name (like bo$Entity)
+     * @return id of created workflow instance
      */
     @PostMapping(value = "/start")
-    void start(@RequestParam(name = "id") String entityId,
-               @RequestParam(name = "entityName") String entityName);
+    ResponseDTO<String> start(@RequestParam(name = "id") String entityId,
+                              @RequestParam(name = "entityName") String entityName);
 
     /**
      * Check is send entity in workflow process or not
@@ -52,7 +53,7 @@ public interface WorkflowRestAPI {
      *
      * @param entityIds  performing entities ids
      * @param workflowId current processing workflow id
-     * @param stepId    processing step id
+     * @param stepId     processing step id
      * @param actionId   performing action id
      * @return is provided user can perform action to the specified entities or not
      */
@@ -67,7 +68,7 @@ public interface WorkflowRestAPI {
      *
      * @param entityIds  performing entities ids
      * @param workflowId current processing workflow id
-     * @param stepId    processing step id
+     * @param stepId     processing step id
      * @param actionId   performing action id
      * @return result of the performing
      */
