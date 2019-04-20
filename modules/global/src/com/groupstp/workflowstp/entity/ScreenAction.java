@@ -28,6 +28,10 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
     private static final long serialVersionUID = -4907974240053342336L;
 
     @MetaProperty
+    @JsonProperty("id")
+    protected UUID id;
+
+    @MetaProperty
     @JsonProperty("template")
     private UUID template;
 
@@ -94,6 +98,16 @@ public class ScreenAction extends BaseUuidEntity implements Serializable {
     @JsonProperty("externalPermitScript")
     private String externalPermitScript;
 
+
+    @Override
+    public UUID getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
     public UUID getTemplate() {
         return template;
