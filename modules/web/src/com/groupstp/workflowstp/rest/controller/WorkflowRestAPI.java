@@ -70,7 +70,7 @@ public interface WorkflowRestAPI {
      * @param payload    special payload message which can contains business logic data
      * @return result of the performing
      */
-    @PostMapping(value = "/perform")
+    @PostMapping(value = "/perform", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseDTO<String> perform(@RequestParam(name = "entityId") String[] entityId,
                                 @RequestParam(name = "workflowId") String workflowId,
                                 @RequestParam(name = "stepId") String stepId,

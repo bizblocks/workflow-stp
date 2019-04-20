@@ -385,7 +385,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<String> perform(String[] entityId, String workflowId, String stepId, String actionId, String payload) {
+    public ResponseDTO<String> perform(String[] entityId, String workflowId, String stepId, String actionId, @RequestBody String payload) {
         checkEnabled();
 
         Step step = findWorkflowStep(workflowId, stepId);
