@@ -1,5 +1,6 @@
 package com.groupstp.workflowstp.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.io.Serializable;
  *
  * @author adiatullin
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActionDTO implements Serializable {
     private static final long serialVersionUID = 8641784479409760516L;
 

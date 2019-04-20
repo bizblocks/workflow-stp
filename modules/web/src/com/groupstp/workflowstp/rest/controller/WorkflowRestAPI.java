@@ -3,10 +3,7 @@ package com.groupstp.workflowstp.rest.controller;
 import com.groupstp.workflowstp.rest.dto.ResponseDTO;
 import com.groupstp.workflowstp.rest.dto.WorkflowDTO;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,7 +31,7 @@ public interface WorkflowRestAPI {
      * @return id of created workflow instance
      */
     @PostMapping(value = "/start")
-    ResponseDTO<String> start(@RequestParam(name = "id") String entityId,
+    ResponseDTO<String> start(@RequestParam(name = "entityId") String entityId,
                               @RequestParam(name = "entityName") String entityName);
 
     /**
@@ -42,10 +39,10 @@ public interface WorkflowRestAPI {
      *
      * @param entityId   processing entity id
      * @param entityName processing entity name (like bo$Entity)
-     * @return is provided entity in workflow process or not
+     * @return is provided entity in workflow process or not (also returning id of workflow instance if entity is processing)
      */
     @GetMapping(value = "/processing")
-    ResponseDTO<Boolean> isProcessing(@RequestParam(name = "id") String entityId,
+    ResponseDTO<String> isProcessing(@RequestParam(name = "entityId") String entityId,
                                       @RequestParam(name = "entityName") String entityName);
 
     /**
@@ -58,7 +55,7 @@ public interface WorkflowRestAPI {
      * @return is provided user can perform action to the specified entities or not
      */
     @GetMapping(value = "/performable")
-    ResponseDTO<Boolean> isPerformable(@RequestParam(name = "id") String[] entityIds,
+    ResponseDTO<Boolean> isPerformable(@RequestParam(name = "entityId") String[] entityIds,
                                        @RequestParam(name = "workflowId") String workflowId,
                                        @RequestParam(name = "stepId") String stepId,
                                        @RequestParam(name = "actionId") String actionId);
@@ -73,7 +70,7 @@ public interface WorkflowRestAPI {
      * @return result of the performing
      */
     @PostMapping(value = "/perform")
-    ResponseDTO<String> perform(@RequestParam(name = "id") String[] entityIds,
+    ResponseDTO<String> perform(@RequestParam(name = "entityId") String[] entityIds,
                                 @RequestParam(name = "workflowId") String workflowId,
                                 @RequestParam(name = "stepId") String stepId,
                                 @RequestParam(name = "actionId") String actionId);

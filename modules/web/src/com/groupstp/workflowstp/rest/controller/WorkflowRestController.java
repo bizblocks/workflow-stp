@@ -3,6 +3,7 @@ package com.groupstp.workflowstp.rest.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groupstp.workflowstp.bean.WorkflowSugarProcessor;
 import com.groupstp.workflowstp.entity.*;
+import com.groupstp.workflowstp.rest.config.WorkflowRestConfig;
 import com.groupstp.workflowstp.rest.dto.*;
 import com.groupstp.workflowstp.service.WorkflowService;
 import com.groupstp.workflowstp.util.EqualsUtils;
@@ -61,11 +62,16 @@ public class WorkflowRestController implements WorkflowRestAPI {
     @Inject
     protected WorkflowSugarProcessor sugar;
 
+    @Inject
+    protected WorkflowRestConfig config;
+
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
     public List<WorkflowDTO> getWorkflows() {
+        checkEnabled();
+
         try {
             List<WorkflowDTO> result = Collections.emptyList();
 
@@ -225,9 +231,11 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
     @Override
     public ResponseDTO<String> start(String entityId, String entityName) {
+        checkEnabled();
+
         WorkflowEntity entity = findEntity(entityId, entityName);
 
-        if (isProcessing(entity)) {
+        if (!StringUtils.isBlank(getWorkflowInstanceId(entity))) {
             throw new RestAPIException(getMessage("captions.error.general"),
                     getMessage("WorkflowRestController.entityAlreadyInProcess"), HttpStatus.BAD_REQUEST);
         }
@@ -250,18 +258,22 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<Boolean> isProcessing(String entityId, String entityName) {
+    public ResponseDTO<String> isProcessing(String entityId, String entityName) {
+        checkEnabled();
+
         WorkflowEntity entity = findEntity(entityId, entityName);
 
-        ResponseDTO<Boolean> response = new ResponseDTO<>();
-        response.setResult(isProcessing(entity));
+        ResponseDTO<String> response = new ResponseDTO<>();
+        response.setResult(getWorkflowInstanceId(entity));
 
         return response;
     }
 
-    protected boolean isProcessing(WorkflowEntity entity) {
+    @Nullable
+    protected String getWorkflowInstanceId(WorkflowEntity entity) {
         try {
-            return workflowService.isProcessing(entity);
+            WorkflowInstance instance = workflowService.getWorkflowInstance(entity);
+            return instance == null ? null : instance.getId().toString();
         } catch (Exception e) {
             log.error("Failed to check entity workflow processing", e);
 
@@ -272,6 +284,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
     @Override
     public ResponseDTO<Boolean> isPerformable(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
+        checkEnabled();
+
         Step step = findWorkflowStep(workflowIdText, stepIdText);
         Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
         boolean viewOnly = isViewOnly(step);
@@ -362,6 +376,8 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
     @Override
     public ResponseDTO<String> perform(String[] entityIds, String workflowIdText, String stepIdText, String actionIdText) {
+        checkEnabled();
+
         Step step = findWorkflowStep(workflowIdText, stepIdText);
         Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionIdText);
         boolean viewOnly = isViewOnly(step);
@@ -653,6 +669,14 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
     protected String prepareScript(String script) {
         return sugar.prepareScript(script);
+    }
+
+    protected void checkEnabled() {
+        if (!Boolean.TRUE.equals(config.getRestEnabled())) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.disabled"),
+                    HttpStatus.BAD_GATEWAY);
+        }
     }
 
     protected String getMessage(String mesageKey) {
