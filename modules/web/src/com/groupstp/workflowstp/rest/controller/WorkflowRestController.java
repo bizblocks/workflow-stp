@@ -295,16 +295,24 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
         String entityName = step.getWorkflow().getEntityName();
         String stepName = step.getStage().getName();
-        for (String id : entityId) {
-            WorkflowEntity entity = findEntity(id, entityName);
-            if (!entities.contains(entity)) {
-                if (!stepName.equalsIgnoreCase(entity.getStepName())) {
-                    throw new RestAPIException(getMessage("captions.error.general"),
-                            format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
-                            HttpStatus.BAD_REQUEST);
+
+        if (entityId != null) {
+            for (String id : entityId) {
+                WorkflowEntity entity = findEntity(id, entityName);
+                if (!entities.contains(entity)) {
+                    if (!stepName.equalsIgnoreCase(entity.getStepName())) {
+                        throw new RestAPIException(getMessage("captions.error.general"),
+                                format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                    entities.add(entity);
                 }
-                entities.add(entity);
             }
+        }
+        if (CollectionUtils.isEmpty(entities)) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.emptyEntities"),
+                    HttpStatus.BAD_REQUEST);
         }
 
         ResponseDTO<Boolean> result = new ResponseDTO<>();
@@ -387,17 +395,25 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
         String entityName = step.getWorkflow().getEntityName();
         String stepName = step.getStage().getName();
-        for (String id : entityId) {
-            WorkflowEntity entity = findEntity(id, entityName);
-            if (!entities.contains(entity)) {
-                if (!stepName.equalsIgnoreCase(entity.getStepName())) {
-                    throw new RestAPIException(getMessage("captions.error.general"),
-                            format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
-                            HttpStatus.BAD_REQUEST);
+        if (entityId != null) {
+            for (String id : entityId) {
+                WorkflowEntity entity = findEntity(id, entityName);
+                if (!entities.contains(entity)) {
+                    if (!stepName.equalsIgnoreCase(entity.getStepName())) {
+                        throw new RestAPIException(getMessage("captions.error.general"),
+                                format("WorkflowRestController.entityInAnotherStep", entity.getInstanceName(), stepName, entity.getStepName()),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                    entities.add(entity);
                 }
-                entities.add(entity);
             }
         }
+        if (CollectionUtils.isEmpty(entities)) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.emptyEntities"),
+                    HttpStatus.BAD_REQUEST);
+        }
+
 
         ResponseDTO<String> result = new ResponseDTO<>();
 
@@ -478,7 +494,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
             workflowId = UUID.fromString(workflowIdText);
         } catch (Exception e) {
             throw new RestAPIException(getMessage("captions.error.general"),
-                    format("WorkflowRestController.failedToParseId", workflowIdText),
+                    format("WorkflowRestController.failedToParseId", "workflow", workflowIdText),
                     HttpStatus.BAD_REQUEST);
         }
         UUID stepId;
@@ -486,7 +502,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
             stepId = UUID.fromString(stepIdText);
         } catch (Exception e) {
             throw new RestAPIException(getMessage("captions.error.general"),
-                    format("WorkflowRestController.failedToParseId", stepIdText),
+                    format("WorkflowRestController.failedToParseId", "step", stepIdText),
                     HttpStatus.BAD_REQUEST);
         }
         Step step = dataManager.load(Step.class)
@@ -515,7 +531,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
             actionId = UUID.fromString(actionIdText);
         } catch (Exception e) {
             throw new RestAPIException(getMessage("captions.error.general"),
-                    format("WorkflowRestController.failedToParseId", actionIdText),
+                    format("WorkflowRestController.failedToParseId", "action", actionIdText),
                     HttpStatus.BAD_REQUEST);
         }
         try {
