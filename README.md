@@ -313,6 +313,262 @@ public class Ticket extends StandardEntity implements WorkflowEntity<UUID> {
 <richTextArea datasource="ds" property="description" id="description" width="100%" required="true"/>
 ```
 
+### 3. Интеграция с внешними системами
+Управление рабочими процессами (отображение колонок, выполнение действий) может быть интегрированно с внешними системами через технологию REST. В проекте есть дескриптор сервиса ws.raml описывающий сервис:
+```
+#%RAML 0.8
+title: REST сервис рабочих процессов
+version: v1
+baseUri: url_сервера:порт/app/rest/workflow
+
+/all:
+  get:
+    description: |
+      Получить все доступные рабочие процессы с их настройками (действиями, отображаемыми колонками-свойствами, редактируемые поля и т.д.)
+
+    responses:
+      200:
+        body:
+          application/json:
+              example: |
+                [
+                    {
+                        "id": "920a5902-061e-76b5-882e-91ccca1bccc7",
+                        "name": "Обработка задач",
+                        "code": "A1",
+                        "entity_name": "test$Task",
+                        "steps": [
+                            {
+                                "id": "b55f895e-4bfa-c6df-ceb6-3806261979d0",
+                                "name": "Финансовый контроль",
+                                "entity_name": "test$Task",
+                                "permission": "FULL",  //Может быть FULL (полный доступ к шагу), READ_ONLY (шаг доступен только на чтение)
+                                "actions": [//список действий
+                                    {
+                                        "id": "60131a32-4d64-1b1f-48df-a118049c7163",
+                                        "caption": "Согласование",
+                                        "icon": "font-icon:CHECK",
+                                        "always_enabled": false,
+                						"style": "primary",
+                                        "order": 1
+                                    },
+                                    {
+                                        "id": "f8fc2022-5434-4572-6c5d-757d39a8778b",
+                                        "caption": "Excel",
+                                        "icon": "font-icon:FILE_EXCEL_O",
+                                        "always_enabled": true,
+                                        "order": 4
+                                    },
+                                ],
+                                "browser_columns": [//список отображаемых колонок
+                                    {
+                                        "id": "number",
+                                        "caption": "Номер",
+                                        "order": 1
+                                    },
+                                    {
+                                        "id": "amount",
+                                        "caption": "Сумма",
+                                        "order": 2
+                                    }
+                                ],
+                                "editor_fields": [//список редактируемых свойств
+                                    {
+                                        "id": "images",
+                                        "caption": "Вложения"
+                                    },
+                                    {
+                                        "id": "fieldGroup.taxNumber",
+                                        "caption": "ИНН"
+                                    },
+                                    {
+                                        "id": "companyField",
+                                        "caption": "Компания"
+                                    }
+                                ],
+                                "order": 1
+                            },
+                            {
+                                "id": "565ce6a3-fb01-44a0-9ed7-9f3761dcc909",
+                                "name": "Согласование с директором",
+                                "entity_name": "test$Task",
+                                "permission": "READ_ONLY",
+                                "actions": [
+                                    {
+                                        "id": "0acfa67a-f0dc-53c1-1879-4e53dab154ca",
+                                        "caption": "Согласование",
+                                        "icon": "font-icon:CHECK",
+                                        "always_enabled": false,
+                						"style": "primary",
+                                        "order": 1
+                                    },
+                                    {
+                                        "id": "71399dbc-59a8-036f-744f-eb20db015e72",
+                                        "caption": "Excel",
+                                        "icon": "font-icon:FILE_EXCEL_O",
+                                        "always_enabled": true,
+                                        "order": 2
+                                    }
+                                ],
+                                "browser_columns": [
+                                    {
+                                        "id": "number",
+                                        "caption": "Номер",
+                                        "order": 1
+                                    },
+                                    {
+                                        "id": "amount",
+                                        "caption": "Сумма",
+                                        "order": 2
+                                    }
+                                ],
+                                "editor_fields": [
+                                    {
+                                        "id": "fieldGroup.urgent",
+                                        "caption": "Срочность"
+                                    }
+                                ],
+                                "order": 2
+                            }
+                        ],
+                        "order": 1
+                    },
+                    {
+                        "id": "e49e98c9-de58-ecaf-0289-62cf2c4309d2",
+                        "name": "Двойное согласование",
+                        "code": "A2",
+                        "entity_name": "test$Task",
+                        "steps": [],
+                        "order": 2
+                    }
+                ]
+
+/start:
+  post:
+    description: |
+      Запустить рабочий процесс для указанной сущности и получить идентификатор запущенного процесса
+
+    queryParameters:
+      entityId:
+        type: текст
+        description: идентификатор сущности
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      entityName:
+        type: текст
+        description: имя сущности
+        example: 'test$Task'
+        required: true
+
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+                {
+                    "result": "b34c8ad4-1e05-4119-ee14-1fb30e86fc8c"
+                }
+
+/processing:
+  get:
+    description: |
+      Получить информацию запущена ли сущность в рабочий процесс, и если да, система вернет идентификатор запущенного процесса
+
+    queryParameters:
+      entityId:
+        type: текст
+        description: идентификатор сущности
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      entityName:
+        type: текст
+        description: имя сущности
+        example: 'test$Task'
+        required: true
+
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+                {
+                    "result": "b34c8ad4-1e05-4119-ee14-1fb30e86fc8c"
+                }
+
+/performable:
+  get:
+    description: |
+      Получить информацию о том возможно ли выполнить указанное действие для указанных сущностей в текущий момент или нет
+
+    queryParameters:
+      entityId:
+        type: список
+        description: идентификаторы сущностей
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      workflowId:
+        type: текст
+        description: идентификатор рабочего процесса
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      stepId:
+        type: список
+        description: идентификаторы выполняемого шага
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      actionId:
+        type: список
+        description: идентификатор действия
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+                {
+                    "result": true
+                }
+
+/perform:
+  post:
+    description: |
+      Произвести выполнение указанного действия текущим пользователем для указанных сущностей
+
+    queryParameters:
+      entityId:
+        type: список
+        description: идентификаторы сущностей
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      workflowId:
+        type: текст
+        description: идентификатор рабочего процесса
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      stepId:
+        type: список
+        description: идентификаторы выполняемого шага
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+      actionId:
+        type: список
+        description: идентификатор действия
+        example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
+        required: true
+    body: |
+        Любая полезная нагрузка
+
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+                {
+                    "result": "Success"
+                }
+```
 # Дополнение A: Свойства модуля.
 
 ## Основные свойства
