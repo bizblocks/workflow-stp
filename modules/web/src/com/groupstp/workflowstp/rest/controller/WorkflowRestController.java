@@ -441,6 +441,9 @@ public class WorkflowRestController implements WorkflowRestAPI {
             } catch (Exception e) {
                 log.error(String.format("Failed evaluate action '%s|%s'", step.getStage().getName(), action.getCaption()), e);
 
+                if (e instanceof RestAPIException) {
+                    throw (RestAPIException) e;
+                }
                 Throwable cause = e.getCause();
                 if (cause instanceof RestAPIException) {
                     throw (RestAPIException) cause;
