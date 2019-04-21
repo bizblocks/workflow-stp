@@ -314,7 +314,9 @@ public class Ticket extends StandardEntity implements WorkflowEntity<UUID> {
 ```
 
 ### 3. Интеграция с внешними системами
-Управление рабочими процессами (отображение колонок, выполнение действий) может быть интегрированно с внешними системами через технологию REST. В проекте есть дескриптор сервиса ws.raml описывающий сервис:
+Управление рабочими процессами (отображение колонок, выполнение действий) может быть интегрированно с внешними системами через технологию REST.
+Сервис который предоставляет данный функционал описан в классе com.groupstp.workflowstp.rest.controller.WorkflowRestAPI
+В проекте есть дескриптор этого сервиса в формате raml:
 ```
 #%RAML 0.8
 title: REST сервис рабочих процессов
@@ -347,7 +349,7 @@ baseUri: url_сервера:порт/app/rest/workflow
                                     {
                                         "id": "60131a32-4d64-1b1f-48df-a118049c7163",
                                         "caption": "Согласование",
-                                        "icon": "font-icon:CHECK",
+                                        "icon": "fa-check",
                                         "always_enabled": false,
                 						"style": "primary",
                                         "order": 1
@@ -355,7 +357,7 @@ baseUri: url_сервера:порт/app/rest/workflow
                                     {
                                         "id": "f8fc2022-5434-4572-6c5d-757d39a8778b",
                                         "caption": "Excel",
-                                        "icon": "font-icon:FILE_EXCEL_O",
+                                        "icon": "fa-file-excel-o",
                                         "always_enabled": true,
                                         "order": 4
                                     },
@@ -378,11 +380,11 @@ baseUri: url_сервера:порт/app/rest/workflow
                                         "caption": "Вложения"
                                     },
                                     {
-                                        "id": "fieldGroup.taxNumber",
+                                        "id": "taxNumber",
                                         "caption": "ИНН"
                                     },
                                     {
-                                        "id": "companyField",
+                                        "id": "company",
                                         "caption": "Компания"
                                     }
                                 ],
@@ -397,7 +399,7 @@ baseUri: url_сервера:порт/app/rest/workflow
                                     {
                                         "id": "0acfa67a-f0dc-53c1-1879-4e53dab154ca",
                                         "caption": "Согласование",
-                                        "icon": "font-icon:CHECK",
+                                        "icon": "fa-check",
                                         "always_enabled": false,
                 						"style": "primary",
                                         "order": 1
@@ -405,7 +407,7 @@ baseUri: url_сервера:порт/app/rest/workflow
                                     {
                                         "id": "71399dbc-59a8-036f-744f-eb20db015e72",
                                         "caption": "Excel",
-                                        "icon": "font-icon:FILE_EXCEL_O",
+                                        "icon": "fa-file-excel-o",
                                         "always_enabled": true,
                                         "order": 2
                                     }
@@ -424,7 +426,7 @@ baseUri: url_сервера:порт/app/rest/workflow
                                 ],
                                 "editor_fields": [
                                     {
-                                        "id": "fieldGroup.urgent",
+                                        "id": "urgent",
                                         "caption": "Срочность"
                                     }
                                 ],
@@ -512,13 +514,13 @@ baseUri: url_сервера:порт/app/rest/workflow
         example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
         required: true
       stepId:
-        type: список
+        type: текст
         description: идентификаторы выполняемого шага
         example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
         required: true
       actionId:
         type: список
-        description: идентификатор действия
+        description: идентификаторы проверяемых действий
         example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
         required: true
 
@@ -528,7 +530,10 @@ baseUri: url_сервера:порт/app/rest/workflow
           application/json:
             example: |
                 {
-                    "result": true
+                    "result": {
+                        "cb6ee232-d82d-43b2-6775-ad4e91613523": true,
+                        "c5896b1d-bb27-7c50-2bd7-debc0bab0ec2": true
+                    }
                 }
 
 /perform:
@@ -548,12 +553,12 @@ baseUri: url_сервера:порт/app/rest/workflow
         example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
         required: true
       stepId:
-        type: список
+        type: текст
         description: идентификаторы выполняемого шага
         example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
         required: true
       actionId:
-        type: список
+        type: текст
         description: идентификатор действия
         example: e49e98c9-de58-ecaf-0289-62cf2c4309d2
         required: true

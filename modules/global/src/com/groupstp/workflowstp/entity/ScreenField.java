@@ -40,6 +40,10 @@ public class ScreenField extends BaseUuidEntity implements Serializable {
     @JsonProperty("fieldId")
     private String fieldId;
 
+    @MetaProperty
+    @JsonProperty("property")
+    private String property;
+
 
     @Override
     public UUID getId() {
@@ -68,5 +72,13 @@ public class ScreenField extends BaseUuidEntity implements Serializable {
 
     public void setFieldId(String fieldId) {
         this.fieldId = fieldId;
+    }
+
+    public String getProperty() {
+        return property;
+    }
+
+    public void setProperty(String property) {
+        this.property = property;
     }
 }

@@ -221,7 +221,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
 
             for (ScreenField field : fields) {
                 EditorFieldDTO dto = new EditorFieldDTO();
-                dto.setId(field.getFieldId());
+                dto.setId(convertFieldToProperty(field));
                 dto.setCaption(field.getName());
 
                 dtos.add(dto);
@@ -285,11 +285,20 @@ public class WorkflowRestController implements WorkflowRestAPI {
     }
 
     @Override
-    public ResponseDTO<Boolean> isPerformable(String[] entityId, String workflowId, String stepId, String actionId) {
+    public ResponseDTO<ResultDTO> isPerformable(String[] entityId, String workflowId, String stepId, String[] actionId) {
         checkEnabled();
 
+        if (actionId == null || actionId.length == 0) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.emptyActions"),
+                    HttpStatus.BAD_REQUEST);
+        }
+
         Step step = findWorkflowStep(workflowId, stepId);
-        Pair<ScreenAction, ScreenActionTemplate> actionPair = getAction(step, actionId);
+        List<Pair<ScreenAction, ScreenActionTemplate>> actionsPairs = new ArrayList<>();
+        for (String id : actionId) {
+            actionsPairs.add(getAction(step, id));
+        }
         boolean viewOnly = isViewOnly(step);
 
         List<WorkflowEntity> entities = new ArrayList<>();
@@ -316,72 +325,77 @@ public class WorkflowRestController implements WorkflowRestAPI {
                     HttpStatus.BAD_REQUEST);
         }
 
-        ResponseDTO<Boolean> result = new ResponseDTO<>();
+        ResultDTO result = new ResultDTO();
 
-        ScreenAction action = actionPair.getFirst();
-        ScreenActionTemplate actionTemplate = actionPair.getSecond();
+        for (Pair<ScreenAction, ScreenActionTemplate> actionPair : actionsPairs) {
+            ScreenAction action = actionPair.getFirst();
+            ScreenActionTemplate actionTemplate = actionPair.getSecond();
 
-        if (viewOnly && !Boolean.TRUE.equals(getValue(action, actionTemplate, "alwaysEnabled", null))) {
-            result.setResult(Boolean.FALSE);
-        }
-        if (result.getResult() == null) {
-            if (!Boolean.TRUE.equals(getValue(action, actionTemplate, "availableInExternalSystem", null))) {
-                result.setResult(Boolean.FALSE);
+            Boolean accessible = null;
+
+            if (viewOnly && !Boolean.TRUE.equals(getValue(action, actionTemplate, "alwaysEnabled", null))) {
+                accessible = Boolean.FALSE;
             }
-        }
-        if (result.getResult() == null) {
-            if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
-                Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
-                ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
-                if (count != null && type != null) {
-                    int currentCount = entities.size();
-                    switch (type) {
-                        case LESS: {
-                            result.setResult(currentCount < count);
-                            break;
-                        }
-                        case MORE: {
-                            result.setResult(currentCount > count);
-                            break;
-                        }
-                        case EQUALS: {
-                            result.setResult(currentCount == count);
-                            break;
-                        }
-                    }
+            if (accessible == null) {
+                if (!Boolean.TRUE.equals(getValue(action, actionTemplate, "availableInExternalSystem", null))) {
+                    accessible = Boolean.FALSE;
                 }
-                if (result.getResult() == null) {
-                    String script = getValue(action, actionTemplate, "externalPermitScript", null);
-                    if (!StringUtils.isBlank(script)) {
-                        try {
-                            Map<String, Object> binding = new HashMap<>();
-                            binding.put(ENTITIES_PARAMETER, entities);
-                            binding.put(STAGE_PARAMETER, step.getStage());
-                            binding.put(VIEW_ONLY_PARAMETER, viewOnly);
-
-                            Object value = scripting.evaluateGroovy(prepareScript(script), binding);
-                            if (value instanceof Boolean) {
-                                result.setResult((Boolean) value);
-                            } else if (value instanceof String) {
-                                result.setResult(BooleanUtils.toBoolean((String) value));
-                            } else {
-                                //nothing return mean yes
-                                result.setResult(Boolean.TRUE);
+            }
+            if (accessible == null) {
+                if (Boolean.TRUE.equals(getValue(action, actionTemplate, "permitRequired", null))) {
+                    Integer count = getValue(action, actionTemplate, "permitItemsCount", null);
+                    ComparingType type = getValue(action, actionTemplate, "permitItemsType", null);
+                    if (count != null && type != null) {
+                        int currentCount = entities.size();
+                        switch (type) {
+                            case LESS: {
+                                accessible = currentCount < count;
+                                break;
                             }
-                        } catch (Exception e) {
-                            log.error(String.format("Failed to check is action '%s|%s' performable or not", step.getStage().getName(), action.getCaption()), e);
+                            case MORE: {
+                                accessible = currentCount > count;
+                                break;
+                            }
+                            case EQUALS: {
+                                accessible = currentCount == count;
+                                break;
+                            }
+                        }
+                    }
+                    if (accessible == null) {
+                        String script = getValue(action, actionTemplate, "externalPermitScript", null);
+                        if (!StringUtils.isBlank(script)) {
+                            try {
+                                Map<String, Object> binding = new HashMap<>();
+                                binding.put(ENTITIES_PARAMETER, entities);
+                                binding.put(STAGE_PARAMETER, step.getStage());
+                                binding.put(VIEW_ONLY_PARAMETER, viewOnly);
 
-                            throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
+                                Object value = scripting.evaluateGroovy(prepareScript(script), binding);
+                                if (value instanceof Boolean) {
+                                    accessible = (Boolean) value;
+                                } else if (value instanceof String) {
+                                    accessible = BooleanUtils.toBoolean((String) value);
+                                }
+                            } catch (Exception e) {
+                                log.error(String.format("Failed to check is action '%s|%s' performable or not", step.getStage().getName(), action.getCaption()), e);
+
+                                throw new RestAPIException(getMessage("captions.error.general"), getMessage("captions.error.internal"), HttpStatus.INTERNAL_SERVER_ERROR);
+                            }
                         }
                     }
                 }
             }
-        }
-        if (result.getResult() == null) {
-            result.setResult(Boolean.TRUE);
+            if (accessible == null) {
+                accessible = Boolean.TRUE;
+            }
+
+            result.setProperty(action.getId().toString(), accessible);
         }
 
-        return result;
+        ResponseDTO<ResultDTO> response = new ResponseDTO<>();
+        response.setResult(result);
+        return response;
     }
 
     @Override
@@ -422,6 +436,11 @@ public class WorkflowRestController implements WorkflowRestAPI {
         ScreenActionTemplate actionTemplate = actionPair.getSecond();
 
         if (viewOnly && !Boolean.TRUE.equals(getValue(action, actionTemplate, "alwaysEnabled", null))) {
+            throw new RestAPIException(getMessage("captions.error.general"),
+                    getMessage("WorkflowRestController.accessDenied"), HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        if (!Boolean.TRUE.equals(getValue(action, actionTemplate, "availableInExternalSystem", null))) {
             throw new RestAPIException(getMessage("captions.error.general"),
                     getMessage("WorkflowRestController.accessDenied"), HttpStatus.NOT_ACCEPTABLE);
         }
@@ -720,11 +739,11 @@ public class WorkflowRestController implements WorkflowRestAPI {
                 String lowerCaseIcon = icon.toLowerCase();
                 for (CubaIcon at : CubaIcon.values()) {
                     if (lowerCaseIcon.endsWith(at.name().toLowerCase())) {
-                        return at.name();
+                        return "fa-" + at.name().replace("_", "-").toLowerCase();//make it as link font awesome icon
                     }
                 }
             } catch (Exception e) {
-                log.warn("Failed to retrieve icon", e.getMessage());
+                log.warn("Failed to retrieve icon. {}", e.getMessage());
             }
         }
         return icon;
@@ -735,10 +754,31 @@ public class WorkflowRestController implements WorkflowRestAPI {
             try {
                 //make conversion if need
             } catch (Exception e) {
-                log.warn("Failed to retrieve style", e.getMessage());
+                log.warn("Failed to retrieve style. {}", e.getMessage());
             }
         }
         return style;
     }
 
+    protected String convertFieldToProperty(ScreenField field) {
+        if (!StringUtils.isBlank(field.getProperty())) {
+            return field.getProperty();
+        }
+        //try to retrieve property name from field with convenience. Backward compatibility
+        String fieldName = field.getFieldId();
+        if (!StringUtils.isBlank(fieldName)) {
+            try {
+                int separatorIndex = fieldName.indexOf(".");
+                if (separatorIndex > 0) {
+                    fieldName = fieldName.substring(separatorIndex + 1);
+                }
+                if (fieldName.toLowerCase().endsWith("field")) {
+                    fieldName = fieldName.substring(0, fieldName.length() - "field".length());
+                }
+            } catch (Exception e) {
+                log.warn("Failed to retrieve property from field name. {}", e.getMessage());
+            }
+        }
+        return fieldName;
+    }
 }

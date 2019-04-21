@@ -2,7 +2,6 @@ package com.groupstp.workflowstp.web.screenconstructor.frame.editor;
 
 import com.groupstp.workflowstp.entity.ScreenField;
 import com.groupstp.workflowstp.web.screenconstructor.frame.AbstractScreenConstructorFrame;
-import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.chile.core.model.MetaProperty;
 import com.haulmont.chile.core.model.MetaPropertyPath;
 import com.haulmont.cuba.core.global.MessageTools;
@@ -106,7 +105,7 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
     }
 
     private void initFieldsNamesLookup() {
-        final Map<String, Pair<String, String>> options = new TreeMap<>();
+        final Map<String, FieldDescription> options = new TreeMap<>();
         ComponentsHelper.walkComponents(extendingWindow, (component, name) -> {
             if (component instanceof DatasourceComponent) {
                 DatasourceComponent dsComponent = (DatasourceComponent) component;
@@ -115,7 +114,13 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
                     if (!StringUtils.isEmpty(component.getId())) {
                         if (entityMetaClass.getProperties().contains(propertyPath.getMetaProperty())) {
                             String caption = messageTools.getPropertyCaption(propertyPath.getMetaProperty());
-                            options.put(caption, new Pair<>(caption, component.getId()));
+
+                            FieldDescription desc = new FieldDescription();
+                            desc.caption = caption;
+                            desc.fieldId = component.getId();
+                            desc.property = propertyPath.getMetaProperty().getName();
+
+                            options.put(caption, desc);
                         }
                     }
                 }
@@ -130,7 +135,13 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
                                     if (entityMetaClass.getProperty(field.getProperty()) != null) {
                                         if (entityMetaClass.equals(field.getDatasource().getMetaClass())) {
                                             String caption = messageTools.getPropertyCaption(entityMetaClass.getPropertyNN(field.getProperty()));
-                                            options.put(caption, new Pair<>(caption, fg.getId() + "." + field.getId()));
+
+                                            FieldDescription desc = new FieldDescription();
+                                            desc.caption = caption;
+                                            desc.fieldId = fg.getId() + "." + field.getId();
+                                            desc.property = field.getProperty();
+
+                                            options.put(caption, desc);
                                         }
                                     }
                                 }
@@ -143,7 +154,13 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
                 MetaProperty metaProperty = entityMetaClass.getProperty(id);
                 if (metaProperty != null) {
                     String caption = messageTools.getPropertyCaption(metaProperty);
-                    options.put(caption, new Pair<>(caption, id));
+
+                    FieldDescription desc = new FieldDescription();
+                    desc.caption = caption;
+                    desc.fieldId = id;
+                    desc.property = metaProperty.getName();
+
+                    options.put(caption, desc);
                 }
             }
         });
@@ -152,12 +169,14 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
         nameLookup.addValueChangeListener(e -> {
             if (setup[0]) {
                 //noinspection unchecked
-                Pair<String, String> pair = (Pair) e.getValue();
-                String name = pair == null ? null : pair.getFirst();
-                String fieldId = pair == null ? null : pair.getSecond();
+                FieldDescription desc = (FieldDescription) e.getValue();
+                String name = desc == null ? null : desc.caption;
+                String fieldId = desc == null ? null : desc.fieldId;
+                String property = desc == null ? null : desc.property;
 
                 fieldDs.getItem().setName(name);
                 fieldDs.getItem().setFieldId(fieldId);
+                fieldDs.getItem().setProperty(property);
             }
         });
         fieldDs.addItemChangeListener(e -> {
@@ -270,5 +289,11 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
         fieldsDs.refresh();
 
         disableEdit();
+    }
+
+    private static final class FieldDescription {
+        String caption;
+        String fieldId;
+        String property;
     }
 }
