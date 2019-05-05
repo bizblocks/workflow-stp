@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author adiatullin
  */
-@RequestMapping(value = "/workflow", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/wf/workflow", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface WorkflowRestAPI {
 
     /**

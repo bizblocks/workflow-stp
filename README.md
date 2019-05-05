@@ -321,7 +321,7 @@ public class Ticket extends StandardEntity implements WorkflowEntity<UUID> {
 #%RAML 0.8
 title: REST сервис рабочих процессов
 version: v1
-baseUri: url_сервера:порт/app/rest/workflow
+baseUri: url_сервера:порт/app/rest/wf/workflow
 
 /all:
   get:

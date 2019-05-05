@@ -13,12 +13,12 @@
     <!-- Define a base package for your controllers-->
     <context:component-scan base-package="com.groupstp.workflowstp.rest"/>
 
-    <security:http pattern="/rest/**"
+    <security:http pattern="/rest/wf/**"
                    create-session="stateless"
                    entry-point-ref="oauthAuthenticationEntryPoint"
                    xmlns="http://www.springframework.org/schema/security">
         <!-- Specify one or more protected URL patterns-->
-        <intercept-url pattern="/rest/**" access="isAuthenticated()"/>
+        <intercept-url pattern="/rest/wf/**" access="isAuthenticated()"/>
         <anonymous enabled="false"/>
         <csrf disabled="true"/>
         <cors configuration-source-ref="cuba_RestCorsSource"/>
