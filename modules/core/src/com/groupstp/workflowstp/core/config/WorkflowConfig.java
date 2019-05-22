@@ -30,7 +30,7 @@ public interface WorkflowConfig extends Config {
      * <br> This reduces the server load on startup.
      */
     @Property("workflow.delayCallCount")
-    @DefaultInteger(5)
+    @DefaultInteger(2)
     int getDelayCallCount();
 
     void setDelayCallCount(int value);
