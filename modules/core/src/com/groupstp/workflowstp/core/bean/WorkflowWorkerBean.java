@@ -69,6 +69,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected final Map<UUID, Thread> processingInstances = new HashMap<>();
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
+    protected volatile int callCount = 0;
+
 
     @Override
     public Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException {
@@ -1046,6 +1048,13 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Override
     public void performWorkflowHeartbeat() {
         if (Boolean.TRUE.equals(config.getHeartbeatEnable())) {
+
+            int callsToSkip = config.getDelayCallCount();
+            if (callCount < callsToSkip) {
+                callCount++;
+                return;
+            }
+
             Set<UUID> processing;
 
             ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
