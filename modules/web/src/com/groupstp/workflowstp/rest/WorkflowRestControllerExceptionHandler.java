@@ -9,5 +9,5 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
  * @author adiatullin
  */
 @ControllerAdvice("com.groupstp.workflowstp.rest.controller")
-public class ExtRestControllerExceptionHandler extends RestControllerExceptionHandler {
+public class WorkflowRestControllerExceptionHandler extends RestControllerExceptionHandler {
 }

@@ -31,8 +31,8 @@ public interface WorkflowConfig extends Config {
      */
     @Property("workflow.delayCallCount")
     @DefaultInteger(2)
-    int getDelayCallCount();
+    Integer getDelayCallCount();
 
-    void setDelayCallCount(int value);
+    void setDelayCallCount(Integer value);
 
 }

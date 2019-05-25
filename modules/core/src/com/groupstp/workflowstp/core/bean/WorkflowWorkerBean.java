@@ -1049,10 +1049,12 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     public void performWorkflowHeartbeat() {
         if (Boolean.TRUE.equals(config.getHeartbeatEnable())) {
 
-            int callsToSkip = config.getDelayCallCount();
-            if (callCount < callsToSkip) {
-                callCount++;
-                return;
+            Integer callsToSkip = config.getDelayCallCount();
+            if (callsToSkip != null) {
+                if (callCount < callsToSkip) {
+                    callCount++;
+                    return;
+                }
             }
 
             Set<UUID> processing;
