@@ -19,6 +19,7 @@
     <layout expand="workflowInstanceTasksTable"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="workflowInstanceTasksTable"
                 datasource="workflowInstanceTasksDs">
             <properties include=".*"/>

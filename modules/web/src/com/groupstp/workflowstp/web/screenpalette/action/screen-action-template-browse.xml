@@ -19,6 +19,7 @@
     <layout expand="mainBox"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="screenActionTemplatesTable"
                 datasource="screenActionTemplatesDs">
             <properties include=".*"/>

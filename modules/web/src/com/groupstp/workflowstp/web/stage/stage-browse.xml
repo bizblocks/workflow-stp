@@ -23,6 +23,7 @@
     <layout expand="stagesTable"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="stagesTable"
                 datasource="stagesDs">
             <properties include=".*"/>

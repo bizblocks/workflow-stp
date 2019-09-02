@@ -19,6 +19,7 @@
     <layout expand="screenExtensionTemplatesTable"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="screenExtensionTemplatesTable"
                 datasource="screenExtensionTemplatesDs">
             <properties include=".*"/>

@@ -19,6 +19,7 @@
     <layout expand="screenTableColumnTemplatesTable"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="screenTableColumnTemplatesTable"
                 datasource="screenTableColumnTemplatesDs">
             <properties include=".*"/>

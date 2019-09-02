@@ -22,6 +22,7 @@
     <layout expand="activitiesTable"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="activitiesTable"
                 datasource="activitiesDs">
             <properties include=".*"/>

@@ -19,6 +19,7 @@
     <layout expand="workflowsTable"
             spacing="true">
         <filter id="filter"
+                defaultMode="generic"
                 applyTo="workflowsTable"
                 datasource="workflowsDs">
             <properties include=".*"/>
