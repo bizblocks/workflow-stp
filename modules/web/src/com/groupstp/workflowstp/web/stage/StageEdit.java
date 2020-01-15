@@ -17,8 +17,11 @@ import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.impl.ValueCollectionDatasourceImpl;
 import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
+import com.haulmont.cuba.security.entity.Role;
+import com.haulmont.cuba.security.entity.User;
+import com.vaadin.data.HasValue;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * @author adiatullin
@@ -51,21 +55,21 @@ public class StageEdit extends AbstractEditor<Stage> {
     @Inject
     protected FieldGroup generalFieldGroup;
     @Inject
-    protected LookupField entityNameField;
+    protected LookupField<String> entityNameField;
     @Inject
-    protected LookupField typeField;
+    protected LookupField<StageType> typeField;
     @Inject
     protected Component userInteractionBox;
     @Inject
     protected Component executionBox;
     @Inject
-    protected LookupField actorTypeAction;
+    protected LookupField<ActorsType> actorTypeAction;
     @Inject
-    protected TokenList actorRolesList;
+    protected TokenList<Role> actorRolesList;
     @Inject
-    protected TokenList actorUsersList;
+    protected TokenList<User> actorUsersList;
     @Inject
-    protected LookupField viewerTypeAction;
+    protected LookupField<ActorsType> viewerTypeAction;
     @Inject
     protected TokenList viewerRolesList;
     @Inject
@@ -75,15 +79,15 @@ public class StageEdit extends AbstractEditor<Stage> {
     @Inject
     protected SourceCodeEditor editorScreenGroovyScript;
     @Inject
-    protected LookupField executionBeanNameField;
+    protected LookupField<String> executionBeanNameField;
     @Inject
     protected SourceCodeEditor executionCode;
     @Inject
     protected BoxLayout scriptBox;
     @Inject
-    protected TextArea browserScreenConstructor;
+    protected TextArea<String> browserScreenConstructor;
     @Inject
-    protected TextArea editorScreenConstructor;
+    protected TextArea<String> editorScreenConstructor;
     @Inject
     protected BoxLayout mainBox;
     @Inject
@@ -117,7 +121,7 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     //Setup behaviour when selected one type some view must be hidden or showed
     protected void initTypeSelectionBehaviour() {
-        ((LookupField) generalFieldGroup.getFieldNN("type").getComponentNN()).addValueChangeListener(e -> {
+        ((LookupField<StageType>) generalFieldGroup.getFieldNN("type").getComponentNN()).addValueChangeListener(e -> {
             boolean userInteraction = EqualsUtils.equalAny(e.getValue(), StageType.USERS_INTERACTION, StageType.ARCHIVE);
             boolean execution = StageType.ALGORITHM_EXECUTION.equals(e.getValue());
 
@@ -143,7 +147,7 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     //Setup entity name selection. Then name selected it's can't be changed
     protected void initEntityNameBehaviour() {
-        Map<String, Object> options = new TreeMap<>();
+        Map<String, String> options = new TreeMap<>();
         for (MetaClass metaClass : workflowWebBean.getWorkflowEntities()) {
             options.put(messageTools.getEntityCaption(metaClass) + " (" + metaClass.getName() + ")", metaClass.getName());
         }
@@ -157,7 +161,7 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     //Behaviour for selecting users or roles
     protected void initActorsSelectionBehaviour() {
-        Map<String, Object> options = new LinkedHashMap<>();
+        Map<String, ActorsType> options = new LinkedHashMap<>();
         options.put(getMessage("stageEdit.selectUsers"), ActorsType.USER);
         options.put(getMessage("stageEdit.selectRole"), ActorsType.ROLE);
 
@@ -171,7 +175,7 @@ public class StageEdit extends AbstractEditor<Stage> {
     }
 
     protected void initViewerSelectionBehaviour() {
-        Map<String, Object> options = new LinkedHashMap<>();
+        Map<String, ActorsType> options = new LinkedHashMap<>();
         options.put(getMessage("stageEdit.selectUsers"), ActorsType.USER);
         options.put(getMessage("stageEdit.selectRole"), ActorsType.ROLE);
 
@@ -244,7 +248,7 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     protected void initExecutionScripts() {
         executionBeanNameField.setOptionsMap(workflowService.getWorkflowExecutionDelegates());
-        ValueChangeListener listener = e -> {
+        HasValue.ValueChangeListener listener = e -> {
             if (!StringUtils.isEmpty(executionCode.getValue())) {
                 executionBeanNameField.setValue(null);
             } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
@@ -256,8 +260,8 @@ public class StageEdit extends AbstractEditor<Stage> {
             executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
             scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
         };
-        executionBeanNameField.addValueChangeListener(listener);
-        executionCode.addValueChangeListener(listener);
+        executionBeanNameField.addValueChangeListener((Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>>) listener);
+        executionCode.addValueChangeListener((Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>>) listener);
     }
 
     protected void getBrowseScreenGroovyHint() {

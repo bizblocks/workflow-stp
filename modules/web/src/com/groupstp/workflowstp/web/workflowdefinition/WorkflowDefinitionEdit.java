@@ -21,7 +21,7 @@ import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.security.entity.FilterEntity;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.dom4j.Element;
 
@@ -52,7 +52,7 @@ public class WorkflowDefinitionEdit extends AbstractEditor<WorkflowDefinition> {
     private Scripting scripting;
 
     @Inject
-    private LookupField entityNameField;
+    private LookupField<String> entityNameField;
     @Inject
     private TabSheet conditionTabSheet;
     @Inject
@@ -75,7 +75,7 @@ public class WorkflowDefinitionEdit extends AbstractEditor<WorkflowDefinition> {
 
     private void initEntityNameField() {
         //fill the entity names who extend WorkflowEntity
-        Map<String, Object> options = new TreeMap<>();
+        Map<String, String> options = new TreeMap<>();
         for (MetaClass metaClass : metadata.getSession().getClasses()) {
             if (WorkflowEntity.class.isAssignableFrom(metaClass.getJavaClass())) {
                 MetaClass mainMetaClass = extendedEntities.getOriginalOrThisMetaClass(metaClass);

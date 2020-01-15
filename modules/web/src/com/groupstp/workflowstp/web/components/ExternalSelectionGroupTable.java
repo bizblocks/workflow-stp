@@ -49,7 +49,7 @@ public class ExternalSelectionGroupTable<E extends Entity> extends WebGroupTable
         if (!externalSelection.isEmpty()) {
             Set res = new LinkedHashSet<>();
             for (Object id : externalSelection) {
-                Entity item = datasource.getItem(id);
+                Entity item = (Entity) component.getContainerDataSource().getItem(id);
                 if (item != null) {
                     res.add(item);
                 }
@@ -69,7 +69,7 @@ public class ExternalSelectionGroupTable<E extends Entity> extends WebGroupTable
         if (itemIds != null) {
             Set res = new LinkedHashSet<>();
             for (Object id : itemIds) {
-                Entity item = datasource.getItem(id);
+                Entity item = (Entity) component.getContainerDataSource().getItem(id);
                 if (item != null) {
                     res.add(item);
                 }
@@ -107,12 +107,12 @@ public class ExternalSelectionGroupTable<E extends Entity> extends WebGroupTable
                 throw new DevelopmentException("External selection not enabled");
             }
 
-            if (!datasource.containsItem(item.getId())) {
+            if (!component.getContainerDataSource().containsId(item.getId())) {
                 throw new IllegalStateException("Datasource doesn't contain item to select: " + item);
             }
 
             externalSelection.add(item.getId());
-            datasource.setItem(item);
+            component.getContainerDataSource().addItem(item);
             refreshActionsState();
         }
     }
@@ -131,14 +131,14 @@ public class ExternalSelectionGroupTable<E extends Entity> extends WebGroupTable
             externalSelection.remove(item.getId());
             E entity = null;
             if (!CollectionUtils.isEmpty(externalSelection)) {
-                entity = (E) datasource.getItem(IterableUtils.get(externalSelection, 0));
+                entity = (E) (Entity) component.getContainerDataSource().getItem(IterableUtils.get(externalSelection, 0));
             } else {
                 Set internalSelected = super.getSelectedItemIds();
                 if (!CollectionUtils.isEmpty(internalSelected) && internalSelected.size() == 1) {
-                    entity = (E) datasource.getItem(IterableUtils.get(internalSelected, 0));
+                    entity = (E) (Entity) component.getContainerDataSource().getItem(IterableUtils.get(internalSelected, 0));
                 }
             }
-            datasource.setItem(entity);
+            component.getContainerDataSource().addItem(entity);
             refreshActionsState();
         }
     }

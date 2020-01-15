@@ -56,7 +56,7 @@ public class StageNameDialog extends AbstractWindow {
      * @return user entered stage name
      */
     public String getStageName() {
-        return stageNameField.getValue();
+        return (String) stageNameField.getValue();
     }
 
     @Override

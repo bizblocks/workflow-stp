@@ -21,7 +21,7 @@ import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.entity.UserRole;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ComparatorUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.perf4j.StopWatch;
 import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.Logger;
@@ -441,8 +441,8 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
             if (targetComponent instanceof Table) {
                 targetComponent = ((Table) targetComponent).getButtonsPanel();
             }
-            if (targetComponent instanceof com.haulmont.cuba.gui.components.Component.Container) {
-                Collection children = ((com.haulmont.cuba.gui.components.Component.Container) targetComponent).getComponents();
+            if (targetComponent instanceof com.haulmont.cuba.gui.components.ComponentContainer) {
+                Collection children = ((com.haulmont.cuba.gui.components.ComponentContainer) targetComponent).getComponents();
                 actionsStartPosition = children == null ? 0 : children.size();
             }
 

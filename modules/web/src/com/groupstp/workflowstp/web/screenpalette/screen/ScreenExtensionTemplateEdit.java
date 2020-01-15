@@ -7,7 +7,7 @@ import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.components.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +32,15 @@ public class ScreenExtensionTemplateEdit extends AbstractEditor<ScreenExtensionT
     private DataManager dataManager;
 
     @Inject
-    private LookupField entityNameField;
+    private LookupField<String> entityNameField;
     @Inject
-    private LookupField screenIdField;
+    private LookupField<String> screenIdField;
     @Inject
     private BoxLayout constructorBox;
     @Inject
     private FieldGroup fieldGroup;
     @Inject
-    private TextArea browserScreenConstructor;
+    private TextArea<String> browserScreenConstructor;
 
     private MetaClass metaClass;
     private WorkflowWebBean.WorkflowScreenInfo screenInfo;
@@ -54,7 +54,7 @@ public class ScreenExtensionTemplateEdit extends AbstractEditor<ScreenExtensionT
     }
 
     private void initEntityNameField() {
-        Map<String, Object> options = new TreeMap<>();
+        Map<String, String> options = new TreeMap<>();
         for (MetaClass metaClass : workflowWebBean.getWorkflowEntities()) {
             options.put(messageTools.getEntityCaption(metaClass) + " (" + metaClass.getName() + ")", metaClass.getName());
         }

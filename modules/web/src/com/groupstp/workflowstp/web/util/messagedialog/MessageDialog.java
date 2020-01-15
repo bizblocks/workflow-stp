@@ -7,7 +7,7 @@ import com.haulmont.cuba.gui.components.AbstractWindow;
 import com.haulmont.cuba.gui.components.Button;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.ResizableTextArea;
-import com.haulmont.cuba.web.toolkit.ui.CubaCopyButtonExtension;
+import com.haulmont.cuba.web.widgets.CubaCopyButtonExtension;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -99,7 +99,7 @@ public class MessageDialog extends AbstractWindow {
     }
 
     public String getMessage() {
-        return textArea.getValue();
+        return (String) textArea.getValue();
     }
 
     public void onOk() {

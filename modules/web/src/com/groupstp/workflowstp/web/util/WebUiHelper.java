@@ -28,7 +28,7 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.security.entity.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
 import javax.annotation.Nullable;
@@ -169,11 +169,11 @@ public class WebUiHelper {
      * @param container     components container
      * @param componentsIds editable components ids
      */
-    public static void enableComponents(com.haulmont.cuba.gui.components.Component.Container container, List<String> componentsIds) {
+    public static void enableComponents(com.haulmont.cuba.gui.components.ComponentContainer container, List<String> componentsIds) {
         ((WebUiHelper) AppBeans.get(NAME)).enableComponentsInternal(container, componentsIds);
     }
 
-    protected void enableComponentsInternal(com.haulmont.cuba.gui.components.Component.Container container, List<String> componentsIds) {
+    protected void enableComponentsInternal(com.haulmont.cuba.gui.components.ComponentContainer container, List<String> componentsIds) {
         ComponentsHelper.walkComponents(container, (component, name) -> {
             if (component instanceof FieldGroup) {
                 FieldGroup fg = (FieldGroup) component;
@@ -194,16 +194,16 @@ public class WebUiHelper {
                 } else {
                     component.setEnabled(true);
                 }
-                if (component instanceof Component.ActionsHolder) {
-                    Collection<Action> actions = ((Component.ActionsHolder) component).getActions();
+                if (component instanceof ActionsHolder) {
+                    Collection<Action> actions = ((ActionsHolder) component).getActions();
                     if (!CollectionUtils.isEmpty(actions)) {
                         for (Action action : actions) {
                             action.setEnabled(true);
                         }
                     }
                 }
-                if (component instanceof Component.HasButtonsPanel) {
-                    ButtonsPanel bp = ((Component.HasButtonsPanel) component).getButtonsPanel();
+                if (component instanceof HasButtonsPanel) {
+                    ButtonsPanel bp = ((HasButtonsPanel) component).getButtonsPanel();
                     if (bp != null) {
                         Collection<Component> components = bp.getComponents();
                         if (!CollectionUtils.isEmpty(components)) {
@@ -443,7 +443,7 @@ public class WebUiHelper {
         if (Boolean.class.isAssignableFrom(path.getRangeJavaClass())) {
             CheckBox checkBox = componentsFactory.createComponent(CheckBox.class);
             checkBox.setEditable(false);
-            checkBox.setValue(value);
+            checkBox.setValue((Boolean) value);
             return checkBox;
         } else {
             String text = StringUtils.EMPTY;

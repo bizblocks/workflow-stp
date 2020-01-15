@@ -39,7 +39,7 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
     @Inject
     private FieldGroup generalFieldGroup;
     @Inject
-    private LookupField entityNameField;
+    private LookupField<String> entityNameField;
     @Inject
     private SplitPanel stepsSplit;
     @Inject
@@ -64,7 +64,7 @@ public class WorkflowEdit extends AbstractEditor<Workflow> {
 
     private void initEntityNameBehaviour() {
         //prepare workflow entities in system
-        Map<String, Object> options = new TreeMap<>();
+        Map<String, String> options = new TreeMap<>();
         for (MetaClass metaClass : metadata.getSession().getClasses()) {
             if (WorkflowEntity.class.isAssignableFrom(metaClass.getJavaClass())) {
                 MetaClass mainMetaClass = extendedEntities.getOriginalOrThisMetaClass(metaClass);

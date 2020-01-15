@@ -18,7 +18,7 @@ import com.groupstp.workflowstp.entity.WorkflowInstance;
 import com.haulmont.cuba.gui.components.actions.BaseAction;
 import com.haulmont.cuba.gui.data.CollectionDatasource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.Collection;

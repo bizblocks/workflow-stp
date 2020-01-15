@@ -65,7 +65,7 @@ public class WorkflowChooserDialog extends AbstractWindow {
 
 
     public Workflow getWorkflow() {
-        return workflowField.getValue();
+        return (Workflow) workflowField.getValue();
     }
 
     @Override

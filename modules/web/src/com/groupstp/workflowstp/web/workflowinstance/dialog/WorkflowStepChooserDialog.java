@@ -49,7 +49,7 @@ public class WorkflowStepChooserDialog extends AbstractWindow {
      * @return user selected step from provided workflow
      */
     public Step getStep() {
-        return stepField.getValue();
+        return (Step) stepField.getValue();
     }
 
     @Override

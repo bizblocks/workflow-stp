@@ -15,7 +15,7 @@ import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -39,7 +39,7 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
     @Inject
     private FieldGroup fieldFieldGroup;
     @Inject
-    private LookupField nameLookup;
+    private LookupField<FieldDescription> nameLookup;
     @Inject
     private BoxLayout fieldEditBox;
 
@@ -183,7 +183,9 @@ public class ScreenConstructorEditorFrame extends AbstractScreenConstructorFrame
             setup[0] = false;
             try {
                 ScreenField field = e.getItem();
-                nameLookup.setValue(field == null ? null : field.getName());
+                FieldDescription fieldDescription = new FieldDescription();
+                if(field!=null)fieldDescription.fieldId = field.getName();
+                nameLookup.setValue(field == null ? null : fieldDescription);
             } finally {
                 setup[0] = true;
             }

@@ -17,7 +17,7 @@ import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.data.DsBuilder;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 
 import javax.annotation.Nullable;

@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.cubaVersion = '6.10.8'
+    ext.cubaVersion = '7.0.12'
     repositories {
         
         mavenLocal()
@@ -97,7 +97,7 @@ configure(coreModule) {
 
     dependencies {
         compile(globalModule)
-        provided(servletApi)
+        compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version:'3.1.0'
         jdbc(postgres)
         testRuntime(postgres)
         compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
@@ -143,7 +143,7 @@ configure(webModule) {
     }
 
     dependencies {
-        provided(servletApi)
+        compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version:'3.1.0'
         compile(globalModule)
 
     }

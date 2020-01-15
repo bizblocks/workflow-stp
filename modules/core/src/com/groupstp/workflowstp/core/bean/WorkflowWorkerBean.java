@@ -21,8 +21,8 @@ import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.security.app.Authenticated;
 import com.haulmont.cuba.security.entity.User;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -954,7 +954,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
      */
     protected void markAsFailed(WorkflowInstance instance, @Nullable WorkflowEntity entity,
                                 @Nullable WorkflowInstanceTask task, @Nullable Exception e) throws WorkflowException {
-        markAsFailed(instance, entity, task, e == null ? null : ExceptionUtils.getFullStackTrace(e));
+        markAsFailed(instance, entity, task, e == null ? null : ExceptionUtils.getStackTrace(e));
     }
 
     protected void markAsFailed(WorkflowInstance instance, @Nullable WorkflowEntity entity,

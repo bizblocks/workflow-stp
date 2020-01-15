@@ -1,7 +1,7 @@
 package com.groupstp.workflowstp.annotation;
 
 import com.haulmont.cuba.core.entity.annotation.MetaAnnotation;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -51,7 +51,7 @@ public class CodeDialog extends AbstractWindow {
         super.init(params);
 
         codeEditor.setMode(SourceCodeEditor.Mode.parse((String) params.get(MODE)));
-        codeEditor.setValue(params.get(CODE));
+        codeEditor.setValue((String) params.get(CODE));
     }
 
     /**

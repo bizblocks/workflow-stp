@@ -16,7 +16,7 @@ import com.haulmont.cuba.gui.data.CollectionDatasource;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -51,13 +51,13 @@ public class ScreenConstructorBrowserFrame extends AbstractScreenConstructorFram
     @Inject
     private TextField captionField;
     @Inject
-    private LookupField namePropertiesLookup;
+    private LookupField<MetaProperty> namePropertiesLookup;
     @Inject
     private TextArea generatorScriptEditor;
     @Inject
     private FlowBoxLayout generatorScriptEditorBox;
     @Inject
-    private LookupField templateField;
+    private LookupField<ScreenTableColumnTemplate> templateField;
 
     private ScreenTableColumn editingItem;
 

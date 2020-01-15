@@ -20,7 +20,7 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -90,7 +90,7 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
     @Inject
     protected LookupField styleField;
     @Inject
-    protected LookupField templateField;
+    protected LookupField<ScreenActionTemplate> templateField;
     @Inject
     protected TextField permitItemsCountField;
     @Inject
