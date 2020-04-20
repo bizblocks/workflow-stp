@@ -1,5 +1,6 @@
 package com.groupstp.workflowstp.web.screenconstructor.frame.action;
 
+import com.google.common.collect.Maps;
 import com.groupstp.workflowstp.entity.*;
 import com.groupstp.workflowstp.web.screenconstructor.frame.AbstractScreenConstructorFrame;
 import com.groupstp.workflowstp.web.util.action.ItemMoveAction;
@@ -344,9 +345,14 @@ public class ScreenConstructorActionsFrame extends AbstractScreenConstructorFram
 
     protected void initIconField() {
         Map<String, Object> options = new TreeMap<>();
+        Set<Object> values = new HashSet<>();
         for (CubaIcon icon : CubaIcon.values()) {
-            options.put(icon.name(), icon.source());
+            if (!values.contains(icon.source())){
+                options.put(icon.name(), icon.source());
+                values.add(icon.source());
+            }
         }
+
         iconField.setOptionsMap(options);
         iconField.setOptionIconProvider(item -> (String) item);
     }

@@ -248,20 +248,22 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     protected void initExecutionScripts() {
         executionBeanNameField.setOptionsMap(workflowService.getWorkflowExecutionDelegates());
-        HasValue.ValueChangeListener listener = e -> {
-            if (!StringUtils.isEmpty(executionCode.getValue())) {
-                executionBeanNameField.setValue(null);
-            } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
-                executionCode.setValue(null);
-            }
-            executionCode.setEditable(StringUtils.isEmpty(executionBeanNameField.getValue()));
-            executionCode.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
-            executionBeanNameField.setEditable(StringUtils.isEmpty(executionCode.getValue()));
-            executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
-            scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+        Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>> listener = e-> {
+
+                if (!StringUtils.isEmpty(executionCode.getValue())) {
+                    executionBeanNameField.setValue(null);
+                } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
+                    executionCode.setValue(null);
+                }
+                executionCode.setEditable(StringUtils.isEmpty(executionBeanNameField.getValue()));
+                executionCode.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+                executionBeanNameField.setEditable(StringUtils.isEmpty(executionCode.getValue()));
+                executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
+                scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+
         };
-        executionBeanNameField.addValueChangeListener((Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>>) listener);
-        executionCode.addValueChangeListener((Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>>) listener);
+        executionBeanNameField.addValueChangeListener(listener);
+        executionCode.addValueChangeListener(listener);
     }
 
     protected void getBrowseScreenGroovyHint() {

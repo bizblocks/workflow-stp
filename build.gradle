@@ -31,15 +31,13 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.workflowstp'
-        version = "2.1.0"
+        version = "2.1.1"
         isSnapshot = false
     }
     tomcat {
         dir = "$project.rootDir/deploy/tomcat"
     }
-    uploadRepository {
-        url = myMavenRepoWriteUrl
-    }
+   
 }
 
 dependencies {
