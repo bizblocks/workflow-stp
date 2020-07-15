@@ -1,6 +1,6 @@
 package com.groupstp.workflowstp.rest;
 
-import com.haulmont.restapi.controllers.RestControllerExceptionHandler;
+import com.haulmont.addon.restapi.api.controllers.RestControllerExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 /**

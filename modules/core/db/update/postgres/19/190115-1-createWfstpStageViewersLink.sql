@@ -1,1 +1,0 @@
-alter table STAGE_VIEWERS_LINK rename to WFSTP_STAGE_VIEWERS_LINK ;

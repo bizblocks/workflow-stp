@@ -19,7 +19,6 @@ import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.security.entity.Role;
 import com.haulmont.cuba.security.entity.User;
-import com.vaadin.data.HasValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -248,7 +247,7 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     protected void initExecutionScripts() {
         executionBeanNameField.setOptionsMap(workflowService.getWorkflowExecutionDelegates());
-        HasValue.ValueChangeListener listener = e -> {
+        Consumer<HasValue.ValueChangeEvent<String>> listener = e -> {
             if (!StringUtils.isEmpty(executionCode.getValue())) {
                 executionBeanNameField.setValue(null);
             } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
@@ -260,8 +259,8 @@ public class StageEdit extends AbstractEditor<Stage> {
             executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
             scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
         };
-        executionBeanNameField.addValueChangeListener((Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>>) listener);
-        executionCode.addValueChangeListener((Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>>) listener);
+        executionBeanNameField.addValueChangeListener(listener);
+        executionCode.addValueChangeListener(listener);
     }
 
     protected void getBrowseScreenGroovyHint() {
