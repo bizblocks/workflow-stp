@@ -1,5 +1,6 @@
 package com.groupstp.workflowstp.web.components;
 
+import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.components.AbstractFrame;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.config.WindowConfig;
@@ -15,8 +16,8 @@ import javax.inject.Inject;
  */
 public abstract class AbstractXmlDescriptorFrame extends AbstractFrame implements Component.HasXmlDescriptor {
 
-    @Inject
-    private WindowConfig windowConfig;
+
+    private WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
 
     private Element element;
 

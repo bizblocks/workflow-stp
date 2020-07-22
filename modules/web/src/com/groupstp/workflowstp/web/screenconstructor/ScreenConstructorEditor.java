@@ -16,6 +16,8 @@ import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.data.impl.DatasourceImplementation;
+import com.haulmont.cuba.web.gui.components.WebFragment;
+import com.haulmont.cuba.web.sys.WebScreens;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
@@ -86,7 +88,7 @@ public class ScreenConstructorEditor extends AbstractWindow {
     @Inject
     private WindowConfig windowConfig;
     @Inject
-    private ExtWebWindowManager windowManager;
+    private WebScreens windowManager;
     @Inject
     private Metadata metadata;
 
@@ -127,7 +129,8 @@ public class ScreenConstructorEditor extends AbstractWindow {
     private void initExtendingScreen(Map<String, Object> params) {
         WindowInfo info = windowConfig.getWindowInfo((String) params.get(EXTENDING_SCREEN_ID));
         try {
-            extendingWindow = windowManager.createWindow(info);
+            extendingWindow = windowManager.openWindow(info, WindowManager.OpenType.NEW_TAB);
+            windowManager.close(extendingWindow);
         } catch (Exception e) {
             throw new RuntimeException(getMessage("screenConstructorEditor.unableToExtendScreen"), e);
         }
@@ -162,7 +165,7 @@ public class ScreenConstructorEditor extends AbstractWindow {
 
         frames = new ArrayList<>();
         for (String name : Arrays.asList("actionsFrame", "browserFrame", "editorFrame", "customFrame")) {
-            AbstractScreenConstructorFrame frame = (AbstractScreenConstructorFrame) getComponent(name);
+            AbstractScreenConstructorFrame frame = (AbstractScreenConstructorFrame) (((WebFragment) getComponent(name)).getFrameOwner());
             if (frame != null) {
                 frame.setEntityMetaClass(entityClass);
                 frame.setScreenConstructor(getItem());

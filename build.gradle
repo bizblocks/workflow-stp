@@ -37,9 +37,9 @@ cuba {
     tomcat {
         dir = "$project.rootDir/deploy/tomcat"
     }
-/*    uploadRepository {
+    uploadRepository {
         url = myMavenRepoWriteUrl
-    }*/
+    }
 }
 
 dependencies {
