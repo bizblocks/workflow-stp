@@ -19,7 +19,6 @@ import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.security.entity.Role;
 import com.haulmont.cuba.security.entity.User;
-import com.vaadin.data.HasValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -248,19 +247,17 @@ public class StageEdit extends AbstractEditor<Stage> {
 
     protected void initExecutionScripts() {
         executionBeanNameField.setOptionsMap(workflowService.getWorkflowExecutionDelegates());
-        Consumer<com.haulmont.cuba.gui.components.HasValue.ValueChangeEvent<String>> listener = e-> {
-
-                if (!StringUtils.isEmpty(executionCode.getValue())) {
-                    executionBeanNameField.setValue(null);
-                } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
-                    executionCode.setValue(null);
-                }
-                executionCode.setEditable(StringUtils.isEmpty(executionBeanNameField.getValue()));
-                executionCode.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
-                executionBeanNameField.setEditable(StringUtils.isEmpty(executionCode.getValue()));
-                executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
-                scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
-
+        Consumer<HasValue.ValueChangeEvent<String>> listener = e -> {
+            if (!StringUtils.isEmpty(executionCode.getValue())) {
+                executionBeanNameField.setValue(null);
+            } else if (!StringUtils.isEmpty(executionBeanNameField.getValue())) {
+                executionCode.setValue(null);
+            }
+            executionCode.setEditable(StringUtils.isEmpty(executionBeanNameField.getValue()));
+            executionCode.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
+            executionBeanNameField.setEditable(StringUtils.isEmpty(executionCode.getValue()));
+            executionBeanNameField.setEnabled(StringUtils.isEmpty(executionCode.getValue()));
+            scriptBox.setEnabled(StringUtils.isEmpty(executionBeanNameField.getValue()));
         };
         executionBeanNameField.addValueChangeListener(listener);
         executionCode.addValueChangeListener(listener);
