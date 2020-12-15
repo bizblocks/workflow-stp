@@ -23,6 +23,8 @@ def modulePrefix = 'wfstp'
 def globalModule = project(":${modulePrefix}-global")
 def coreModule = project(":${modulePrefix}-core")
 def webModule = project(":${modulePrefix}-web")
+def myMavenRepoWriteUrl = "https://mymavenrepo.com/repo/8nW04Xlvs0TNbEzfXmWz"
+
 
 def servletApi = 'javax.servlet:javax.servlet-api:3.1.0'
 apply(plugin: 'idea')
@@ -202,6 +204,3 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
 }
 restart.finalizedBy start
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.3.1'
-}
