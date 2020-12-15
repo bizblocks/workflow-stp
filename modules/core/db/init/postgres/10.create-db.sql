@@ -1,167 +1,3 @@
--- begin WFSTP_STAGE
-create table WFSTP_STAGE (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    NAME varchar(255) not null,
-    ENTITY_NAME varchar(255) not null,
-    TYPE integer not null,
-    EXECUTION_GROOVY_SCRIPT text,
-    EXECUTION_BEAN_NAME varchar(255),
-    BROWSE_SCREEN_GROOVY_SCRIPT text,
-    BROWSER_SCREEN_CONSTRUCTOR text,
-    EDITOR_SCREEN_GROOVY_SCRIPT text,
-    EDITOR_SCREEN_CONSTRUCTOR text,
-    SCREEN_CONSTRUCTOR text,
-    DIRECTION_VARIABLES text,
-    --
-    primary key (ID)
-)^
--- end WFSTP_STAGE
--- begin WFSTP_STEP
-create table WFSTP_STEP (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    ORDER_ integer,
-    START boolean,
-    STAGE_ID uuid not null,
-    TIMEOUT_SEC integer,
-    REPEAT_SEC integer,
-    WORKFLOW_ID uuid not null,
-    --
-    primary key (ID)
-)^
--- end WFSTP_STEP
--- begin WFSTP_STEP_DIRECTION
-create table WFSTP_STEP_DIRECTION (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    ORDER_ integer,
-    FROM_ID uuid not null,
-    TO_ID uuid not null,
-    CONDITION_SQL_SCRIPT text,
-    CONDITION_XML text,
-    CONDITION_GROOVY_SCRIPT text,
-    --
-    primary key (ID)
-)^
--- end WFSTP_STEP_DIRECTION
--- begin WFSTP_WORKFLOW
-create table WFSTP_WORKFLOW (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    NAME varchar(255) not null,
-    CODE varchar(10) not null,
-    ACTIVE boolean,
-    ENTITY_NAME varchar(255) not null,
-    ORDER_ integer,
-    --
-    primary key (ID)
-)^
--- end WFSTP_WORKFLOW
--- begin WFSTP_WORKFLOW_INSTANCE
-create table WFSTP_WORKFLOW_INSTANCE (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    WORKFLOW_ID uuid not null,
-    ENTITY_NAME varchar(255) not null,
-    ENTITY_ID varchar(255) not null,
-    CONTEXT text,
-    START_DATE timestamp,
-    END_DATE timestamp,
-    ERROR_ text,
-    ERROR_IN_TASK boolean,
-    --
-    primary key (ID)
-)^
--- end WFSTP_WORKFLOW_INSTANCE
--- begin WFSTP_WORKFLOW_INSTANCE_COMMENT
-create table WFSTP_WORKFLOW_INSTANCE_COMMENT (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    INSTANCE_ID uuid,
-    TASK_ID uuid,
-    AUTHOR_ID uuid,
-    COMMENT text,
-    ATTACHMENT_ID uuid,
-    --
-    primary key (ID)
-)^
--- end WFSTP_WORKFLOW_INSTANCE_COMMENT
--- begin WFSTP_WORKFLOW_INSTANCE_TASK
-create table WFSTP_WORKFLOW_INSTANCE_TASK (
-    ID uuid,
-    VERSION integer not null,
-    CREATE_TS timestamp,
-    CREATED_BY varchar(50),
-    UPDATE_TS timestamp,
-    UPDATED_BY varchar(50),
-    DELETE_TS timestamp,
-    DELETED_BY varchar(50),
-    --
-    INSTANCE_ID uuid not null,
-    STEP_ID uuid not null,
-    START_DATE timestamp,
-    END_DATE timestamp,
-    --
-    primary key (ID)
-)^
--- end WFSTP_WORKFLOW_INSTANCE_TASK
--- begin WFSTP_STAGE_ACTORS_LINK
-create table WFSTP_STAGE_ACTORS_LINK (
-    STAGE_ID uuid,
-    ACTOR_ID uuid,
-    primary key (STAGE_ID, ACTOR_ID)
-)^
--- end WFSTP_STAGE_ACTORS_LINK
--- begin WFSTP_STAGE_ACTORS_ROLES_LINK
-create table WFSTP_STAGE_ACTORS_ROLES_LINK (
-    STAGE_ID uuid,
-    ACTOR_ROLE_ID uuid,
-    primary key (STAGE_ID, ACTOR_ROLE_ID)
-)^
--- end WFSTP_STAGE_ACTORS_ROLES_LINK
 -- begin WFSTP_SCREEN_ACTION_TEMPLATE
 create table WFSTP_SCREEN_ACTION_TEMPLATE (
     ID uuid,
@@ -214,6 +50,92 @@ create table WFSTP_SCREEN_EXTENSION_TEMPLATE (
     primary key (ID)
 )^
 -- end WFSTP_SCREEN_EXTENSION_TEMPLATE
+-- begin WFSTP_STAGE
+create table WFSTP_STAGE (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    NAME varchar(255) not null,
+    ENTITY_NAME varchar(255) not null,
+    TYPE integer not null,
+    EXECUTION_GROOVY_SCRIPT text,
+    EXECUTION_BEAN_NAME varchar(255),
+    BROWSE_SCREEN_GROOVY_SCRIPT text,
+    BROWSER_SCREEN_CONSTRUCTOR text,
+    EDITOR_SCREEN_GROOVY_SCRIPT text,
+    EDITOR_SCREEN_CONSTRUCTOR text,
+    SCREEN_CONSTRUCTOR text,
+    DIRECTION_VARIABLES text,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_STAGE
+-- begin WFSTP_WORKFLOW
+create table WFSTP_WORKFLOW (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    NAME varchar(255) not null,
+    CODE varchar(10) not null,
+    ACTIVE boolean,
+    ENTITY_NAME varchar(255) not null,
+    ORDER_ integer,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_WORKFLOW
+-- begin WFSTP_STEP
+create table WFSTP_STEP (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    ORDER_ integer,
+    START boolean,
+    STAGE_ID uuid not null,
+    TIMEOUT_SEC integer,
+    REPEAT_SEC integer,
+    WORKFLOW_ID uuid not null,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_STEP
+-- begin WFSTP_WORKFLOW_INSTANCE_TASK
+create table WFSTP_WORKFLOW_INSTANCE_TASK (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    INSTANCE_ID uuid not null,
+    STEP_ID uuid not null,
+    START_DATE timestamp,
+    END_DATE timestamp,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_WORKFLOW_INSTANCE_TASK
 -- begin WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE
 create table WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE (
     ID uuid,
@@ -235,6 +157,27 @@ create table WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE (
     primary key (ID)
 )^
 -- end WFSTP_SCREEN_TABLE_COLUMN_TEMPLATE
+-- begin WFSTP_STEP_DIRECTION
+create table WFSTP_STEP_DIRECTION (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    ORDER_ integer,
+    FROM_ID uuid not null,
+    TO_ID uuid not null,
+    CONDITION_SQL_SCRIPT text,
+    CONDITION_XML text,
+    CONDITION_GROOVY_SCRIPT text,
+    --
+    primary key (ID)
+)^
+-- end WFSTP_STEP_DIRECTION
 -- begin WFSTP_WORKFLOW_DEFINITION
 create table WFSTP_WORKFLOW_DEFINITION (
     ID uuid,
@@ -256,20 +199,56 @@ create table WFSTP_WORKFLOW_DEFINITION (
     primary key (ID)
 )^
 -- end WFSTP_WORKFLOW_DEFINITION
--- begin WFSTP_STAGE_VIEWERS_LINK
-create table WFSTP_STAGE_VIEWERS_LINK (
-    STAGE_ID uuid,
-    VIEWER_ID uuid,
-    primary key (STAGE_ID, VIEWER_ID)
+-- begin WFSTP_WORKFLOW_INSTANCE_COMMENT
+create table WFSTP_WORKFLOW_INSTANCE_COMMENT (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    INSTANCE_ID uuid,
+    TASK_ID uuid,
+    AUTHOR_ID uuid,
+    COMMENT text,
+    ATTACHMENT_ID uuid,
+    --
+    primary key (ID)
 )^
--- end WFSTP_STAGE_VIEWERS_LINK
--- begin WFSTP_STAGE_VIEWERS_ROLES_LINK
-create table WFSTP_STAGE_VIEWERS_ROLES_LINK (
-    STAGE_ID uuid,
-    VIEWER_ROLE_ID uuid,
-    primary key (STAGE_ID, VIEWER_ROLE_ID)
+-- end WFSTP_WORKFLOW_INSTANCE_COMMENT
+-- begin WFSTP_WORKFLOW_INSTANCE
+create table WFSTP_WORKFLOW_INSTANCE (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    WORKFLOW_ID uuid not null,
+    ENTITY_NAME varchar(255) not null,
+    ENTITY_ID varchar(255) not null,
+    CONTEXT text,
+    START_DATE timestamp,
+    END_DATE timestamp,
+    ERROR_ text,
+    ERROR_IN_TASK boolean,
+    --
+    primary key (ID)
 )^
--- end WFSTP_STAGE_VIEWERS_ROLES_LINK
+-- end WFSTP_WORKFLOW_INSTANCE
+-- begin WFSTP_STAGE_ACTORS_LINK
+create table WFSTP_STAGE_ACTORS_LINK (
+    STAGE_ID uuid,
+    ACTOR_ID uuid,
+    primary key (STAGE_ID, ACTOR_ID)
+)^
+-- end WFSTP_STAGE_ACTORS_LINK
 -- begin WFSTP_TASK_PERFORMERS_LINK
 create table WFSTP_TASK_PERFORMERS_LINK (
     TASK_ID uuid,
@@ -277,3 +256,24 @@ create table WFSTP_TASK_PERFORMERS_LINK (
     primary key (TASK_ID, PERFORMER_ID)
 )^
 -- end WFSTP_TASK_PERFORMERS_LINK
+-- begin WFSTP_STAGE_VIEWERS_ROLES_LINK
+create table WFSTP_STAGE_VIEWERS_ROLES_LINK (
+    STAGE_ID uuid,
+    VIEWER_ROLE_ID uuid,
+    primary key (STAGE_ID, VIEWER_ROLE_ID)
+)^
+-- end WFSTP_STAGE_VIEWERS_ROLES_LINK
+-- begin WFSTP_STAGE_ACTORS_ROLES_LINK
+create table WFSTP_STAGE_ACTORS_ROLES_LINK (
+    STAGE_ID uuid,
+    ACTOR_ROLE_ID uuid,
+    primary key (STAGE_ID, ACTOR_ROLE_ID)
+)^
+-- end WFSTP_STAGE_ACTORS_ROLES_LINK
+-- begin WFSTP_STAGE_VIEWERS_LINK
+create table WFSTP_STAGE_VIEWERS_LINK (
+    STAGE_ID uuid,
+    VIEWER_ID uuid,
+    primary key (STAGE_ID, VIEWER_ID)
+)^
+-- end WFSTP_STAGE_VIEWERS_LINK

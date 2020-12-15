@@ -2,7 +2,7 @@
 buildscript {
     ext.cubaVersion = '7.2.10'
     repositories {
-        
+
         mavenLocal()
         maven {
             url 'https://repo.cuba-platform.com/content/groups/work'
@@ -11,7 +11,7 @@ buildscript {
                 password(rootProject.hasProperty('repoPass') ? rootProject['repoPass'] : 'cuba123')
             }
         }
-        
+
     }
     dependencies {
         classpath "com.haulmont.gradle:cuba-plugin:$cubaVersion"
@@ -31,13 +31,15 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.workflowstp'
-        version = "2.1.1"
+        version = '2.2.1'
         isSnapshot = false
     }
     tomcat {
         dir = "$project.rootDir/deploy/tomcat"
     }
-   
+    uploadRepository {
+        url = myMavenRepoWriteUrl
+    }
 }
 
 dependencies {
@@ -83,8 +85,6 @@ configure(globalModule) {
             attributes('App-Component-Version': cuba.artifact.version + (cuba.artifact.isSnapshot ? '-SNAPSHOT' : ''))
         }
     }
-
-    
 }
 
 configure(coreModule) {
@@ -135,7 +135,7 @@ configure(coreModule) {
         dbPassword = 'cuba'
     }
 }
-    
+
 configure(webModule) {
     configurations {
         webcontent
@@ -146,7 +146,7 @@ configure(webModule) {
         compile(globalModule)
 
     }
-    
+
     task webArchive(type: Zip) {
         from file("$buildDir/web")
         from file('web')
@@ -198,8 +198,10 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
                 socket(server: 'localhost', port: '8787')
             }
         }
-        start.execute()
     }
 }
+restart.finalizedBy start
 
-
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.3.1'
+}
