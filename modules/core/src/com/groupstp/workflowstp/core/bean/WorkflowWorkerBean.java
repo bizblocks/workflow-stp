@@ -59,6 +59,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     protected UserSessionSource userSessionSource;
     @Inject
     protected WorkflowSugarProcessor sugar;
+    @Inject
+    protected EntityStates entityStates;
+    @Inject
+    protected ViewRepository viewRepository;
 
     @Inject
     protected WorkflowConfig config;
@@ -71,9 +75,13 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     protected volatile int callCount = 0;
 
-
     @Override
     public Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException {
+        return determinateWorkflow(entity, View.MINIMAL);
+    }
+
+    @Override
+    public Workflow determinateWorkflow(WorkflowEntity entity, @Nullable String view) throws WorkflowException {
         Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWorkerBean.emptyEntity"));
 
         entity = reloadNN(entity, View.LOCAL);
@@ -84,6 +92,11 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 try {
                     if (isSatisfyDefinition(definition, entity)) {
                         log.debug("For entity '{}' will be used workflow '{}'", entity.getId(), definition.getWorkflow().getId());
+
+                        view = view == null ? View.MINIMAL : view;
+                        if (!entityStates.isLoadedWithView(definition.getWorkflow(), view)) {
+                            return reloadNN(definition.getWorkflow(), view);
+                        }
 
                         return definition.getWorkflow();
                     }
@@ -101,7 +114,11 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     protected List<WorkflowDefinition> loadActiveDefinitions(String entityName) {
         return dataManager.load(WorkflowDefinition.class)
-                .query("select e from wfstp$WorkflowDefinition e where e.entityName = :entityName and e.workflow.active = true order by e.priority desc")
+                .query("select e from wfstp$WorkflowDefinition e " +
+                        " where " +
+                        " e.entityName = :entityName " +
+                        " and e.workflow.active = true " +
+                        " order by e.priority desc")
                 .parameter("entityName", entityName)
                 .view("workflowDefinition-determination")
                 .list();
@@ -136,6 +153,16 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             instance.setEntityName(metaClass.getName());
             instance.setEntityId(entityId.toString());
             instance.setStartDate(timeSource.currentTimestamp());
+
+            if (!entityStates.isLoaded(entity, "workflow")
+                    || !entityStates.isLoaded(entity, "status")
+                    || !entityStates.isLoaded(entity, "stepName")) {
+                entity = dataManager.reload(entity, new View(entity.getClass())
+                        .addProperty("id")
+                        .addProperty("workflow", viewRepository.getView(Workflow.class, View.MINIMAL))
+                        .addProperty("status")
+                        .addProperty("stepName"));
+            }
 
             if (entity.getWorkflow() != null) {
                 throw new WorkflowException(String.format(getMessage("WorkflowWorkerBean.workflowEntityAlreadyProcessing"), entity.getId()));
@@ -191,6 +218,8 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             }
 
             if (Boolean.TRUE.equals(instance.getErrorInTask())) {
+                instance.setErrorInTask(null);
+
                 WorkflowInstanceTask task = getLastTask(instance);
                 if (task != null) {
                     task.setEndDate(null);
@@ -286,12 +315,14 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         Preconditions.checkNotNullArgument(instance, getMessage("WorkflowWorkerBean.emptyWorkflowInstance"));
 
         forceAttach(instance);
-        try {
+        try (Transaction tr = persistence.getTransaction()) {
             //cleanup system parameter
             WorkflowExecutionContext ctx = getExecutionContext(instance);
             ctx.putParam(WorkflowConstants.REPEAT, null);
             ctx.putParam(WorkflowConstants.TIMEOUT, null);
             setExecutionContext(ctx, instance);
+
+            tr.commit();
         } finally {
             detach(instance);
         }
@@ -368,18 +399,24 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     @Override
     public boolean isProcessing(WorkflowEntity entity) {
-        return getWorkflowInstance(entity) != null;
+        return getWorkflowInstance(entity, View.MINIMAL) != null;
     }
 
     @Nullable
     @Override
     public Workflow getWorkflow(WorkflowEntity entity) {
+        return getWorkflow(entity, View.LOCAL);
+    }
+
+    @Nullable
+    @Override
+    public Workflow getWorkflow(WorkflowEntity entity, @Nullable String view) {
         Preconditions.checkNotNullArgument(entity);
         return dataManager.load(Workflow.class)
                 .query("select e.workflow from " + entity.getMetaClass().getName() + " e where e.id = :id")
                 .parameter("id", entity.getId())
                 .maxResults(1)
-                .view(View.LOCAL)
+                .view(view == null ? View.MINIMAL : view)
                 .optional()
                 .orElse(null);
     }
@@ -387,21 +424,32 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Nullable
     @Override
     public WorkflowInstance getWorkflowInstance(WorkflowEntity entity) {
-        return getWorkflowInstanceInternal(entity, true);
+        return getWorkflowInstance(entity, "workflowInstance-process");
+    }
+
+    @Nullable
+    public WorkflowInstance getWorkflowInstance(WorkflowEntity entity, @Nullable String view) {
+        return getWorkflowInstanceInternal(entity, true, view);
     }
 
     @Nullable
     @Override
     public WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity) {
-        return getWorkflowInstanceInternal(entity, false);
+        return getWorkflowInstanceIC(entity, "workflowInstance-process");
     }
 
-    protected WorkflowInstance getWorkflowInstanceInternal(WorkflowEntity entity, boolean active) {
+    @Nullable
+    @Override
+    public WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity, @Nullable String view) {
+        return getWorkflowInstanceInternal(entity, false, view);
+    }
+
+    protected WorkflowInstance getWorkflowInstanceInternal(WorkflowEntity entity, boolean active, String view) {
         Preconditions.checkNotNullArgument(entity);
 
         Workflow workflow;
-        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
-            workflow = getWorkflow(entity);
+        if (!entityStates.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity, View.MINIMAL);
         } else {
             workflow = entity.getWorkflow();
         }
@@ -418,7 +466,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     .parameter("entityId", entity.getId().toString())
                     .parameter("workflowId", workflow.getId())
                     .maxResults(1)
-                    .view("workflowInstance-process")
+                    .view(view == null ? View.MINIMAL : view)
                     .optional()
                     .orElse(null);
         }
@@ -428,21 +476,33 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Nullable
     @Override
     public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
-        return getWorkflowInstanceTaskInternal(entity, true);
+        return getWorkflowInstanceTask(entity, "workflowInstanceTask-detailed");
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, String view) {
+        return getWorkflowInstanceTaskInternal(entity, true, view);
     }
 
     @Nullable
     @Override
     public WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity) {
-        return getWorkflowInstanceTaskInternal(entity, false);
+        return getWorkflowInstanceTaskIC(entity, "workflowInstanceTask-detailed");
     }
 
-    protected WorkflowInstanceTask getWorkflowInstanceTaskInternal(WorkflowEntity entity, boolean active) {
+    @Nullable
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity, String view) {
+        return getWorkflowInstanceTaskInternal(entity, false, view);
+    }
+
+    protected WorkflowInstanceTask getWorkflowInstanceTaskInternal(WorkflowEntity entity, boolean active, String view) {
         Preconditions.checkNotNullArgument(entity);
 
         Workflow workflow;
-        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
-            workflow = getWorkflow(entity);
+        if (!entityStates.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity, View.MINIMAL);
         } else {
             workflow = entity.getWorkflow();
         }
@@ -459,7 +519,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     .parameter("entityId", entity.getId().toString())
                     .parameter("workflowId", workflow.getId())
                     .maxResults(1)
-                    .view("workflowInstanceTask-detailed")
+                    .view(view == null ? View.MINIMAL : view)
                     .optional()
                     .orElse(null);
         }
@@ -468,12 +528,17 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
 
     @Override
     public WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage) {
+        return getWorkflowInstanceTaskNN(entity, stage, "workflowInstanceTask-detailed");
+    }
+
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage, String view) {
         Preconditions.checkNotNullArgument(entity);
         Preconditions.checkNotNullArgument(stage);
 
         Workflow workflow;
-        if (!PersistenceHelper.isLoaded(entity, "workflow")) {
-            workflow = getWorkflow(entity);
+        if (!entityStates.isLoaded(entity, "workflow")) {
+            workflow = getWorkflow(entity, View.MINIMAL);
         } else {
             workflow = entity.getWorkflow();
         }
@@ -497,13 +562,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 .parameter("workflowId", workflow.getId())
                 .parameter("stageId", stage.getId())
                 .maxResults(1)
-                .view("workflowInstanceTask-detailed")
+                .view(view == null ? View.MINIMAL : view)
                 .optional()
                 .orElse(null);
         if (task != null) {
-            if (!Boolean.TRUE.equals(task.getInstance().getWorkflow().getActive())) {
-                throw new RuntimeException(getMessage("WorkflowWorkerBean.workflowNotActive"));
-            }
             return task;
         }
         throw new RuntimeException(String.format(getMessage("WorkflowWorkerBean.taskAlreadyExecuted"), stage.getName(), entity.getInstanceName()));
@@ -512,6 +574,14 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     @Nullable
     @Override
     public Stage getStage(WorkflowEntity entity) {
+        return getStage(entity, "stage-process");
+    }
+
+    @Nullable
+    @Override
+    public Stage getStage(WorkflowEntity entity, String view) {
+        Preconditions.checkNotNullArgument(entity);
+
         if (!StringUtils.isEmpty(entity.getStepName())) {
             return dataManager.load(Stage.class)
                     .query("select e from wfstp$Stage e where " +
@@ -520,7 +590,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                     .parameter("entityName", entity.getMetaClass().getName())
                     .parameter("name", entity.getStepName())
                     .maxResults(1)
-                    .view("stage-process")
+                    .view(view == null ? View.MINIMAL : view)
                     .optional()
                     .orElse(null);
         }
@@ -1057,24 +1127,33 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
                 }
             }
 
-            Set<UUID> processing;
+            int batchSize = 30;
+            int count = 0;
+            List<WorkflowInstance> list;
+            do {
+                list = dataManager.load(WorkflowInstance.class)
+                        .query("select e from wfstp$WorkflowInstance e " +
+                                " where " +
+                                " e.endDate is null " +
+                                " and e.error is null " +
+                                " order by e.createTs asc, e.id asc")
+                        .view(View.MINIMAL)
+                        .firstResult(count)
+                        .maxResults(batchSize)
+                        .list();
+                count += list.size();
 
-            ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-            readLock.lock();
-            try {
-                processing = processingInstances.keySet();
-            } finally {
-                readLock.unlock();
-            }
-
-            List<WorkflowInstance> notFinished = getNotFinishedWorkflowInstances(processing);
-            for (WorkflowInstance instance : notFinished) {
-                try {
-                    iterate(instance);
-                } catch (WorkflowException e) {
-                    log.warn("Failed to restart workflow instance from heartbeat");
+                for (WorkflowInstance instance : list) {
+                    if (isProcessing(instance)) {
+                        continue;
+                    }
+                    try {
+                        iterate(instance);
+                    } catch (WorkflowException e) {
+                        log.warn("Failed to restart workflow instance from heartbeat: " + e.getMessage());
+                    }
                 }
-            }
+            } while (!list.isEmpty());
         }
     }
 
@@ -1140,23 +1219,13 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
             MetaClass metaClass = metadata.getClassNN(instance.getEntityName());
             Object id = parseEntityId(metaClass, instance.getEntityId());
             //noinspection unchecked
-            List list = dataManager.loadList(LoadContext.create(metaClass.getJavaClass()).setId(id).setView(View.LOCAL));
-            if (!CollectionUtils.isEmpty(list)) {
-                return (WorkflowEntity) list.get(0);
-            }
+            return (WorkflowEntity<?>) dataManager.load(metaClass.getJavaClass())
+                    .id(id)
+                    .view(View.LOCAL)
+                    .optional()
+                    .orElse(null);
         }
         return null;
-    }
-
-    /**
-     * Retrieve all not finished workflow instances
-     */
-    protected List<WorkflowInstance> getNotFinishedWorkflowInstances(Set<UUID> processingIds) {
-        return dataManager.load(WorkflowInstance.class)
-                .query("select e from wfstp$WorkflowInstance e where e.endDate is null and e.error is null and e.id not in :ids")
-                .parameter("ids", processingIds)
-                .view(View.MINIMAL)
-                .list();
     }
 
     /**
@@ -1190,7 +1259,7 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
         if (repeatSec != null && repeatSec > 0) {
             String lastExecuteText = ctx.getParam(WorkflowConstants.REPEAT);
             if (!StringUtils.isEmpty(lastExecuteText)) {
-                long lastExecute = Long.valueOf(lastExecuteText);
+                long lastExecute = Long.parseLong(lastExecuteText);
                 long now = timeSource.currentTimeMillis();
                 long diff = now - lastExecute;
                 if (diff < (repeatSec * 1000)) {
@@ -1243,6 +1312,19 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     /**
+     * Check is current instance currently in process mode or not
+     */
+    protected boolean isProcessing(WorkflowInstance instance) {
+        ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+        readLock.lock();
+        try {
+            return processingInstances.containsKey(instance.getId());
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
      * Reloading entity with provided view
      */
     protected <T extends Entity> T reloadNN(T entity, String view) {
@@ -1281,10 +1363,10 @@ public class WorkflowWorkerBean extends MessageableBean implements WorkflowWorke
     }
 
     protected void fireEvent(WorkflowEntity entity, @Nullable String previousStep) {
-        String id = entity.getId().toString();
-        Class idClass = entity.getId().getClass();
-
         if (!Objects.equals(entity.getStepName(), previousStep)) {
+            String id = entity.getId().toString();
+            Class<?> idClass = entity.getId().getClass();
+
             WorkflowEvent event = new WorkflowEvent(entity.getClass(), id, idClass, entity.getStepName(), previousStep);
             events.publish(event);
         }

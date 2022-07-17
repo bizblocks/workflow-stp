@@ -14,6 +14,7 @@ import java.util.UUID;
  * @author adiatullin
  */
 public interface WorkflowService {
+
     String NAME = "wfstp_WorkflowService";
 
     /**
@@ -22,8 +23,20 @@ public interface WorkflowService {
      * @param entity workflow entity
      * @return active workflow object which should be used for specified entity
      * @throws WorkflowException in case of any unexpected problems or if active workflow not found
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     Workflow determinateWorkflow(WorkflowEntity entity) throws WorkflowException;
+
+    /**
+     * Determinate and get active workflow object which should be used for specified entity
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of workflow
+     * @return active workflow object which should be used for specified entity
+     * @throws WorkflowException in case of any unexpected problems or if active workflow not found
+     */
+    Workflow determinateWorkflow(WorkflowEntity entity, @Nullable String view) throws WorkflowException;
 
     /**
      * Retrieve all exist in system workflow execution delegates services
@@ -90,45 +103,105 @@ public interface WorkflowService {
      *
      * @param entity workflow entity
      * @return current related with entity workflow
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     @Nullable
     Workflow getWorkflow(WorkflowEntity entity);
+
+    /**
+     * Retrieve workflow reference of workflow entity
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of workflow
+     * @return current related with entity workflow
+     */
+    @Nullable
+    Workflow getWorkflow(WorkflowEntity entity, @Nullable String view);
 
     /**
      * Load workflow instance by workflow entity, or return null if instance are not exist or finished.
      *
      * @param entity workflow entity
      * @return active current entity workflow instance
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     @Nullable
     WorkflowInstance getWorkflowInstance(WorkflowEntity entity);
+
+    /**
+     * Load workflow instance by workflow entity, or return null if instance are not exist or finished.
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of workflow instance
+     * @return active current entity workflow instance
+     */
+    @Nullable
+    WorkflowInstance getWorkflowInstance(WorkflowEntity entity, @Nullable String view);
 
     /**
      * Load workflow instance by workflow entity, or return null only if instance not exist (ignore completion)
      *
      * @param entity workflow entity
      * @return current entity workflow instance
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     @Nullable
     WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity);
+
+    /**
+     * Load workflow instance by workflow entity, or return null only if instance not exist (ignore completion)
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of workflow instance
+     * @return current entity workflow instance
+     */
+    @Nullable
+    WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity, @Nullable String view);
 
     /**
      * Load entity last workflow instance task, or return null if all tasks are finished or workflow instance not exist.
      *
      * @param entity workflow entity
      * @return last processing workflow instance task
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     @Nullable
     WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity);
+
+    /**
+     * Load entity last workflow instance task, or return null if all tasks are finished or workflow instance not exist.
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of task
+     * @return last processing workflow instance task
+     */
+    @Nullable
+    WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, @Nullable String view);
 
     /**
      * Load entity last workflow instance task, or return null only if tasks not exist (ignore completion)
      *
      * @param entity workflow entity
      * @return last processing(processed) workflow instance task
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     @Nullable
     WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity);
+
+    /**
+     * Load entity last workflow instance task, or return null only if tasks not exist (ignore completion)
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of task
+     * @return last processing(processed) workflow instance task
+     */
+    @Nullable
+    WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity, @Nullable String view);
 
     /**
      * Load entity last processing active workflow instance task by provided stage, or throw exception if task are not exist or finished.
@@ -136,23 +209,47 @@ public interface WorkflowService {
      * @param entity workflow entity
      * @param stage  current stage
      * @return processing workflow instance task
+     * @deprecated use the same method with fetch plan
      */
+    @Deprecated
     WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage);
+
+    /**
+     * Load entity last processing active workflow instance task by provided stage, or throw exception if task are not exist or finished.
+     *
+     * @param entity workflow entity
+     * @param stage  current stage
+     * @param view   fetch plan of task
+     * @return processing workflow instance task
+     */
+    WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage, @Nullable String view);
 
     /**
      * Load entity current processing stage
      *
      * @param entity workflow entity
      * @return entity current processing stage or null
+     * @deprecated use the same method with fetch plan
      */
     @Nullable
+    @Deprecated
     Stage getStage(WorkflowEntity entity);
+
+    /**
+     * Load entity current processing stage
+     *
+     * @param entity workflow entity
+     * @param view   fetch plan of task
+     * @return entity current processing stage or null
+     */
+    @Nullable
+    Stage getStage(WorkflowEntity entity, @Nullable String view);
 
     /**
      * Complete (if possible) provided workflow task and move workflow instance to the next step
      *
      * @param task            workflow instance task
-     * @param performersLogin task perform users login, or, if nothing passed, only a current user will be used
+     * @param performersLogin task perform users login, or if nothing passed, only a current user will be used
      * @throws WorkflowException in case of any unexpected problems
      */
     void finishTask(WorkflowInstanceTask task, String... performersLogin) throws WorkflowException;
@@ -163,7 +260,7 @@ public interface WorkflowService {
      *
      * @param task            workflow instance task
      * @param params          additional workflow execution parameters which must be saved
-     * @param performersLogin task perform users login, or, if nothing passed, only a current user will be used
+     * @param performersLogin task perform users login, or if nothing passed, only a current user will be used
      * @throws WorkflowException in case of any unexpected problems
      */
     void finishTask(WorkflowInstanceTask task, @Nullable Map<String, String> params, String... performersLogin) throws WorkflowException;

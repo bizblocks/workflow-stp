@@ -106,7 +106,7 @@ public class WorkflowChooserDialog extends AbstractWindow {
 
     public void onDeterminate() {
         try {
-            workflowField.setValue(workflowService.determinateWorkflow(entity));
+            workflowField.setValue(workflowService.determinateWorkflow(entity, View.MINIMAL));
         } catch (WorkflowException e) {
             log.error("Failed to determinate workflow", e);
             throw new RuntimeException(getMessage("workflowChooserDialog.internalError"));

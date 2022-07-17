@@ -107,6 +107,11 @@
         <property name="steps"
                   view="step-rest"/>
     </view>
+    <view class="com.groupstp.workflowstp.entity.Workflow"
+          extends="_minimal"
+          name="workflow-active">
+        <property name="active"/>
+    </view>
     <view class="com.groupstp.workflowstp.entity.Step"
           extends="_minimal"
           name="step-rest">

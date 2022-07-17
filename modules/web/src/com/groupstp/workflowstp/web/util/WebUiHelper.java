@@ -54,15 +54,6 @@ public class WebUiHelper {
 
     protected static Element CREATE_TS_ELEMENT = Dom4j.readDocument("<createTs format=\"dd.MM.yyyy\" useUserTimezone=\"true\"/>").getRootElement();
     protected static String DATE_FORMAT = "dd.MM.yyyy";
-    protected static SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
-    protected static DecimalFormat DECIMAL_FORMAT;
-
-    static {
-        DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
-        formatSymbols.setDecimalSeparator('.');
-        formatSymbols.setGroupingSeparator(' ');
-        DECIMAL_FORMAT = new DecimalFormat("#,###.##", formatSymbols);
-    }
 
     @Inject
     protected ComponentsFactory componentsFactory;
@@ -449,13 +440,16 @@ public class WebUiHelper {
             String text = StringUtils.EMPTY;
             if (value != null) {
                 if (Date.class.isAssignableFrom(path.getRangeJavaClass())) {
-                    text = SIMPLE_DATE_FORMAT.format((Date) value);
+                    text = new SimpleDateFormat(DATE_FORMAT).format((Date) value);
                 } else if (Entity.class.isAssignableFrom(path.getRangeJavaClass())) {
                     text = ((Entity) value).getInstanceName();
                 } else if (Enum.class.isAssignableFrom(path.getRangeJavaClass())) {
                     text = messages.getMessage((Enum) value);
                 } else if (BigDecimal.class.isAssignableFrom(path.getRangeJavaClass())) {
-                    text = DECIMAL_FORMAT.format(((BigDecimal) value).doubleValue());
+                    DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
+                    formatSymbols.setDecimalSeparator('.');
+                    formatSymbols.setGroupingSeparator(' ');
+                    text = new DecimalFormat("#,###.##", formatSymbols).format(((BigDecimal) value).doubleValue());
                 } else {
                     text = value.toString();
                 }
@@ -710,7 +704,7 @@ public class WebUiHelper {
                     try {
                         for (WorkflowEntity item : selected) {
                             if (predicate == null || predicate.test(item)) {
-                                WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage);
+                                WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage, View.MINIMAL);
                                 workflowService.finishTask(itemTask, params);
                             }
                         }
@@ -787,8 +781,8 @@ public class WebUiHelper {
                     commitTableIfNeed(table);
                     try {
                         for (WorkflowEntity item : selected) {
-                            WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item);
-                            WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage);
+                            WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item, View.MINIMAL);
+                            WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(item, stage, View.MINIMAL);
                             WorkflowExecutionContext ctx = workflowService.getExecutionContext(itemInstance);
                             String[] performers = doubleActionPerformed(ctx, key);
                             if (performers != null) {
@@ -862,7 +856,7 @@ public class WebUiHelper {
             Set<WorkflowEntity> selected = table.getSelected();
             if (!CollectionUtils.isEmpty(selected)) {
                 for (WorkflowEntity item : selected) {
-                    WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item);
+                    WorkflowInstance itemInstance = workflowService.getWorkflowInstance(item, View.MINIMAL);
                     if (itemInstance == null) {
                         return false;
                     }

@@ -64,6 +64,8 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     @Inject
     protected WorkflowWebConfig webConfig;
 
+    protected final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public List<MetaClass> getWorkflowEntities() {
         List<MetaClass> result = new ArrayList<>();
@@ -202,7 +204,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
         Preconditions.checkNotNullArgument(entity, getMessage("WorkflowWebBeanImpl.entityIsEmpty"));
         Preconditions.checkNotNullArgument(screen, getMessage("WorkflowWebBeanImpl.frameIsEmpty"));
 
-        final Workflow workflow = service.getWorkflow(entity);
+        final Workflow workflow = service.getWorkflow(entity, "workflow-active");
         if (workflow == null || !Boolean.TRUE.equals(workflow.getActive())) {
             log.warn(String.format("Extension of editor ignored since workflow for entity '%s' are missing or deactivated", entity.getInstanceName()));
             return;
@@ -212,7 +214,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
             entity = reloadIfNeed(entity, View.LOCAL);
         }
 
-        final Stage stage = service.getStage(entity);
+        final Stage stage = service.getStage(entity, View.MINIMAL);
         if (stage == null) {
             log.warn(String.format("Extension of editor ignored since stage for entity '%s' not found", entity.getInstanceName()));
             return;
@@ -220,7 +222,7 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
 
         if (EqualsUtils.equalAny(stage.getType(), StageType.USERS_INTERACTION, StageType.ARCHIVE)) {
             try {
-                extendEditor(entity, screen, service.getWorkflowInstanceTaskNN(entity, stage));
+                extendEditor(entity, screen, service.getWorkflowInstanceTaskNN(entity, stage, "workflowInstanceTask-detailed"));
             } catch (Exception e) {
                 if (e instanceof WorkflowException) {
                     throw (WorkflowException) e;
@@ -326,8 +328,6 @@ public class WorkflowWebBeanImpl implements WorkflowWebBean {
     @Nullable
     protected String constructScript(Frame screen, @Nullable String constructorJson, @Nullable String genericConstructorJson) throws Exception {
         if (!StringUtils.isEmpty(constructorJson) || !StringUtils.isEmpty(genericConstructorJson)) {
-            ObjectMapper objectMapper = new ObjectMapper();
-
             ScreenConstructor constructor = populateConstructor(
                     StringUtils.isEmpty(constructorJson) ? null : objectMapper.readValue(constructorJson, ScreenConstructor.class),
                     StringUtils.isEmpty(genericConstructorJson) ? null : objectMapper.readValue(genericConstructorJson, ScreenConstructor.class)

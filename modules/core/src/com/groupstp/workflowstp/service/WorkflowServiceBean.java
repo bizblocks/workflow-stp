@@ -30,6 +30,11 @@ public class WorkflowServiceBean implements WorkflowService {
     }
 
     @Override
+    public Workflow determinateWorkflow(WorkflowEntity entity, @Nullable String view) throws WorkflowException {
+        return worker.determinateWorkflow(entity, view);
+    }
+
+    @Override
     public Map<String, String> getWorkflowExecutionDelegates() {
         Map<String, String> result = new TreeMap<>();
 
@@ -80,8 +85,20 @@ public class WorkflowServiceBean implements WorkflowService {
 
     @Nullable
     @Override
+    public Workflow getWorkflow(WorkflowEntity entity, @Nullable String view) {
+        return worker.getWorkflow(entity, view);
+    }
+
+    @Nullable
+    @Override
     public WorkflowInstance getWorkflowInstance(WorkflowEntity entity) {
         return worker.getWorkflowInstance(entity);
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstance getWorkflowInstance(WorkflowEntity entity, @Nullable String view) {
+        return worker.getWorkflowInstance(entity, view);
     }
 
     @Nullable
@@ -92,8 +109,20 @@ public class WorkflowServiceBean implements WorkflowService {
 
     @Nullable
     @Override
+    public WorkflowInstance getWorkflowInstanceIC(WorkflowEntity entity, @Nullable String view) {
+        return worker.getWorkflowInstanceIC(entity, view);
+    }
+
+    @Nullable
+    @Override
     public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity) {
         return worker.getWorkflowInstanceTask(entity);
+    }
+
+    @Nullable
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTask(WorkflowEntity entity, @Nullable String view) {
+        return worker.getWorkflowInstanceTask(entity, view);
     }
 
     @Nullable
@@ -102,15 +131,32 @@ public class WorkflowServiceBean implements WorkflowService {
         return worker.getWorkflowInstanceTaskIC(entity);
     }
 
+    @Nullable
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTaskIC(WorkflowEntity entity, @Nullable String view) {
+        return worker.getWorkflowInstanceTaskIC(entity, view);
+    }
+
     @Override
     public WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage) {
         return worker.getWorkflowInstanceTaskNN(entity, stage);
+    }
+
+    @Override
+    public WorkflowInstanceTask getWorkflowInstanceTaskNN(WorkflowEntity entity, Stage stage, @Nullable String view) {
+        return worker.getWorkflowInstanceTaskNN(entity, stage, view);
     }
 
     @Nullable
     @Override
     public Stage getStage(WorkflowEntity entity) {
         return worker.getStage(entity);
+    }
+
+    @Nullable
+    @Override
+    public Stage getStage(WorkflowEntity entity, @Nullable String view) {
+        return worker.getStage(entity, view);
     }
 
     @Override
