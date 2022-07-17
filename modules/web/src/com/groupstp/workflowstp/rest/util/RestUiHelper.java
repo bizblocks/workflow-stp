@@ -130,7 +130,7 @@ public class RestUiHelper {
             if (!CollectionUtils.isEmpty(entities)) {
                 for (WorkflowEntity entity : entities) {
                     if (predicate == null || predicate.test(entity)) {
-                        WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(entity, stage);
+                        WorkflowInstanceTask itemTask = workflowService.getWorkflowInstanceTaskNN(entity, stage, View.MINIMAL);
                         workflowService.finishTask(itemTask, params);
                     }
                 }
@@ -146,8 +146,8 @@ public class RestUiHelper {
         try {
             if (!CollectionUtils.isEmpty(entities)) {
                 for (WorkflowEntity entity : entities) {
-                    WorkflowInstance instance = workflowService.getWorkflowInstance(entity);
-                    WorkflowInstanceTask task = workflowService.getWorkflowInstanceTaskNN(entity, stage);
+                    WorkflowInstance instance = workflowService.getWorkflowInstance(entity, View.MINIMAL);
+                    WorkflowInstanceTask task = workflowService.getWorkflowInstanceTaskNN(entity, stage, View.MINIMAL);
                     WorkflowExecutionContext ctx = workflowService.getExecutionContext(instance);
                     String[] performers = doubleActionPerformed(ctx, key);
                     if (performers != null) {
@@ -186,7 +186,7 @@ public class RestUiHelper {
         assert stage != null;
         if (!CollectionUtils.isEmpty(entities)) {
             for (WorkflowEntity entity : entities) {
-                WorkflowInstance itemInstance = workflowService.getWorkflowInstance(entity);
+                WorkflowInstance itemInstance = workflowService.getWorkflowInstance(entity, View.MINIMAL);
                 if (itemInstance == null) {
                     return false;
                 }

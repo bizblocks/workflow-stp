@@ -14,6 +14,8 @@ import java.io.IOException;
 public class JsonUtil {
     public static final String NAME = "wfstp_JsonUtil";
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
      * Serialize provided object into json text
      *
@@ -23,7 +25,7 @@ public class JsonUtil {
      */
     public <T> String toJson(T object) {
         try {
-            return new ObjectMapper().writeValueAsString(object);
+            return objectMapper.writeValueAsString(object);
         } catch (IOException e) {
             throw new RuntimeException("JSON serialization failed", e);
         }
@@ -39,7 +41,7 @@ public class JsonUtil {
      */
     public <T> T fromJson(String json, Class<T> clazz) {
         try {
-            return new ObjectMapper().readValue(json, clazz);
+            return objectMapper.readValue(json, clazz);
         } catch (IOException e) {
             throw new RuntimeException("JSON deserialization failed", e);
         }

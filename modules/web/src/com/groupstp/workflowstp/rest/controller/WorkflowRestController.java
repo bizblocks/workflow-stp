@@ -242,7 +242,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
                     getMessage("WorkflowRestController.entityAlreadyInProcess"), HttpStatus.BAD_REQUEST);
         }
         try {
-            Workflow wf = workflowService.determinateWorkflow(entity);
+            Workflow wf = workflowService.determinateWorkflow(entity, View.MINIMAL);
 
             log.debug("Start entity {}:{} workflow {}", entity, entityId, wf.getInstanceName());
 
@@ -274,7 +274,7 @@ public class WorkflowRestController implements WorkflowRestAPI {
     @Nullable
     protected String getWorkflowInstanceId(WorkflowEntity entity) {
         try {
-            WorkflowInstance instance = workflowService.getWorkflowInstance(entity);
+            WorkflowInstance instance = workflowService.getWorkflowInstance(entity, View.MINIMAL);
             return instance == null ? null : instance.getId().toString();
         } catch (Exception e) {
             log.error("Failed to check entity workflow processing", e);
